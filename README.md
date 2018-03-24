@@ -25,3 +25,24 @@ is desired.
 $ go get -t #Download dependencies, including those used by tests
 $ ginkgo watch #Watch source/test files for changes
 ```
+
+
+## TCP Traffic
+
+When the server just listens, accepts, and closes a connection.
+
+```bash
+$ ./gohttp -p 1234 -d ... #Server
+$ netcat -vz -4 localhost 1234 #Client
+```
+
+Packet sniffing
+
+```bash
+$ tcpdump -D #Show interfaces; find localhost
+$ tcpdump -i <interface> -s 0 -w gohttp--netcat-4.pcap #Capture
+$ tcpdump -4 <file> #View file
+```
+
+
+There's also `curl --trace <hex as ascii dump file> ...`

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 	"net"
+	"bufio"
 )
 
 func main() {
@@ -56,18 +57,42 @@ type HttpServer struct {
 }
 
 func (httpd HttpServer) Listen() error {
-	address := fmt.Sprintf(":%d", httpd.Port)
-	listener, listenError := net.Listen("tcp", address)
+	address, addressErr := net.ResolveTCPAddr("tcp", fmt.Sprintf("localhost:%d", httpd.Port))
+	if addressErr != nil {
+		return addressErr
+	}
+
+	listener, listenError := net.ListenTCP("tcp", address)
 	if listenError != nil {
 		return listenError
 	}
 
-	for { //TODO KDK: Monitor a given channel to request shutdown and exit gracefully
-		conn, connectionError := listener.Accept()
+	for {
+		conn, connectionError := listener.AcceptTCP()
 		if connectionError != nil {
-			fmt.Println(connectionError.Error()) //TODO KDK: Push to a buffered channel
+			fmt.Println(connectionError.Error())
 		}
 
-		fmt.Printf("Connected! %v\n", conn)
+		fmt.Printf("Connected! %v -> %v\n", conn.LocalAddr(), conn.RemoteAddr())
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn *net.TCPConn) {
+	//Read so it doesn't complain about the connection being reset
+	readBuffer := make([]byte, 1024)
+	reader := bufio.NewReader(conn)
+	numBytesRead, readError := reader.Read(readBuffer)
+	if readError != nil {
+		fmt.Printf(readError.Error())
+		return
+	}
+
+	fmt.Printf("Read %d bytes\n", numBytesRead)
+
+	//Try first to respond with just enough for a 404
+	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+	if closeError := conn.Close(); closeError != nil {
+		fmt.Printf("Failed to close connection: %s\n", closeError.Error())
 	}
 }

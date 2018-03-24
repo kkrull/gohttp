@@ -1,0 +1,16 @@
+== Info: Rebuilt URL to: http://localhost:1234/
+== Info:   Trying 127.0.0.1...
+== Info: TCP_NODELAY set
+== Info: Connected to localhost (127.0.0.1) port 1234 (#0)
+=> Send header, 78 bytes (0x4e)
+0000: 47 45 54 20 2f 20 48 54 54 50 2f 31 2e 31 0d 0a GET / HTTP/1.1..
+0010: 48 6f 73 74 3a 20 6c 6f 63 61 6c 68 6f 73 74 3a Host: localhost:
+0020: 31 32 33 34 0d 0a 55 73 65 72 2d 41 67 65 6e 74 1234..User-Agent
+0030: 3a 20 63 75 72 6c 2f 37 2e 35 34 2e 30 0d 0a 41 : curl/7.54.0..A
+0040: 63 63 65 70 74 3a 20 2a 2f 2a 0d 0a 0d 0a       ccept: */*....
+<= Recv header, 24 bytes (0x18)
+0000: 48 54 54 50 2f 31 2e 31 20 34 30 34 20 4e 6f 74 HTTP/1.1 404 Not
+0010: 20 46 6f 75 6e 64 0d 0a                          Found..
+== Info: Recv failure: Connection reset by peer
+== Info: stopped the pause stream!
+== Info: Closing connection 0
