@@ -8,7 +8,7 @@ import (
 /* HttpServer */
 
 type HttpServer struct {
-	ListenFails string
+	ListenFails  string
 	listenCalled bool
 }
 
