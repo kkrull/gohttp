@@ -19,10 +19,24 @@ var _ = Describe("CliCommandParser", func() {
 		)
 
 		Context("given --help", func() {
-			It("returns HelpCommand", func() {
+			BeforeEach(func() {
 				parser = &CliCommandParser{}
-				command = parser.Parse([]string{"gohttp", "--help"})
+				command = parser.Parse([]string{"/path/to/gohttp", "--help"})
+			})
+
+			It("returns HelpCommand", func() {
 				Expect(command).To(BeAssignableToTypeOf(HelpCommand{}))
+			})
+			It("the HelpCommand is configured for the name of the program in the first argument", func() {
+				stderr := &bytes.Buffer{}
+				command.Run(stderr)
+				Expect(stderr.String()).To(HavePrefix("Usage of /path/to/gohttp"))
+			})
+			It("the HelpCommand shows usage for the gohttp arguments", func() {
+				stderr := &bytes.Buffer{}
+				command.Run(stderr)
+				Expect(stderr.String()).To(ContainSubstring("The root content directory"))
+				Expect(stderr.String()).To(ContainSubstring("The TCP port on which to listen"))
 			})
 		})
 

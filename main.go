@@ -25,21 +25,22 @@ func main() {
 type CliCommandParser struct{}
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
-	flagSet := flag.NewFlagSet("gohttp", flag.ContinueOnError)
+	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	path := flagSet.String("d", "", "The root content directory, from which to operate")
 	port := flagSet.Uint("p", 0, "The TCP port on which to listen")
 	suppressUntimelyOutput(flagSet)
 
-	parseError := flagSet.Parse(args[1:])
-	if parseError == flag.ErrHelp {
+	err := flagSet.Parse(args[1:])
+	switch {
+	case err == flag.ErrHelp:
 		return HelpCommand{FlagSet: flagSet}
-	} else if parseError != nil {
-		return ErrorCommand{Error: parseError}
-	} else if *path == "" {
+	case err != nil:
+		return ErrorCommand{Error: err}
+	case *path == "":
 		return ErrorCommand{Error: fmt.Errorf("missing path")}
-	} else if *port == 0 {
+	case *port == 0:
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
-	} else {
+	default:
 		return RunServerCommand{Server: http.NewServer(*path, *port)}
 	}
 }
@@ -81,8 +82,8 @@ type RunServerCommand struct {
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
-	if listenError := command.Server.Listen(); listenError != nil {
-		return 2, listenError
+	if err := command.Server.Listen(); err != nil {
+		return 2, err
 	}
 
 	return 0, nil
