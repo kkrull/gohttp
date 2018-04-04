@@ -123,29 +123,6 @@ var _ = Describe("TCPServer", func() {
 				Expect(tcpAddress.Port).To(BeNumerically("<=", 1<<16))
 			})
 		})
-
-		Context("when listening", func() {
-			BeforeEach(func() {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
-				Expect(server.Start()).To(Succeed())
-			})
-
-			It("responds to HTTP requests", func(done Done) {
-				for i := 0; i < 2; i++ {
-					conn, connectError = net.Dial("tcp", server.Address().String())
-					Expect(connectError).NotTo(HaveOccurred())
-					writeString(conn, "GET / HTTP/1.1\r\n\r\n")
-					expectHttpResponse(conn)
-				}
-
-				close(done)
-			})
-
-			XIt("Notifies of read errors, caused by Conn#SetReadDeadline")
-			XIt("Section 3.1.1 (recommended to allow request lines to be at least 8,000 octets)")
-			XIt("Section 3 paragraph 3 (encoding must be a superset of US-ASCII)")
-			XIt("Section 3 paragraph 5 (recipient must reject request with whitespace between the start-line and the first header)")
-		})
 	})
 
 	Describe("#Shutdown", func() {
@@ -182,6 +159,29 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 		})
+	})
+
+	Context("when the server is running", func() {
+		BeforeEach(func() {
+			server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+			Expect(server.Start()).To(Succeed())
+		})
+		
+		It("responds to HTTP requests", func(done Done) {
+			for i := 0; i < 2; i++ {
+				conn, connectError = net.Dial("tcp", server.Address().String())
+				Expect(connectError).NotTo(HaveOccurred())
+				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
+				expectHttpResponse(conn)
+			}
+
+			close(done)
+		})
+
+		XIt("Notifies of read errors, caused by Conn#SetReadDeadline")
+		XIt("Section 3.1.1 (recommended to allow request lines to be at least 8,000 octets)")
+		XIt("Section 3 paragraph 3 (encoding must be a superset of US-ASCII)")
+		XIt("Section 3 paragraph 5 (recipient must reject request with whitespace between the start-line and the first header)")
 	})
 })
 
