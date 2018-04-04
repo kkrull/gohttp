@@ -27,6 +27,7 @@ type CliCommandParser struct{}
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	path := flagSet.String("d", "", "The root content directory, from which to operate")
+	host := "localhost"
 	port := flagSet.Uint("p", 0, "The TCP port on which to listen")
 	suppressUntimelyOutput(flagSet)
 
@@ -41,7 +42,8 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case *port == 0:
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
 	default:
-		return RunServerCommand{Server: http.NewServer(*path, *port)}
+		command, _ := MakeRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
+		return command
 	}
 }
 
@@ -77,14 +79,30 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 
 /* RunServerCommand */
 
+func MakeRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
+	quit = make(chan bool, 1)
+	command = RunServerCommand{Server: server, Quit: quit}
+	return
+}
+
 type RunServerCommand struct {
 	Server http.Server
+	Quit   chan bool
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
-	if err := command.Server.Listen(); err != nil {
+	if err := command.Server.Start(); err != nil {
 		return 2, err
 	}
 
+	command.waitForShutdownRequest()
+	if err := command.Server.Shutdown(); err != nil {
+		return 3, err
+	}
+
 	return 0, nil
+}
+
+func (command RunServerCommand) waitForShutdownRequest() {
+	<-command.Quit
 }

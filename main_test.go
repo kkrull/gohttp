@@ -9,6 +9,7 @@ import (
 	"fmt"
 	. "github.com/kkrull/gohttp"
 	"github.com/kkrull/gohttp/mock"
+	"time"
 )
 
 var _ = Describe("CliCommandParser", func() {
@@ -116,34 +117,75 @@ var _ = Describe("CliCommands", func() {
 	})
 
 	Describe("RunServerCommand", func() {
-		var server mock.HttpServer
+		var (
+			server mock.Server
+			quit   chan bool
+		)
 
 		Describe("#Run", func() {
-			Context("when there is no error", func() {
+			Context("given a workable configuration", func() {
 				BeforeEach(func() {
-					server = mock.HttpServer{}
-					command = RunServerCommand{Server: &server}
-					code, err = command.Run(stderr)
+					server = mock.Server{}
+					command, quit = MakeRunServerCommand(&server)
 				})
 
-				It("starts the server", func() {
-					server.VerifyListen()
+				It("runs the server until the quit channel receives something", func(done Done) {
+					go func() {
+						defer GinkgoRecover()
+						command.Run(stderr)
+						server.VerifyShutdown()
+						close(done)
+					}()
+
+					waitForStart()
+					server.VerifyRunning()
+					quit <- true
 				})
-				It("returns no error and an exit code of 0, to indicate success", func() {
+			})
+
+			Context("when everything has run ok", func() {
+				BeforeEach(func() {
+					server = mock.Server{}
+					command, quit = MakeRunServerCommand(&server)
+				})
+
+				It("returns 0 and no error", func() {
+					go scheduleShutdown(quit)
+					code, err = command.Run(stderr)
 					Expect(code).To(Equal(0))
 					Expect(err).To(BeNil())
 				})
 			})
 
-			Context("when there is an error", func() {
+			Context("when there is an error starting the server", func() {
 				It("returns the error and an exit code indicating failure", func() {
-					server = mock.HttpServer{ListenFails: "no listening ears"}
-					command = RunServerCommand{Server: &server}
+					server = mock.Server{StartFails: "no listening ears"}
+					command, quit = MakeRunServerCommand(&server)
 					code, err = command.Run(stderr)
 					Expect(code).To(Equal(2))
 					Expect(err).To(MatchError("no listening ears"))
 				})
 			})
+
+			Context("when there is an error shutting down", func() {
+				It("returns the error and an exit code indicating failure", func() {
+					server = mock.Server{ShutdownFails: "backfire"}
+					command, quit = MakeRunServerCommand(&server)
+					go scheduleShutdown(quit)
+					code, err = command.Run(stderr)
+					Expect(code).To(Equal(3))
+					Expect(err).To(MatchError("backfire"))
+				})
+			})
 		})
 	})
 })
+
+func waitForStart() {
+	time.Sleep(100 * time.Millisecond)
+}
+
+func scheduleShutdown(quit chan bool) {
+	waitForStart()
+	quit <- true
+}

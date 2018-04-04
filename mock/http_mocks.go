@@ -3,24 +3,48 @@ package mock
 import (
 	"fmt"
 	. "github.com/onsi/gomega"
+	"net"
 )
 
-/* HttpServer */
+type Server struct {
+	StartFails  string
+	startCalled bool
 
-type HttpServer struct {
-	ListenFails  string
-	listenCalled bool
+	ShutdownFails  string
+	shutdownCalled bool
 }
 
-func (mock *HttpServer) Listen() error {
-	mock.listenCalled = true
-	if mock.ListenFails != "" {
-		return fmt.Errorf(mock.ListenFails)
+func (Server) Address() net.Addr {
+	panic("implement me")
+}
+
+func (mock *Server) Start() error {
+	mock.startCalled = true
+	if mock.StartFails != "" {
+		return fmt.Errorf(mock.StartFails)
 	}
 
 	return nil
 }
 
-func (mock *HttpServer) VerifyListen() {
-	Expect(mock.listenCalled).To(BeTrue())
+func (mock Server) VerifyStart() {
+	Expect(mock.startCalled).To(BeTrue())
+}
+
+func (mock *Server) Shutdown() error {
+	mock.shutdownCalled = true
+	if mock.ShutdownFails != "" {
+		return fmt.Errorf(mock.ShutdownFails)
+	}
+
+	return nil
+}
+
+func (mock Server) VerifyRunning() {
+	Expect(mock.startCalled).To(BeTrue())
+	Expect(mock.shutdownCalled).To(BeFalse())
+}
+
+func (mock Server) VerifyShutdown() {
+	Expect(mock.shutdownCalled).To(BeTrue())
 }

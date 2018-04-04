@@ -1,26 +1,58 @@
 package http
 
 import (
-	"bufio"
 	"fmt"
 	"net"
+	"bufio"
+	"io"
+	"bytes"
 )
 
-func NewServer(contentRootDirectory string, port uint) Server {
-	return server{ContentRootDirectory: contentRootDirectory, Port: port}
+func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
+	return &TCPServer{
+		Host: host,
+		Port: 0,
+	}
 }
 
-type Server interface {
-	Listen() error
+func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server {
+	return &TCPServer{
+		Host: host,
+		Port: port,
+	}
 }
 
-type server struct {
-	ContentRootDirectory string
-	Port                 uint
+/* TCPServer */
+
+type TCPServer struct {
+	Host     string
+	Port     uint16
+	listener *net.TCPListener
 }
 
-func (server server) Listen() error {
-	address, addressErr := net.ResolveTCPAddr("tcp", fmt.Sprintf("localhost:%d", server.Port))
+func (server *TCPServer) Address() net.Addr {
+	if server.listener == nil {
+		return nil
+	}
+
+	return server.listener.Addr()
+}
+
+func (server *TCPServer) Start() error {
+	if err := server.startListening(); err != nil {
+		return err
+	}
+
+	go server.acceptConnections()
+	return nil
+}
+
+func (server *TCPServer) startListening() error {
+	if server.listener != nil {
+		return fmt.Errorf("TCPServer: already running")
+	}
+
+	address, addressErr := net.ResolveTCPAddr("tcp", server.hostAndPort())
 	if addressErr != nil {
 		return addressErr
 	}
@@ -30,32 +62,63 @@ func (server server) Listen() error {
 		return listenError
 	}
 
+	server.listener = listener
+	return nil
+}
+
+func (server TCPServer) hostAndPort() string {
+	return fmt.Sprintf("%s:%d", server.Host, server.Port)
+}
+
+func (server TCPServer) acceptConnections() {
 	for {
-		conn, connectionError := listener.AcceptTCP()
-		if connectionError != nil {
-			fmt.Println(connectionError.Error())
+		conn, listenerClosed := server.listener.AcceptTCP()
+		if listenerClosed != nil {
+			return
 		}
 
-		fmt.Printf("Connected! %v -> %v\n", conn.LocalAddr(), conn.RemoteAddr())
-		go handleConnection(conn)
+		handleConnection(conn)
 	}
 }
 
 func handleConnection(conn *net.TCPConn) {
-	//Read so it doesn't complain about the connection being reset
-	readBuffer := make([]byte, 1024)
-	reader := bufio.NewReader(conn)
-	numBytesRead, readError := reader.Read(readBuffer)
-	if readError != nil {
-		fmt.Printf(readError.Error())
+	_, err := readSocket(conn)
+	if err != nil {
 		return
 	}
 
-	fmt.Printf("Read %d bytes\n", numBytesRead)
-
-	//Try first to respond with just enough for a 404
 	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-	if closeError := conn.Close(); closeError != nil {
-		fmt.Printf("Failed to close connection: %s\n", closeError.Error())
+	_ = conn.Close()
+}
+
+func readSocket(conn *net.TCPConn) (*bytes.Buffer, error) {
+	requestBytes := make([]byte, 1024)
+	reader := bufio.NewReader(conn)
+	_, readError := reader.Read(requestBytes)
+	if readError == io.EOF {
+		return bytes.NewBuffer(nil), nil
+	} else if readError != nil {
+		return bytes.NewBuffer(nil), readError
+	} else {
+		return bytes.NewBuffer(requestBytes), nil
 	}
+}
+
+func (server *TCPServer) Shutdown() error {
+	if server.listener == nil {
+		return nil
+	}
+
+	defer func() {
+		server.listener = nil
+	}()
+	return server.listener.Close()
+}
+
+/* Server */
+
+type Server interface {
+	Address() net.Addr
+	Start() error
+	Shutdown() error
 }
