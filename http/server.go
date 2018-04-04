@@ -77,18 +77,18 @@ func (server TCPServer) acceptConnections() {
 			return
 		}
 
-		handleConnection(conn)
+		_ = handleConnection(conn)
 	}
 }
 
-func handleConnection(conn *net.TCPConn) {
+func handleConnection(conn *net.TCPConn) error {
 	_, err := readSocket(conn)
 	if err != nil {
-		return
+		return err
 	}
 
 	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-	_ = conn.Close()
+	return conn.Close()
 }
 
 func readSocket(conn *net.TCPConn) (*bytes.Buffer, error) {

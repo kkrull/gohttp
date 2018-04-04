@@ -140,6 +140,11 @@ var _ = Describe("TCPServer", func() {
 
 				close(done)
 			})
+
+			XIt("Notifies of read errors, caused by Conn#SetReadDeadline")
+			XIt("Section 3.1.1 (recommended to allow request lines to be at least 8,000 octets)")
+			XIt("Section 3 paragraph 3 (encoding must be a superset of US-ASCII)")
+			XIt("Section 3 paragraph 5 (recipient must reject request with whitespace between the start-line and the first header)")
 		})
 	})
 

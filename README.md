@@ -44,5 +44,4 @@ $ tcpdump -i <interface> -s 0 -w gohttp--netcat-4.pcap #Capture
 $ tcpdump -4 <file> #View file
 ```
 
-
 There's also `curl --trace <hex as ascii dump file> ...`
