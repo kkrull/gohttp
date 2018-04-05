@@ -77,10 +77,11 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when there is an error resolving the given host and port to an address", func() {
 			It("immediately returns an error", func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "bogus")
-				Expect(server.Start()).To(MatchError("lookup bogus: no such host"))
+				invalidHostAddress := "666.666.666.666"
+				server = http.MakeTCPServerOnAvailablePort(contentRoot, invalidHostAddress)
+				Expect(server.Start()).To(MatchError(HaveSuffix("no such host")))
 				close(done)
-			})
+			}, 5)
 		})
 
 		Context("when there is an error binding to resolved address", func() {
