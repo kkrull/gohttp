@@ -4,30 +4,30 @@ import (
 	"fmt"
 	"net"
 	"bufio"
-	"strings"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
 	return &TCPServer{
-		Host: host,
-		Port: 0,
+		Host:   host,
+		Port:   0,
+		Parser: RFC7230RequestParser{},
 	}
 }
 
 func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server {
 	return &TCPServer{
-		Host: host,
-		Port: port,
+		Host:   host,
+		Port:   port,
+		Parser: RFC7230RequestParser{},
 	}
 }
 
 /* TCPServer */
 
-const MaxLengthOfFieldInRequestLine = 8000
-
 type TCPServer struct {
 	Host     string
 	Port     uint16
+	Parser   RequestParser
 	listener *net.TCPListener
 }
 
@@ -78,36 +78,23 @@ func (server TCPServer) acceptConnections() {
 			return
 		}
 
-		handleConnection(conn)
+		server.handleConnection(conn)
 		_ = conn.Close()
 	}
 }
 
-func handleConnection(conn *net.TCPConn) {
+func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	method, _ := readFieldFromRequestLine(reader)
-	if len(method) == 0 {
-		fmt.Fprint(conn, "HTTP/1.1 400 Bad Request\r\n")
-		return
-	} else if len(method) > MaxLengthOfFieldInRequestLine {
-		fmt.Fprint(conn, "HTTP/1.1 501 Not Implemented\r\n")
-		return
-	}
-
-	target, _ := readFieldFromRequestLine(reader)
-	if len(target) > MaxLengthOfFieldInRequestLine {
-		fmt.Fprint(conn, "HTTP/1.1 414 URI Too Long\r\n")
+	//parser := RFC7230RequestParser{}
+	_, parseError := server.Parser.ParseRequest(reader)
+	if parseError != nil {
+		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)
 		return
 	}
 
 	remainingBytes := make([]byte, 1024)
 	_, _ = reader.Read(remainingBytes)
 	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-}
-
-func readFieldFromRequestLine(reader *bufio.Reader) (string, error) {
-	field, err := reader.ReadString(' ')
-	return strings.TrimSuffix(field, " "), err
 }
 
 func (server *TCPServer) Shutdown() error {
