@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"bufio"
+	"strings"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
@@ -21,6 +22,8 @@ func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server
 }
 
 /* TCPServer */
+
+const MaxLengthOfFieldInRequestLine = 8000
 
 type TCPServer struct {
 	Host     string
@@ -82,17 +85,17 @@ func (server TCPServer) acceptConnections() {
 
 func handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	methodBytes, _ := reader.ReadBytes(' ')
-	if len(methodBytes) == 1 {
+	method, _ := readFieldFromRequestLine(reader)
+	if len(method) == 0 {
 		fmt.Fprint(conn, "HTTP/1.1 400 Bad Request\r\n")
 		return
-	} else if len(methodBytes) > 8000 {
+	} else if len(method) > MaxLengthOfFieldInRequestLine {
 		fmt.Fprint(conn, "HTTP/1.1 501 Not Implemented\r\n")
 		return
 	}
 
-	targetBytes, _ := reader.ReadBytes(' ')
-	if len(targetBytes) > 8000 {
+	target, _ := readFieldFromRequestLine(reader)
+	if len(target) > MaxLengthOfFieldInRequestLine {
 		fmt.Fprint(conn, "HTTP/1.1 414 URI Too Long\r\n")
 		return
 	}
@@ -100,6 +103,11 @@ func handleConnection(conn *net.TCPConn) {
 	remainingBytes := make([]byte, 1024)
 	_, _ = reader.Read(remainingBytes)
 	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+}
+
+func readFieldFromRequestLine(reader *bufio.Reader) (string, error) {
+	field, err := reader.ReadString(' ')
+	return strings.TrimSuffix(field, " "), err
 }
 
 func (server *TCPServer) Shutdown() error {

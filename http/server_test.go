@@ -204,7 +204,7 @@ var _ = Describe("TCPServer", func() {
 				conn, connectError = net.Dial("tcp", server.Address().String())
 				Expect(connectError).NotTo(HaveOccurred())
 
-				enormousMethod := strings.Repeat("POST", 2000)
+				enormousMethod := strings.Repeat("POST", 2000) + "!"
 				writeString(conn, fmt.Sprintf("%s / HTTP/1.1\r\n\r\n", enormousMethod))
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 501 Not Implemented\r\n"))
 				close(done)
@@ -216,7 +216,7 @@ var _ = Describe("TCPServer", func() {
 				conn, connectError = net.Dial("tcp", server.Address().String())
 				Expect(connectError).NotTo(HaveOccurred())
 
-				enormousTarget := strings.Repeat("/foo", 2000)
+				enormousTarget := strings.Repeat("/foo", 2000) + "/"
 				writeString(conn, fmt.Sprintf("GET %s HTTP/1.1\r\n\r\n", enormousTarget))
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 414 URI Too Long\r\n"))
 				close(done)
