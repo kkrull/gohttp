@@ -75,7 +75,7 @@ var _ = Describe("TCPServer", func() {
 			})
 		})
 
-		XContext("when there is an error resolving the given host and port to an address", func() {
+		Context("when there is an error resolving the given host and port to an address", func() {
 			It("immediately returns an error", func(done Done) {
 				invalidHostAddress := "666.666.666.666"
 				server = http.MakeTCPServerOnAvailablePort(contentRoot, invalidHostAddress)

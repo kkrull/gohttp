@@ -13,6 +13,20 @@ type RequestParser interface {
 type RFC7230RequestParser struct{}
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
+	request, err := parseRequestLine(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	headerError := parseHeaderLines(reader)
+	if headerError != nil {
+		return nil, headerError
+	}
+
+	return request, nil
+}
+
+func parseRequestLine(reader *bufio.Reader) (*Request, *ParseError) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
@@ -23,18 +37,22 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request,
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 	}
 
-	request := &Request{
+	return &Request{
 		Method:  fields[0],
 		Target:  fields[1],
 		Version: fields[2],
-	}
+	}, nil
+}
+
+func parseHeaderLines(reader *bufio.Reader) *ParseError {
+	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {
 		line, err := readCRLFLine(reader)
 		if err != nil {
-			return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
-		} else if line == "" {
-			return request, nil
+			return &ParseError{StatusCode: 400, Reason: "Bad Request"}
+		} else if isBlankLineBetweenHeadersAndBody(line) {
+			return nil
 		}
 	}
 }
