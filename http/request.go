@@ -3,6 +3,7 @@ package http
 import (
 	"bufio"
 	"strings"
+	"fmt"
 )
 
 const maxLengthOfFieldInRequestLine = 8000
@@ -14,28 +15,49 @@ type RequestParser interface {
 type RFC7230RequestParser struct{}
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
-	requestLineWithCR, _ := reader.ReadString('\r')
-	requestLineWithCR = strings.TrimSuffix(requestLineWithCR, "\r")
-	reader.ReadString('\n')
+	//requestLine, _ := readCRLFLine(reader)
+	//requestLineWithCR, _ := reader.ReadString('\r')
+	//reader.ReadString('\n')
+	//requestLine := strings.TrimSuffix(requestLineWithCR, "\r")
 
-	fields := strings.Split(requestLineWithCR, " ")
-	if len(fields) != 3 {
-		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
-	}
+	//fields := strings.Split(requestLine, " ")
+	//if len(fields) != 3 {
+	//	return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
+	//}
 
-	method := fields[0]
-	target := fields[1]
-	version := fields[2]
+	//method := fields[0]
+	//target := fields[1]
+	//version := fields[2]
 
 	//End of headers
-	reader.ReadString('\r')
-	reader.ReadString('\n')
+	_, err := readCRLFLine(reader)
+	if err != nil {
+		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
+	}
+	return nil, nil
 
-	return &Request{
-		Method:  method,
-		Target:  target,
-		Version: version,
-	}, nil
+	//return &Request{
+	//	Method:  method,
+	//	Target:  target,
+	//	Version: version,
+	//}, nil
+}
+
+func readCRLFLine(reader *bufio.Reader) (string, error) {
+	requestLineWithCR, _ := reader.ReadString('\r')
+	if len(requestLineWithCR) == 0 {
+		return "", fmt.Errorf("request line not ending in CR")
+	} else if requestLineWithCR[len(requestLineWithCR) -1:] != "\r" {
+		return "", fmt.Errorf("request line not ending in CR")
+	}
+
+	shouldBeLF, _ := reader.ReadByte()
+	if shouldBeLF != '\n' {
+		return "", fmt.Errorf("request line not ending in LF")
+	}
+
+	requestLine := strings.TrimSuffix(requestLineWithCR, "\r")
+	return requestLine, nil
 }
 
 func (parser RFC7230RequestParser) OldParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
