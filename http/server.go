@@ -91,6 +91,12 @@ func handleConnection(conn *net.TCPConn) {
 		return
 	}
 
+	targetBytes, _ := reader.ReadBytes(' ')
+	if len(targetBytes) > 8000 {
+		fmt.Fprint(conn, "HTTP/1.1 414 URI Too Long\r\n")
+		return
+	}
+
 	remainingBytes := make([]byte, 1024)
 	_, _ = reader.Read(remainingBytes)
 	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
