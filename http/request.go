@@ -6,8 +6,6 @@ import (
 	"fmt"
 )
 
-const maxLengthOfFieldInRequestLine = 8000
-
 type RequestParser interface {
 	ParseRequest(reader *bufio.Reader) (*Request, *ParseError)
 }
@@ -26,8 +24,8 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request,
 	}
 
 	request := &Request{
-		Method: fields[0],
-		Target: fields[1],
+		Method:  fields[0],
+		Target:  fields[1],
 		Version: fields[2],
 	}
 
@@ -56,32 +54,6 @@ func readCRLFLine(reader *bufio.Reader) (string, error) {
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
-}
-
-func (parser RFC7230RequestParser) OldParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
-	method, _ := readUpTo(reader, ' ')
-	if len(method) == 0 {
-		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
-	} else if len(method) > maxLengthOfFieldInRequestLine {
-		return nil, &ParseError{StatusCode: 501, Reason: "Not Implemented"}
-	}
-
-	target, _ := readUpTo(reader, ' ')
-	if len(target) > maxLengthOfFieldInRequestLine {
-		return nil, &ParseError{StatusCode: 414, Reason: "URI Too Long"}
-	}
-
-	version, _ := readUpTo(reader, '\r')
-	return &Request{
-		Method:  method,
-		Target:  target,
-		Version: version,
-	}, nil
-}
-
-func readUpTo(reader *bufio.Reader, delimiter byte) (string, error) {
-	field, err := reader.ReadString(delimiter)
-	return strings.TrimSuffix(field, string(delimiter)), err
 }
 
 type Request struct {
