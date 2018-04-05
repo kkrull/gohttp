@@ -4,7 +4,32 @@ import (
 	"fmt"
 	. "github.com/onsi/gomega"
 	"net"
+	"github.com/kkrull/gohttp/http"
+	"bufio"
 )
+
+type RequestParser struct {
+	ParseRequestReturnError *http.ParseError
+	parseRequestReceived    []byte
+}
+
+func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (http.Request, *http.ParseError) {
+	allButLF, _ := reader.ReadBytes(byte('\r'))
+	shouldBeLF, _ := reader.ReadByte()
+	parser.parseRequestReceived = appendByte(allButLF, shouldBeLF)
+	return nil, parser.ParseRequestReturnError
+}
+
+func appendByte(allButLast []byte, last byte) []byte {
+	whole := make([]byte, len(allButLast)+1)
+	copy(whole, allButLast)
+	whole[len(whole)-1] = last
+	return whole
+}
+
+func (parser RequestParser) VerifyReceived(expected []byte) {
+	Expect(parser.parseRequestReceived).To(Equal(expected))
+}
 
 type Server struct {
 	StartFails  string

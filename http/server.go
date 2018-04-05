@@ -85,7 +85,6 @@ func (server TCPServer) acceptConnections() {
 
 func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	//parser := RFC7230RequestParser{}
 	_, parseError := server.Parser.ParseRequest(reader)
 	if parseError != nil {
 		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)

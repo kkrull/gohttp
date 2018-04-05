@@ -8,8 +8,7 @@ import (
 	"bufio"
 	"io"
 	"bytes"
-	"strings"
-	"fmt"
+	"github.com/kkrull/gohttp/mock"
 )
 
 var (
@@ -182,49 +181,50 @@ var _ = Describe("TCPServer", func() {
 		})
 	})
 
-	Describe("RFC 7230 Section 3.1.1: request-line", func() {
-		BeforeEach(func() {
-			server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
-			Expect(server.Start()).To(Succeed())
-		})
+	Describe("when running", func() {
+		var parser *mock.RequestParser
 
-		Context("when the request starts with whitespace", func() {
-			It("Responds 400 Bad Request", func(done Done) {
+		Context("when it receives a request", func() {
+			BeforeEach(func(done Done) {
+				parser = &mock.RequestParser{}
+				server = &http.TCPServer{
+					Host:   "localhost",
+					Parser: parser}
+
+				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
 				Expect(connectError).NotTo(HaveOccurred())
+				close(done)
+			})
 
-				writeString(conn, " GET / HTTP/1.1\r\n\r\n")
+			It("parses the request line as everything up to the first CRLF", func(done Done) {
+				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
+				readString(conn)
+				parser.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
+				close(done)
+			})
+		})
+
+		Context("when the request parser returns an error", func() {
+			BeforeEach(func(done Done) {
+				parser = &mock.RequestParser{
+					ParseRequestReturnError: &http.ParseError{StatusCode: 400, Reason: "Bad Request"}}
+				server = &http.TCPServer{
+					Host:   "localhost",
+					Parser: parser}
+
+				Expect(server.Start()).To(Succeed())
+				conn, connectError = net.Dial("tcp", server.Address().String())
+				Expect(connectError).NotTo(HaveOccurred())
+				close(done)
+			})
+
+			It("responds with an HTTP status line of the status code and reason returned by the parser", func(done Done) {
+				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 400 Bad Request\r\n"))
 				close(done)
 			})
 		})
-		
-		Context("when the request method is longer than 8,000 octets", func() {
-			It("responds 501 Not Implemented", func(done Done) {
-				conn, connectError = net.Dial("tcp", server.Address().String())
-				Expect(connectError).NotTo(HaveOccurred())
-
-				enormousMethod := strings.Repeat("POST", 2000) + "!"
-				writeString(conn, fmt.Sprintf("%s / HTTP/1.1\r\n\r\n", enormousMethod))
-				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 501 Not Implemented\r\n"))
-				close(done)
-			})
-		})
-
-		Context("when the request target is longer than 8,000 octets", func() {
-			It("responds 414 URI Too Long", func(done Done) {
-				conn, connectError = net.Dial("tcp", server.Address().String())
-				Expect(connectError).NotTo(HaveOccurred())
-
-				enormousTarget := strings.Repeat("/foo", 2000) + "/"
-				writeString(conn, fmt.Sprintf("GET %s HTTP/1.1\r\n\r\n", enormousTarget))
-				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 414 URI Too Long\r\n"))
-				close(done)
-			})
-		})
-
-		XIt("Section 3 paragraph 3 (encoding must be a superset of US-ASCII)")
-		XIt("Section 3 paragraph 5 (recipient must reject request with whitespace between the start-line and the first header)")
 	})
 })
 
@@ -241,7 +241,6 @@ func readString(conn net.Conn) (string, error) {
 		if readErr == io.EOF {
 			return string(runes), nil
 		} else if readErr != nil {
-			fmt.Printf("Error reading: %s\n", readErr)
 			return "", readErr
 		} else {
 			runes = append(runes, r)
