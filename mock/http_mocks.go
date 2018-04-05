@@ -13,7 +13,7 @@ type RequestParser struct {
 	parseRequestReceived    []byte
 }
 
-func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (http.Request, *http.ParseError) {
+func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (*http.Request, *http.ParseError) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
 	parser.parseRequestReceived = appendByte(allButLF, shouldBeLF)
