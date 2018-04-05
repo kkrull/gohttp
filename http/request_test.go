@@ -53,6 +53,18 @@ var _ = Describe("RFC7230RequestParser", func() {
 			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 		})
 
+		It("returns 400 Bad Request when multiple spaces are separating fields in request-line", func() {
+			buffer := bytes.NewBufferString("GET /  HTTP/1.1\r\n\r\n")
+			request, err = parser.ParseRequest(bufio.NewReader(buffer))
+			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
+		})
+
+		It("returns 400 Bad Request when fields in request-line contain spaces", func() {
+			buffer := bytes.NewBufferString("GET /a\\ b HTTP/1.1\r\n\r\n")
+			request, err = parser.ParseRequest(bufio.NewReader(buffer))
+			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
+		})
+
 		Context("given a well-formed request", func() {
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
@@ -70,16 +82,10 @@ var _ = Describe("RFC7230RequestParser", func() {
 			It("returns no error", func() {
 				Expect(err).To(BeNil())
 			})
-			It("parses CRLF lines until reaching a line with only CRLF", func() {
+			It("reads the entire request until reaching a line with only CRLF", func() {
 				Expect(reader.Buffered()).To(Equal(0))
 			})
 		})
-
-		//It("returns 400 Bad Request for a request not containing 3 fields in the request line", func() {
-		//	buffer := bytes.NewBufferString("")
-		//	request, err = parser.ParseRequest(bufio.NewReader(buffer))
-		//	Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
-		//})
 	})
 
 	XDescribe("#OldParseRequest", func() {
