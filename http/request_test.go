@@ -14,6 +14,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 	FDescribe("#ParseRequest", func() {
 		var (
 			parser  *http.RFC7230RequestParser
+			reader  *bufio.Reader
 			request *http.Request
 			err     *http.ParseError
 		)
@@ -52,29 +53,59 @@ var _ = Describe("RFC7230RequestParser", func() {
 			}))
 		})
 
-		//It("returns 400 Bad Request for a request not containing 3 fields in the request line", func() {
-		//	buffer := bytes.NewBufferString("")
-		//	request, err = parser.ParseRequest(bufio.NewReader(buffer))
-		//	Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
-		//})
-
 		It("returns 400 Bad Request for a completely blank request", func() {
 			buffer := bytes.NewBufferString("")
 			request, err = parser.ParseRequest(bufio.NewReader(buffer))
 			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 		})
 
-		It("returns 400 Bad Request for a request line missing CR", func() {
-			buffer := bytes.NewBufferString("\n")
+		It("returns 400 Bad Request for any line missing CR", func() {
+			buffer := bytes.NewBufferString("GET / HTTP/1.1\r\n\n")
 			request, err = parser.ParseRequest(bufio.NewReader(buffer))
 			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 		})
 
-		It("returns 400 Bad Request for a request line missing LF", func() {
-			buffer := bytes.NewBufferString("\r")
+		It("returns 400 Bad Request for any line missing LF", func() {
+			buffer := bytes.NewBufferString("GET / HTTP/1.1\r")
 			request, err = parser.ParseRequest(bufio.NewReader(buffer))
 			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 		})
+
+		It("returns 400 Bad Request for a request missing a request-line", func() {
+			buffer := bytes.NewBufferString("\r\n")
+			request, err = parser.ParseRequest(bufio.NewReader(buffer))
+			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
+		})
+
+		It("returns 400 Bad Request for a request missing an ending CRLF", func() {
+			buffer := bytes.NewBufferString("GET / HTTP/1.1\r\n")
+			request, err = parser.ParseRequest(bufio.NewReader(buffer))
+			Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
+		})
+
+		Context("given a well-formed request", func() {
+			BeforeEach(func() {
+				buffer := bytes.NewBufferString("GET / HTTP/1.1\r\nAccept: */*\r\n\r\n")
+				reader = bufio.NewReader(buffer)
+				request, err = parser.ParseRequest(reader)
+			})
+
+			FIt("parses the request", func() {
+				Expect(request).NotTo(BeNil())
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("parses CRLF lines until reaching a line with only CRLF", func() {
+				Expect(reader.Buffered()).To(Equal(0))
+			})
+		})
+
+		//It("returns 400 Bad Request for a request not containing 3 fields in the request line", func() {
+		//	buffer := bytes.NewBufferString("")
+		//	request, err = parser.ParseRequest(bufio.NewReader(buffer))
+		//	Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
+		//})
 	})
 
 	Describe("#ParseRequest", func() {
