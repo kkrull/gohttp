@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net"
 	"bufio"
-	"io"
-	"bytes"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
@@ -77,31 +75,24 @@ func (server TCPServer) acceptConnections() {
 			return
 		}
 
-		_ = handleConnection(conn)
+		handleConnection(conn)
+		_ = conn.Close()
 	}
 }
 
-func handleConnection(conn *net.TCPConn) error {
-	_, err := readSocket(conn)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-	return conn.Close()
-}
-
-func readSocket(conn *net.TCPConn) (*bytes.Buffer, error) {
-	requestBytes := make([]byte, 1024)
+func handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	_, readError := reader.Read(requestBytes)
-	if readError == io.EOF {
-		return bytes.NewBuffer(nil), nil
-	} else if readError != nil {
-		return bytes.NewBuffer(nil), readError
+	methodBytes, _ := reader.ReadBytes(' ')
+	if len(methodBytes) == 1 {
+		fmt.Fprint(conn, "HTTP/1.1 400 Bad Request\r\n")
+		return
 	} else {
-		return bytes.NewBuffer(requestBytes), nil
+		fmt.Printf("Method: <%s>\n", methodBytes)
 	}
+
+	remainingBytes := make([]byte, 1024)
+	_, _ = reader.Read(remainingBytes)
+	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
 }
 
 func (server *TCPServer) Shutdown() error {
