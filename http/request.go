@@ -15,23 +15,28 @@ type RequestParser interface {
 type RFC7230RequestParser struct{}
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
-	readCRLFLine(reader)
+	requestLine, err := readCRLFLine(reader)
+	if err != nil {
+		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
+	}
 
-	//fields := strings.Split(requestLine, " ")
-	//if len(fields) != 3 {
-	//	return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
-	//}
+	fields := strings.Split(requestLine, " ")
+	if len(fields) != 3 {
+		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
+	}
 
-	//method := fields[0]
-	//target := fields[1]
-	//version := fields[2]
+	request := &Request{
+		Method: fields[0],
+		Target: fields[1],
+		Version: fields[2],
+	}
 
 	for {
 		line, err := readCRLFLine(reader)
 		if err != nil {
 			return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 		} else if line == "" {
-			return &Request{}, nil
+			return request, nil
 		}
 	}
 }
@@ -39,8 +44,8 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request,
 func readCRLFLine(reader *bufio.Reader) (string, error) {
 	maybeEndsInCR, _ := reader.ReadString('\r')
 	if len(maybeEndsInCR) == 0 {
-		return "", fmt.Errorf("request line not ending in CR")
-	} else if maybeEndsInCR[len(maybeEndsInCR)-1:] != "\r" {
+		return "", fmt.Errorf("end of input")
+	} else if !strings.HasSuffix(maybeEndsInCR, "\r") {
 		return "", fmt.Errorf("request line not ending in CR")
 	}
 

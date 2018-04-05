@@ -91,8 +91,6 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 		return
 	}
 
-	remainingBytes := make([]byte, 1024)
-	_, _ = reader.Read(remainingBytes)
 	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
 }
 

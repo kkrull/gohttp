@@ -11,7 +11,7 @@ import (
 )
 
 var _ = Describe("RFC7230RequestParser", func() {
-	FDescribe("#ParseRequest", func() {
+	Describe("#ParseRequest", func() {
 		var (
 			parser  *http.RFC7230RequestParser
 			reader  *bufio.Reader
@@ -21,36 +21,6 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		BeforeEach(func() {
 			parser = &http.RFC7230RequestParser{}
-		})
-
-		XIt("playground", func() {
-			buffer := bytes.NewBufferString("abcd")
-			bufioReader := bufio.NewReader(buffer)
-
-			firstRound, firstReadErr := bufioReader.ReadString('b')
-			for i, c := range firstRound {
-				fmt.Printf("FIRST ROUND Byte %02d: %02x %2s\n", i, c, string(c))
-			}
-			if firstReadErr != nil {
-				fmt.Printf("First round %s\n", firstReadErr.Error())
-			}
-
-			secondRound, secondReadErr := bufioReader.ReadString('e')
-			for i, c := range secondRound {
-				fmt.Printf("SECOND ROUND Byte %02d: %02x %2s\n", i, c, string(c))
-			}
-			if secondReadErr != nil {
-				fmt.Printf("Second round %s\n", secondReadErr.Error())
-			}
-		})
-
-		XIt("parses a well-formed request without headers or a body", func() {
-			request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\r\n"))
-			Expect(request).To(BeEquivalentTo(&http.Request{
-				Method:  "GET",
-				Target:  "/",
-				Version: "HTTP/1.1",
-			}))
 		})
 
 		It("returns 400 Bad Request for a completely blank request", func() {
@@ -85,13 +55,17 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Context("given a well-formed request", func() {
 			BeforeEach(func() {
-				buffer := bytes.NewBufferString("GET / HTTP/1.1\r\nAccept: */*\r\n\r\n")
+				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
 				request, err = parser.ParseRequest(reader)
 			})
 
-			FIt("parses the request", func() {
-				Expect(request).NotTo(BeNil())
+			It("parses the request", func() {
+				Expect(request).To(BeEquivalentTo(&http.Request{
+					Method:  "GET",
+					Target:  "/foo",
+					Version: "HTTP/1.1",
+				}))
 			})
 			It("returns no error", func() {
 				Expect(err).To(BeNil())
@@ -108,7 +82,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		//})
 	})
 
-	Describe("#ParseRequest", func() {
+	XDescribe("#OldParseRequest", func() {
 		var (
 			parser  http.RequestParser
 			request *http.Request
