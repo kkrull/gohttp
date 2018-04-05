@@ -86,8 +86,9 @@ func handleConnection(conn *net.TCPConn) {
 	if len(methodBytes) == 1 {
 		fmt.Fprint(conn, "HTTP/1.1 400 Bad Request\r\n")
 		return
-	} else {
-		fmt.Printf("Method: <%s>\n", methodBytes)
+	} else if len(methodBytes) > 8000 {
+		fmt.Fprint(conn, "HTTP/1.1 501 Not Implemented\r\n")
+		return
 	}
 
 	remainingBytes := make([]byte, 1024)

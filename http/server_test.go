@@ -8,6 +8,8 @@ import (
 	"bufio"
 	"io"
 	"bytes"
+	"strings"
+	"fmt"
 )
 
 var (
@@ -75,7 +77,7 @@ var _ = Describe("TCPServer", func() {
 			})
 		})
 
-		Context("when there is an error resolving the given host and port to an address", func() {
+		XContext("when there is an error resolving the given host and port to an address", func() {
 			It("immediately returns an error", func(done Done) {
 				invalidHostAddress := "666.666.666.666"
 				server = http.MakeTCPServerOnAvailablePort(contentRoot, invalidHostAddress)
@@ -193,6 +195,17 @@ var _ = Describe("TCPServer", func() {
 
 				writeString(conn, " GET / HTTP/1.1\r\n\r\n")
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 400 Bad Request\r\n"))
+			})
+		})
+		
+		Context("when the request method is longer than 8,000 octets", func() {
+			It("responds 501 Not Implemented", func() {
+				conn, connectError = net.Dial("tcp", server.Address().String())
+				Expect(connectError).NotTo(HaveOccurred())
+
+				nefariousHTTPMethod := strings.Repeat("POST", 2000)
+				writeString(conn, fmt.Sprintf("%s / HTTP/1.1\r\n\r\n", nefariousHTTPMethod))
+				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 501 Not Implemented\r\n"))
 			})
 		})
 
