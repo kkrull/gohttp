@@ -5,10 +5,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/kkrull/gohttp/http"
 	"net"
-	"bufio"
-	"io"
 	"bytes"
 	"github.com/kkrull/gohttp/mock"
+	"io/ioutil"
 )
 
 var (
@@ -234,18 +233,8 @@ func expectHttpResponse(conn net.Conn) {
 }
 
 func readString(conn net.Conn) (string, error) {
-	runes := make([]rune, 0)
-	reader := bufio.NewReader(conn)
-	for {
-		r, _, readErr := reader.ReadRune()
-		if readErr == io.EOF {
-			return string(runes), nil
-		} else if readErr != nil {
-			return "", readErr
-		} else {
-			runes = append(runes, r)
-		}
-	}
+	readBytes, err := ioutil.ReadAll(conn)
+	return string(readBytes), err
 }
 
 func writeString(conn net.Conn, s string) {
