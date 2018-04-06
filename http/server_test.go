@@ -185,7 +185,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{}
+				parser = &mock.RequestParser{ReturnsRequest: &http.Request{}}
 				server = &http.TCPServer{
 					Host:   "localhost",
 					Parser: parser}
@@ -207,7 +207,7 @@ var _ = Describe("TCPServer", func() {
 		Context("when the request parser returns an error", func() {
 			BeforeEach(func(done Done) {
 				parser = &mock.RequestParser{
-					ParseRequestReturnError: &http.ParseError{StatusCode: 400, Reason: "Bad Request"}}
+					ReturnsError: &http.ParseError{StatusCode: 400, Reason: "Bad Request"}}
 				server = &http.TCPServer{
 					Host:   "localhost",
 					Parser: parser}

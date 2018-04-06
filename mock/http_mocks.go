@@ -9,15 +9,16 @@ import (
 )
 
 type RequestParser struct {
-	ParseRequestReturnError *http.ParseError
-	parseRequestReceived    []byte
+	ReturnsRequest *http.Request
+	ReturnsError   *http.ParseError
+	received       []byte
 }
 
 func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (*http.Request, *http.ParseError) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
-	parser.parseRequestReceived = appendByte(allButLF, shouldBeLF)
-	return nil, parser.ParseRequestReturnError
+	parser.received = appendByte(allButLF, shouldBeLF)
+	return parser.ReturnsRequest, parser.ReturnsError
 }
 
 func appendByte(allButLast []byte, last byte) []byte {
@@ -28,7 +29,7 @@ func appendByte(allButLast []byte, last byte) []byte {
 }
 
 func (parser RequestParser) VerifyReceived(expected []byte) {
-	Expect(parser.parseRequestReceived).To(Equal(expected))
+	Expect(parser.received).To(Equal(expected))
 }
 
 type Server struct {

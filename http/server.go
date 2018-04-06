@@ -85,13 +85,22 @@ func (server TCPServer) acceptConnections() {
 
 func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	_, parseError := server.Parser.ParseRequest(reader)
+	request, parseError := server.Parser.ParseRequest(reader)
 	if parseError != nil {
 		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)
 		return
 	}
 
-	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+	switch request.Target {
+	case "/":
+		fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+		fmt.Fprint(conn, "Content-Length: 5\r\n")
+		fmt.Fprint(conn, "Content-Type: text/plain\r\n")
+		fmt.Fprint(conn, "\r\n")
+		fmt.Fprintf(conn, "hello")
+	default:
+		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+	}
 }
 
 func (server *TCPServer) Shutdown() error {
