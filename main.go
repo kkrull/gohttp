@@ -30,12 +30,22 @@ func subscribeToSignals(sig os.Signal) <-chan os.Signal {
 /* Command parsing */
 
 func NewCliCommandParser(interrupts <-chan os.Signal) *CliCommandParser {
-	return &CliCommandParser{Interrupts: interrupts}
+	return &CliCommandParser{
+		Interrupts: interrupts,
+		NewCommandToRunHTTPServer: func(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
+			server := http.MakeTCPServer(contentRootPath, host, port)
+			return NewRunServerCommand(server)
+		},
+	}
 }
 
 type CliCommandParser struct {
-	Interrupts <-chan os.Signal
+	Interrupts                <-chan os.Signal
+	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
 }
+
+type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (
+	command CliCommand, quit chan bool)
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -55,7 +65,7 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case *port == 0:
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
 	default:
-		command, quit := NewRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
+		command, quit := parser.NewCommandToRunHTTPServer(*path, host, uint16(*port))
 		go parser.sendTrueOnFirstInterruption(quit)
 		return command
 	}

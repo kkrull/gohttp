@@ -17,7 +17,7 @@ import (
 var _ = Describe("CliCommandParser", func() {
 	Describe("#Build", func() {
 		var (
-			parser  *CliCommandParser
+			parser     *CliCommandParser
 			interrupts chan os.Signal
 
 			command CliCommand
@@ -51,20 +51,24 @@ var _ = Describe("CliCommandParser", func() {
 
 		Context("given a complete configuration for the HTTP server", func() {
 			It("returns a RunServerCommand", func() {
-				parser = &CliCommandParser{}
+				parser = NewCliCommandParser(interrupts)
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				Expect(command).To(BeAssignableToTypeOf(RunServerCommand{}))
 			})
 
 			It("the command waits until a signal is sent to the interrupt signal channel", func(done Done) {
-				parser = &CliCommandParser{Interrupts: interrupts}
-				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
+				quitHttpServer := make(chan bool, 1)
+				parser = &CliCommandParser{
+					Interrupts: interrupts,
+					NewCommandToRunHTTPServer: func(string, string, uint16) (CliCommand, chan bool) {
+						return nil, quitHttpServer
+					}}
 
+				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				go func() {
-					command.Run(stderr)
+					<-quitHttpServer
 					close(done)
 				}()
-
 				interrupts <- syscall.SIGINT
 			})
 		})
