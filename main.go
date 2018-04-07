@@ -81,13 +81,13 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 
 func MakeRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
 	quit = make(chan bool, 1)
-	command = RunServerCommand{Server: server, Quit: quit}
+	command = RunServerCommand{Server: server, quit: quit}
 	return
 }
 
 type RunServerCommand struct {
 	Server http.Server
-	Quit   chan bool
+	quit   chan bool
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
@@ -104,5 +104,5 @@ func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
 }
 
 func (command RunServerCommand) waitForShutdownRequest() {
-	<-command.Quit
+	<-command.quit
 }
