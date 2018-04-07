@@ -9,9 +9,9 @@ import (
 	"fmt"
 	. "github.com/kkrull/gohttp"
 	"github.com/kkrull/gohttp/mock"
-	"time"
 	"os"
 	"syscall"
+	"time"
 )
 
 var _ = Describe("CliCommandParser", func() {

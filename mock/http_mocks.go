@@ -1,11 +1,11 @@
 package mock
 
 import (
+	"bufio"
 	"fmt"
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/gomega"
 	"net"
-	"github.com/kkrull/gohttp/http"
-	"bufio"
 )
 
 type RequestParser struct {

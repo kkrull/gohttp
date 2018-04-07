@@ -2,8 +2,8 @@ package http
 
 import (
 	"bufio"
-	"strings"
 	"fmt"
+	"strings"
 )
 
 type RequestParser interface {

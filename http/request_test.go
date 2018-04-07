@@ -1,12 +1,12 @@
 package http_test
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"fmt"
-	"bytes"
-	"bufio"
-	"github.com/kkrull/gohttp/http"
 )
 
 var _ = Describe("RFC7230RequestParser", func() {
@@ -89,7 +89,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 			It("returns no error", func() {
 				Expect(err).To(BeNil())
 			})
-			
+
 			It("reads the entire request until reaching a line with only CRLF", func() {
 				Expect(reader.Buffered()).To(Equal(0))
 			})
