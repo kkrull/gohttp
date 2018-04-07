@@ -11,10 +11,7 @@ import (
 )
 
 func main() {
-	interrupts := make(chan os.Signal, 1)
-	signal.Notify(interrupts, os.Interrupt)
-	parser := NewCliCommandParser(interrupts)
-
+	parser := NewCliCommandParser(subscribeToSignals(os.Interrupt))
 	command := parser.Parse(os.Args)
 	code, runErr := command.Run(os.Stderr)
 	if runErr != nil {
@@ -24,14 +21,20 @@ func main() {
 	os.Exit(code)
 }
 
+func subscribeToSignals(sig os.Signal) <-chan os.Signal {
+	interrupts := make(chan os.Signal, 1)
+	signal.Notify(interrupts, sig)
+	return interrupts
+}
+
 /* Command parsing */
 
-func NewCliCommandParser(interrupts chan os.Signal) *CliCommandParser {
+func NewCliCommandParser(interrupts <-chan os.Signal) *CliCommandParser {
 	return &CliCommandParser{Interrupts: interrupts}
 }
 
 type CliCommandParser struct {
-	Interrupts chan os.Signal
+	Interrupts <-chan os.Signal
 }
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
@@ -62,7 +65,7 @@ func suppressUntimelyOutput(flagSet *flag.FlagSet) {
 	flagSet.SetOutput(&bytes.Buffer{})
 }
 
-func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan bool) {
+func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
 	<-parser.Interrupts
 	quit <- true
 }
@@ -103,7 +106,7 @@ func NewRunServerCommand(server http.Server) (command CliCommand, quit chan bool
 
 type RunServerCommand struct {
 	Server http.Server
-	quit   chan bool
+	quit   <-chan bool
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
