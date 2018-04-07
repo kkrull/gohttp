@@ -10,6 +10,8 @@ import (
 	. "github.com/kkrull/gohttp"
 	"github.com/kkrull/gohttp/mock"
 	"time"
+	"os"
+	"syscall"
 )
 
 var _ = Describe("CliCommandParser", func() {
@@ -17,24 +19,24 @@ var _ = Describe("CliCommandParser", func() {
 		var (
 			parser  *CliCommandParser
 			command CliCommand
+			stderr  *bytes.Buffer
 		)
 
 		Context("given --help", func() {
 			BeforeEach(func() {
 				parser = &CliCommandParser{}
 				command = parser.Parse([]string{"/path/to/gohttp", "--help"})
+				stderr = &bytes.Buffer{}
 			})
 
 			It("returns HelpCommand", func() {
 				Expect(command).To(BeAssignableToTypeOf(HelpCommand{}))
 			})
 			It("the HelpCommand is configured for the name of the program in the first argument", func() {
-				stderr := &bytes.Buffer{}
 				command.Run(stderr)
 				Expect(stderr.String()).To(HavePrefix("Usage of /path/to/gohttp"))
 			})
 			It("the HelpCommand shows usage for the gohttp arguments", func() {
-				stderr := &bytes.Buffer{}
 				command.Run(stderr)
 				Expect(stderr.String()).To(ContainSubstring("The root content directory"))
 				Expect(stderr.String()).To(ContainSubstring("The TCP port on which to listen"))
@@ -46,6 +48,20 @@ var _ = Describe("CliCommandParser", func() {
 				parser = &CliCommandParser{}
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				Expect(command).To(BeAssignableToTypeOf(RunServerCommand{}))
+			})
+
+			It("the command waits until a signal is sent to the interrupt signal channel", func(done Done) {
+				interrupts := make(chan os.Signal, 1)
+				parser = &CliCommandParser{Interrupts: interrupts}
+				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
+
+				//TODO KDK: See if MakeRunServerCommand can be stubbed to return my own channel, so I can test if sending an interrupt signal results in the quit channel receiving
+				go func() {
+					command.Run(stderr)
+					close(done)
+				}()
+
+				interrupts <- syscall.SIGINT
 			})
 		})
 

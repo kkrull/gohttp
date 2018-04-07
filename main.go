@@ -22,7 +22,9 @@ func main() {
 
 /* Command parsing */
 
-type CliCommandParser struct{}
+type CliCommandParser struct {
+	Interrupts chan os.Signal
+}
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -42,7 +44,15 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case *port == 0:
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
 	default:
-		command, _ := MakeRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
+		command, quit := MakeRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
+
+		go func() {
+			for interruptSignal := range parser.Interrupts {
+				fmt.Printf("Received signal: %s\n", interruptSignal.String())
+				quit <- true
+			}
+		}()
+
 		return command
 	}
 }
