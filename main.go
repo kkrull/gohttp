@@ -45,20 +45,18 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
 	default:
 		command, quit := MakeRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
-
-		go func() {
-			for interruptSignal := range parser.Interrupts {
-				fmt.Printf("Received signal: %s\n", interruptSignal.String())
-				quit <- true
-			}
-		}()
-
+		go parser.sendTrueOnFirstInterruption(quit)
 		return command
 	}
 }
 
 func suppressUntimelyOutput(flagSet *flag.FlagSet) {
 	flagSet.SetOutput(&bytes.Buffer{})
+}
+
+func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan bool) {
+	<-parser.Interrupts
+	quit <- true
 }
 
 type CliCommand interface {
