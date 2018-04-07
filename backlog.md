@@ -1,9 +1,5 @@
 # Developer backlog
 
-## Main
-
-- Handle Ctrl+C signal so it can exit with 0 instead of non-zero.
-
 
 ## Request parsing
 
