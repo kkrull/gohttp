@@ -56,7 +56,7 @@ var _ = Describe("CliCommandParser", func() {
 				Expect(command).To(BeAssignableToTypeOf(RunServerCommand{}))
 			})
 
-			It("the command waits until a signal is sent to the interrupt signal channel", func(done Done) {
+			It("the command waits until a signal is sent to the interrupt signal channel", func() {
 				quitHttpServer := make(chan bool, 1)
 				parser = &CliCommandParser{
 					Interrupts: interrupts,
@@ -65,11 +65,8 @@ var _ = Describe("CliCommandParser", func() {
 					}}
 
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
-				go func() {
-					<-quitHttpServer
-					close(done)
-				}()
 				interrupts <- syscall.SIGINT
+				Eventually(quitHttpServer).Should(Receive())
 			})
 		})
 
