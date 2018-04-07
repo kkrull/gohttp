@@ -7,10 +7,14 @@ import (
 	"github.com/kkrull/gohttp/http"
 	"io"
 	"os"
+	"os/signal"
 )
 
 func main() {
-	parser := CliCommandParser{}
+	interrupts := make(chan os.Signal, 1)
+	signal.Notify(interrupts, os.Interrupt)
+	parser := NewCliCommandParser(interrupts)
+
 	command := parser.Parse(os.Args)
 	code, runErr := command.Run(os.Stderr)
 	if runErr != nil {
@@ -21,6 +25,10 @@ func main() {
 }
 
 /* Command parsing */
+
+func NewCliCommandParser(interrupts chan os.Signal) *CliCommandParser {
+	return &CliCommandParser{Interrupts: interrupts}
+}
 
 type CliCommandParser struct {
 	Interrupts chan os.Signal
@@ -44,7 +52,7 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case *port == 0:
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
 	default:
-		command, quit := MakeRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
+		command, quit := NewRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
 		go parser.sendTrueOnFirstInterruption(quit)
 		return command
 	}
@@ -87,7 +95,7 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 
 /* RunServerCommand */
 
-func MakeRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
+func NewRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
 	quit = make(chan bool, 1)
 	command = RunServerCommand{Server: server, quit: quit}
 	return
