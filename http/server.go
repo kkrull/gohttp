@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"net"
 	"bufio"
-	"io"
-	"bytes"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
 	return &TCPServer{
-		Host: host,
-		Port: 0,
+		Host:   host,
+		Port:   0,
+		Parser: RFC7230RequestParser{},
 	}
 }
 
 func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server {
 	return &TCPServer{
-		Host: host,
-		Port: port,
+		Host:   host,
+		Port:   port,
+		Parser: RFC7230RequestParser{},
 	}
 }
 
@@ -27,6 +27,7 @@ func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server
 type TCPServer struct {
 	Host     string
 	Port     uint16
+	Parser   RequestParser
 	listener *net.TCPListener
 }
 
@@ -77,30 +78,28 @@ func (server TCPServer) acceptConnections() {
 			return
 		}
 
-		_ = handleConnection(conn)
+		server.handleConnection(conn)
+		_ = conn.Close()
 	}
 }
 
-func handleConnection(conn *net.TCPConn) error {
-	_, err := readSocket(conn)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-	return conn.Close()
-}
-
-func readSocket(conn *net.TCPConn) (*bytes.Buffer, error) {
-	requestBytes := make([]byte, 1024)
+func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	_, readError := reader.Read(requestBytes)
-	if readError == io.EOF {
-		return bytes.NewBuffer(nil), nil
-	} else if readError != nil {
-		return bytes.NewBuffer(nil), readError
-	} else {
-		return bytes.NewBuffer(requestBytes), nil
+	request, parseError := server.Parser.ParseRequest(reader)
+	if parseError != nil {
+		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)
+		return
+	}
+
+	switch request.Target {
+	case "/":
+		fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+		fmt.Fprint(conn, "Content-Length: 5\r\n")
+		fmt.Fprint(conn, "Content-Type: text/plain\r\n")
+		fmt.Fprint(conn, "\r\n")
+		fmt.Fprintf(conn, "hello")
+	default:
+		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
 	}
 }
 
