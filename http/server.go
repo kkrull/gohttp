@@ -22,6 +22,12 @@ func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server
 	}
 }
 
+type Server interface {
+	Address() net.Addr
+	Start() error
+	Shutdown() error
+}
+
 /* TCPServer */
 
 type TCPServer struct {
@@ -105,12 +111,4 @@ func (server *TCPServer) Shutdown() error {
 		server.listener = nil
 	}()
 	return server.listener.Close()
-}
-
-/* Server */
-
-type Server interface {
-	Address() net.Addr
-	Start() error
-	Shutdown() error
 }
