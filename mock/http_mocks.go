@@ -3,9 +3,10 @@ package mock
 import (
 	"bufio"
 	"fmt"
+	"net"
+
 	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/gomega"
-	"net"
 )
 
 type RequestParser struct {
