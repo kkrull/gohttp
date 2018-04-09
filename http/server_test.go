@@ -1,13 +1,15 @@
 package http_test
 
 import (
+	"bytes"
+	"io/ioutil"
+	"net"
+
+	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/mock"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/kkrull/gohttp/http"
-	"net"
-	"bytes"
-	"github.com/kkrull/gohttp/mock"
-	"io/ioutil"
 )
 
 var (

@@ -1,9 +1,9 @@
 package http
 
 import (
+	"bufio"
 	"fmt"
 	"net"
-	"bufio"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
