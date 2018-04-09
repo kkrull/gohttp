@@ -81,7 +81,6 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 			It("returns a GetRequest containing the contents of the request", func() {
 				Expect(request).To(BeEquivalentTo(&http.GetRequest{
-					Method:  "GET",
 					Target:  "/foo",
 					Version: "HTTP/1.1",
 				}))

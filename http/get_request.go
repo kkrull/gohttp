@@ -6,9 +6,9 @@ import (
 )
 
 type GetRequest struct {
-	Method  string
-	Target  string
-	Version string
+	BaseDirectory string
+	Target        string
+	Version       string
 }
 
 func (request *GetRequest) Handle(conn *bufio.Writer) error {

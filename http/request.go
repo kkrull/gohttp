@@ -32,11 +32,9 @@ func parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 	}
 
-	method := fields[0]
-	switch method {
+	switch fields[0] {
 	case "GET":
 		return &GetRequest{
-			Method:  method,
 			Target:  fields[1],
 			Version: fields[2],
 		}, nil
