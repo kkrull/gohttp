@@ -22,6 +22,7 @@ func (request *GetRequest) Handle(conn *bufio.Writer) error {
 		return nil
 	default:
 		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+		conn.Flush()
 		return nil
 	}
 }

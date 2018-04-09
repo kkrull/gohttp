@@ -1,6 +1,8 @@
 package http_test
 
 import (
+	"bufio"
+	"bytes"
 	"os"
 	"path"
 
@@ -19,12 +21,17 @@ var _ = Describe("GetRequest", func() {
 			basePath = makeEmptyTestDirectory("GetRequest", os.ModePerm)
 		})
 
-		It("accepts a base path", func() {
-			request := http.GetRequest{
-				BaseDirectory: "/tmp",
-				Target:        "/",
-				Version:       "HTTP/1.1"}
-			Expect(request).NotTo(BeNil())
+		Context("when the resolved target does not exist", func() {
+			It("Responds with 404 Not Found", func() {
+				buffer := &bytes.Buffer{}
+				writer := bufio.NewWriter(buffer)
+				request := http.GetRequest{
+					BaseDirectory: basePath,
+					Target:        "/missing.txt",
+					Version:       "HTTP/1.1"}
+				Expect(request.Handle(writer)).To(Succeed())
+				Expect(buffer.String()).To(Equal("HTTP/1.1 404 Not Found\r\n"))
+			})
 		})
 	})
 })
