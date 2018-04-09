@@ -24,44 +24,37 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Describe("it returns 400 Bad Request", func() {
 			It("for a completely blank request", func() {
-				buffer := bytes.NewBufferString("")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader(""))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
 			It("for any line missing CR", func() {
-				buffer := bytes.NewBufferString("GET / HTTP/1.1\r\n\n")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
 			It("for any line missing LF", func() {
-				buffer := bytes.NewBufferString("GET / HTTP/1.1\r")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
 			It("for a request missing a request-line", func() {
-				buffer := bytes.NewBufferString("\r\n")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader("\r\n"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
 			It("for a request missing an ending CRLF", func() {
-				buffer := bytes.NewBufferString("GET / HTTP/1.1\r\n")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
 			It("when multiple spaces are separating fields in request-line", func() {
-				buffer := bytes.NewBufferString("GET /  HTTP/1.1\r\n\r\n")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader("GET /  HTTP/1.1\r\n\r\n"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
 			It("when fields in request-line contain spaces", func() {
-				buffer := bytes.NewBufferString("GET /a\\ b HTTP/1.1\r\n\r\n")
-				request, err = parser.ParseRequest(bufio.NewReader(buffer))
+				request, err = parser.ParseRequest(makeReader("GET /a\\ b HTTP/1.1\r\n\r\n"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"}))
 			})
 
