@@ -15,3 +15,11 @@ RFC7230 Section 3.1.1
 * Should allow a request line of at least 8,000 octets.  On the flip side, prevent a
   Denial of Service attack with a request line that (almost) never ends (has no CR).
   In this case, it should only read up to 8,000 octets and give up if it hasn't seen CR yet.
+
+
+## General
+
+- Are interface types declared on the client/callee side?
+- When they are in the right package, do they need to be exported anymore?
+- Is the current request handling, parsing, and error handling getting large enough to benefit from being in a separate
+  `handler/filesystem` package?

@@ -32,6 +32,7 @@ func parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 	}
 
+	//TODO KDK: Create the appropriate kind of request based upon the verb.  Respond something like 405 Method Not Allowed or 501 Not Implemented
 	return &GetRequest{
 		Method:  fields[0],
 		Target:  fields[1],

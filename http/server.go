@@ -92,7 +92,7 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	}
 
 	writer := bufio.NewWriter(conn)
-	_ = request.Handle(writer)
+	_ = request.Handle(writer) //TODO KDK: Write a test for the error case
 	_ = writer.Flush()
 }
 
