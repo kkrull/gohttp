@@ -3,7 +3,6 @@ package http
 import (
 	"bufio"
 	"strings"
-	"fmt"
 )
 
 type RequestParser interface {
@@ -60,14 +59,14 @@ func parseHeaderLines(reader *bufio.Reader) *ParseError {
 func readCRLFLine(reader *bufio.Reader) (string, error) {
 	maybeEndsInCR, _ := reader.ReadString('\r')
 	if len(maybeEndsInCR) == 0 {
-		return "", fmt.Errorf("end of input")
+		return "", MissingEndOfHeaderCRLF{}
 	} else if !strings.HasSuffix(maybeEndsInCR, "\r") {
-		return "", fmt.Errorf("request line not ending in CR")
+		return "", MalformedHeaderLine{}
 	}
 
 	nextCharacter, _ := reader.ReadByte()
 	if nextCharacter != '\n' {
-		return "", fmt.Errorf("request line not ending in LF")
+		return "", MalformedHeaderLine{}
 	}
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
@@ -78,6 +77,18 @@ type Request struct {
 	Method  string
 	Target  string
 	Version string
+}
+
+type MissingEndOfHeaderCRLF struct{}
+
+func (MissingEndOfHeaderCRLF) Error() string {
+	return "end of input before terminating CRLF"
+}
+
+type MalformedHeaderLine struct{}
+
+func (MalformedHeaderLine) Error() string {
+	return "line in request header not ending in CRLF"
 }
 
 type ParseError struct {
