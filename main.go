@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/kkrull/gohttp/http"
 	"io"
 	"os"
+	"os/signal"
+
+	"github.com/kkrull/gohttp/http"
 )
 
 func main() {
-	parser := CliCommandParser{}
+	parser := NewCliCommandParser(subscribeToSignals(os.Interrupt))
 	command := parser.Parse(os.Args)
 	code, runErr := command.Run(os.Stderr)
 	if runErr != nil {
@@ -20,9 +22,33 @@ func main() {
 	os.Exit(code)
 }
 
+func subscribeToSignals(sig os.Signal) <-chan os.Signal {
+	interrupts := make(chan os.Signal, 1)
+	signal.Notify(interrupts, sig)
+	return interrupts
+}
+
 /* Command parsing */
 
-type CliCommandParser struct{}
+func NewCliCommandParser(interrupts <-chan os.Signal) *CliCommandParser {
+	return &CliCommandParser{
+		Interrupts:                interrupts,
+		NewCommandToRunHTTPServer: NewCommandToRunHTTPServer,
+	}
+}
+
+type CliCommandParser struct {
+	Interrupts                <-chan os.Signal
+	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
+}
+
+func NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
+	server := http.MakeTCPServer(contentRootPath, host, port)
+	return NewRunServerCommand(server)
+}
+
+type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (
+	command CliCommand, quit chan bool)
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -42,13 +68,19 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case *port == 0:
 		return ErrorCommand{Error: fmt.Errorf("missing port")}
 	default:
-		command, _ := MakeRunServerCommand(http.MakeTCPServer(*path, host, uint16(*port)))
+		command, quit := parser.NewCommandToRunHTTPServer(*path, host, uint16(*port))
+		go parser.sendTrueOnFirstInterruption(quit)
 		return command
 	}
 }
 
 func suppressUntimelyOutput(flagSet *flag.FlagSet) {
 	flagSet.SetOutput(&bytes.Buffer{})
+}
+
+func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
+	<-parser.Interrupts
+	quit <- true
 }
 
 type CliCommand interface {
@@ -79,15 +111,15 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 
 /* RunServerCommand */
 
-func MakeRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
+func NewRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
 	quit = make(chan bool, 1)
-	command = RunServerCommand{Server: server, Quit: quit}
+	command = RunServerCommand{Server: server, quit: quit}
 	return
 }
 
 type RunServerCommand struct {
 	Server http.Server
-	Quit   chan bool
+	quit   <-chan bool
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
@@ -104,5 +136,5 @@ func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
 }
 
 func (command RunServerCommand) waitForShutdownRequest() {
-	<-command.Quit
+	<-command.quit
 }

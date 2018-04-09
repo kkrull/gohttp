@@ -1,12 +1,14 @@
 package http_test
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
+
+	"github.com/kkrull/gohttp/http"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"fmt"
-	"bytes"
-	"bufio"
-	"github.com/kkrull/gohttp/http"
 	"github.com/onsi/gomega/types"
 )
 
