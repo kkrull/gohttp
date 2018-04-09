@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
+func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
@@ -14,18 +14,12 @@ func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Serv
 	}
 }
 
-func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server {
+func MakeTCPServer(contentRootDirectory string, host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
 		Parser: RFC7230RequestParser{},
 	}
-}
-
-type Server interface {
-	Address() net.Addr
-	Start() error
-	Shutdown() error
 }
 
 /* TCPServer */

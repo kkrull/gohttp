@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	server       http.Server
+	server       *http.TCPServer
 	conn         net.Conn
 	connectError error
 

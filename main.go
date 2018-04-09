@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/signal"
 
@@ -111,15 +112,21 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 
 /* RunServerCommand */
 
-func NewRunServerCommand(server http.Server) (command CliCommand, quit chan bool) {
+func NewRunServerCommand(server Server) (command CliCommand, quit chan bool) {
 	quit = make(chan bool, 1)
 	command = RunServerCommand{Server: server, quit: quit}
 	return
 }
 
 type RunServerCommand struct {
-	Server http.Server
+	Server Server
 	quit   <-chan bool
+}
+
+type Server interface {
+	Address() net.Addr
+	Start() error
+	Shutdown() error
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
