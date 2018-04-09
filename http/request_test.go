@@ -98,7 +98,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Context("given any other request method", func() {
 			It("returns a ParseError with 501 Not Implemented", func() {
-				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
+				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
 				Expect(err).To(BeEquivalentTo(&http.ParseError{
 					StatusCode: 501,
 					Reason:     "Not Implemented"}))
