@@ -16,7 +16,6 @@ var _ = Describe("RFC7230RequestParser", func() {
 	Describe("#ParseRequest", func() {
 		var (
 			parser  *http.RFC7230RequestParser
-			reader  *bufio.Reader
 			request http.Request
 			err     *http.ParseError
 		)
@@ -67,8 +66,11 @@ var _ = Describe("RFC7230RequestParser", func() {
 			})
 		})
 
-		Context("given a well-formed request", func() {
-			var typedRequest *http.GetRequest
+		Context("given a well-formed GET request", func() {
+			var (
+				reader       *bufio.Reader
+				typedRequest *http.GetRequest
+			)
 
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
@@ -77,7 +79,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 				typedRequest = request.(*http.GetRequest)
 			})
 
-			It("parses the request", func() {
+			It("returns a GetRequest containing the contents of the request", func() {
 				Expect(request).To(BeEquivalentTo(&http.GetRequest{
 					Method:  "GET",
 					Target:  "/foo",
@@ -91,6 +93,15 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 			It("reads the entire request until reaching a line with only CRLF", func() {
 				Expect(reader.Buffered()).To(Equal(0))
+			})
+		})
+
+		Context("given any other request method", func() {
+			It("returns a ParseError with 501 Not Implemented", func() {
+				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
+				Expect(err).To(BeEquivalentTo(&http.ParseError{
+					StatusCode: 501,
+					Reason:     "Not Implemented"}))
 			})
 		})
 	})
