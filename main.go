@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/kkrull/gohttp/http"
 	"io"
 	"os"
 	"os/signal"
+
+	"github.com/kkrull/gohttp/http"
 )
 
 func main() {

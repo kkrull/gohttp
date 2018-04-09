@@ -1,17 +1,18 @@
 package main_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	"bytes"
 	"flag"
 	"fmt"
-	. "github.com/kkrull/gohttp"
-	"github.com/kkrull/gohttp/mock"
 	"os"
 	"syscall"
 	"time"
+
+	. "github.com/kkrull/gohttp"
+	"github.com/kkrull/gohttp/mock"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("CliCommandParser", func() {
