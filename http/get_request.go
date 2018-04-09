@@ -11,18 +11,18 @@ type GetRequest struct {
 	Version       string
 }
 
-func (request *GetRequest) Handle(conn *bufio.Writer) error {
+func (request *GetRequest) Handle(response *bufio.Writer) error {
 	switch request.Target {
 	case "/":
-		fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-		fmt.Fprint(conn, "Content-Length: 5\r\n")
-		fmt.Fprint(conn, "Content-Type: text/plain\r\n")
-		fmt.Fprint(conn, "\r\n")
-		fmt.Fprintf(conn, "hello")
-		return nil
+		fmt.Fprint(response, "HTTP/1.1 200 OK\r\n")
+		fmt.Fprint(response, "Content-Length: 5\r\n")
+		fmt.Fprint(response, "Content-Type: text/plain\r\n")
+		fmt.Fprint(response, "\r\n")
+		fmt.Fprintf(response, "hello")
 	default:
-		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-		conn.Flush()
-		return nil
+		fmt.Fprint(response, "HTTP/1.1 404 Not Found\r\n")
 	}
+
+	response.Flush()
+	return nil
 }
