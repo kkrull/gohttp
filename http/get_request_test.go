@@ -3,6 +3,7 @@ package http_test
 import (
 	"bufio"
 	"bytes"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -39,6 +40,28 @@ var _ = Describe("GetRequest", func() {
 			})
 			It("Responds with 404 Not Found", func() {
 				Expect(response.String()).To(Equal("HTTP/1.1 404 Not Found\r\n"))
+			})
+		})
+
+		Context("when the target is a readable file in the specified path", func() {
+			BeforeEach(func() {
+				request = &http.GetRequest{
+					BaseDirectory: basePath,
+					Target:        "/readable.txt",
+					Version:       "HTTP/1.1"}
+
+				Expect(ioutil.WriteFile(
+					path.Join(basePath, "readable.txt"),
+					[]byte{42},
+					os.ModePerm)).To(Succeed())
+				err = request.Handle(bufio.NewWriter(response))
+			})
+
+			It("returns no error", func() {
+				Expect(err).NotTo(HaveOccurred())
+			})
+			It("Responds with 200 OK", func() {
+				Expect(response.String()).To(Equal("HTTP/1.1 200 OK\r\n"))
 			})
 		})
 	})
