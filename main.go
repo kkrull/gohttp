@@ -32,17 +32,19 @@ func subscribeToSignals(sig os.Signal) <-chan os.Signal {
 
 func NewCliCommandParser(interrupts <-chan os.Signal) *CliCommandParser {
 	return &CliCommandParser{
-		Interrupts: interrupts,
-		NewCommandToRunHTTPServer: func(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
-			server := http.MakeTCPServer(contentRootPath, host, port)
-			return NewRunServerCommand(server)
-		},
+		Interrupts:                interrupts,
+		NewCommandToRunHTTPServer: NewCommandToRunHTTPServer,
 	}
 }
 
 type CliCommandParser struct {
 	Interrupts                <-chan os.Signal
 	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
+}
+
+func NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
+	server := http.MakeTCPServer(contentRootPath, host, port)
+	return NewRunServerCommand(server)
 }
 
 type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (
