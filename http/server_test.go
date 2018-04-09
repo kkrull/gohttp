@@ -187,7 +187,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{ReturnsRequest: &http.Request{}}
+				parser = &mock.RequestParser{ReturnsRequest: &http.GetRequest{}}
 				server = &http.TCPServer{
 					Host:   "localhost",
 					Parser: parser}

@@ -17,7 +17,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		var (
 			parser  *http.RFC7230RequestParser
 			reader  *bufio.Reader
-			request *http.Request
+			request http.Request
 			err     *http.ParseError
 		)
 
@@ -68,14 +68,17 @@ var _ = Describe("RFC7230RequestParser", func() {
 		})
 
 		Context("given a well-formed request", func() {
+			var typedRequest *http.GetRequest
+
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
 				request, err = parser.ParseRequest(reader)
+				typedRequest = request.(*http.GetRequest)
 			})
 
 			It("parses the request", func() {
-				Expect(request).To(BeEquivalentTo(&http.Request{
+				Expect(request).To(BeEquivalentTo(&http.GetRequest{
 					Method:  "GET",
 					Target:  "/foo",
 					Version: "HTTP/1.1",

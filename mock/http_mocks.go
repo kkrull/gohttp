@@ -10,12 +10,12 @@ import (
 )
 
 type RequestParser struct {
-	ReturnsRequest *http.Request
+	ReturnsRequest http.Request
 	ReturnsError   *http.ParseError
 	received       []byte
 }
 
-func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (*http.Request, *http.ParseError) {
+func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (http.Request, *http.ParseError) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
 	parser.received = appendByte(allButLF, shouldBeLF)

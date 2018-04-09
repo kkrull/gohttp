@@ -2,16 +2,17 @@ package http
 
 import (
 	"bufio"
+	"fmt"
 	"strings"
 )
 
 type RequestParser interface {
-	ParseRequest(reader *bufio.Reader) (*Request, *ParseError)
+	ParseRequest(reader *bufio.Reader) (Request, *ParseError)
 }
 
 type RFC7230RequestParser struct{}
 
-func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
+func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (Request, *ParseError) {
 	request, err := parseRequestLine(reader)
 	if err != nil {
 		return nil, err
@@ -25,7 +26,7 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request,
 	return request, nil
 }
 
-func parseRequestLine(reader *bufio.Reader) (*Request, *ParseError) {
+func parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
@@ -36,7 +37,7 @@ func parseRequestLine(reader *bufio.Reader) (*Request, *ParseError) {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 	}
 
-	return &Request{
+	return &GetRequest{
 		Method:  fields[0],
 		Target:  fields[1],
 		Version: fields[2],
@@ -73,10 +74,29 @@ func readCRLFLine(reader *bufio.Reader) (string, error) {
 	return trimmed, nil
 }
 
-type Request struct {
+type Request interface {
+	Handle(connWriter *bufio.Writer) error
+}
+
+type GetRequest struct {
 	Method  string
 	Target  string
 	Version string
+}
+
+func (request *GetRequest) Handle(conn *bufio.Writer) error {
+	switch request.Target {
+	case "/":
+		fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+		fmt.Fprint(conn, "Content-Length: 5\r\n")
+		fmt.Fprint(conn, "Content-Type: text/plain\r\n")
+		fmt.Fprint(conn, "\r\n")
+		fmt.Fprintf(conn, "hello")
+		return nil
+	default:
+		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+		return nil
+	}
 }
 
 type MissingEndOfHeaderCRLF struct{}

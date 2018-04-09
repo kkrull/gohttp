@@ -91,16 +91,9 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 		return
 	}
 
-	switch request.Target {
-	case "/":
-		fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-		fmt.Fprint(conn, "Content-Length: 5\r\n")
-		fmt.Fprint(conn, "Content-Type: text/plain\r\n")
-		fmt.Fprint(conn, "\r\n")
-		fmt.Fprintf(conn, "hello")
-	default:
-		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
-	}
+	writer := bufio.NewWriter(conn)
+	_ = request.Handle(writer)
+	_ = writer.Flush()
 }
 
 func (server *TCPServer) Shutdown() error {
