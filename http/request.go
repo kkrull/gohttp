@@ -5,10 +5,6 @@ import (
 	"strings"
 )
 
-type RequestParser interface {
-	ParseRequest(reader *bufio.Reader) (Request, *ParseError)
-}
-
 type RFC7230RequestParser struct{}
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (Request, *ParseError) {
@@ -71,10 +67,6 @@ func readCRLFLine(reader *bufio.Reader) (string, error) {
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
-}
-
-type Request interface {
-	Handle(connWriter *bufio.Writer) error
 }
 
 type MissingEndOfHeaderCRLF struct{}

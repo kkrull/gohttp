@@ -25,4 +25,3 @@ func (request *GetRequest) Handle(conn *bufio.Writer) error {
 		return nil
 	}
 }
-

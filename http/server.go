@@ -106,3 +106,11 @@ func (server *TCPServer) Shutdown() error {
 	}()
 	return server.listener.Close()
 }
+
+type RequestParser interface {
+	ParseRequest(reader *bufio.Reader) (Request, *ParseError)
+}
+
+type Request interface {
+	Handle(connWriter *bufio.Writer) error
+}
