@@ -41,6 +41,8 @@ var _ = Describe("GetRequest", func() {
 			It("Responds with 404 Not Found", func() {
 				Expect(response.String()).To(Equal("HTTP/1.1 404 Not Found\r\n"))
 			})
+			XIt("ends the header section")
+			XIt("writes a content length of 0?")
 		})
 
 		Context("when the target is a readable file in the specified path", func() {

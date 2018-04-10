@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strconv"
 )
 
 type GetRequest struct {
@@ -14,21 +15,37 @@ type GetRequest struct {
 	Version       string
 }
 
-func (request *GetRequest) Handle(response *bufio.Writer) error {
+func (request *GetRequest) Handle(client *bufio.Writer) error {
 	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
-		fmt.Fprint(response, "HTTP/1.1 404 Not Found\r\n")
+		writeStatusLine(client, 404, "Not Found")
 	} else {
-		fmt.Fprintf(response, "HTTP/1.1 200 OK\r\n")
-		fmt.Fprintf(response, "Content-Length: %d\r\n", info.Size())
-		fmt.Fprintf(response, "Content-Type: text/plain\r\n")
-		fmt.Fprintf(response, "\r\n")
+		writeStatusLine(client, 200, "OK")
+		writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
+		writeHeader(client, "Content-Type", "text/plain")
+		writeEndOfHeader(client)
 
 		file, _ := os.Open(resolvedTarget)
-		io.Copy(response, file)
+		writeBody(client, file)
 	}
 
-	response.Flush()
+	client.Flush()
 	return nil
+}
+
+func writeBody(client *bufio.Writer, body io.Reader) {
+	io.Copy(client, body)
+}
+
+func writeStatusLine(client *bufio.Writer, status int, reason string) {
+	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status, reason)
+}
+
+func writeHeader(client *bufio.Writer, name string, value string) {
+	fmt.Fprintf(client, "%s: %s\r\n", name, value)
+}
+
+func writeEndOfHeader(client *bufio.Writer) {
+	fmt.Fprintf(client, "\r\n")
 }
