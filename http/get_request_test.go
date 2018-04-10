@@ -39,10 +39,14 @@ var _ = Describe("GetRequest", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 			It("Responds with 404 Not Found", func() {
-				Expect(response.String()).To(Equal("HTTP/1.1 404 Not Found\r\n"))
+				Expect(response.String()).To(HavePrefix("HTTP/1.1 404 Not Found\r\n"))
 			})
-			XIt("ends the header section")
-			XIt("writes a content length of 0?")
+			It("sets Content-Length to 0", func() {
+				Expect(response.String()).To(ContainSubstring("Content-Length: 0\r\n"))
+			})
+			It("has no body", func() {
+				Expect(response.String()).To(HaveSuffix("\r\n\r\n"))
+			})
 		})
 
 		Context("when the target is a readable file in the specified path", func() {
