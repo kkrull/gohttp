@@ -19,7 +19,5 @@ RFC7230 Section 3.1.1
 
 ## General
 
-- Are interface types declared on the client/callee side?
-- When they are in the right package, do they need to be exported anymore?
-- Is the current request handling, parsing, and error handling getting large enough to benefit from being in a separate
+* Is the current request handling, parsing, and error handling getting large enough to benefit from being in a separate
   `handler/filesystem` package?

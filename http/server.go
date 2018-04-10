@@ -93,7 +93,7 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 
 	writer := bufio.NewWriter(conn)
 	_ = request.Handle(writer) //TODO KDK: Write a test for the error case
-	_ = writer.Flush()         //TODO KDK: May not be necessary.  But then again, it doesn't hurt.
+	_ = writer.Flush()
 }
 
 func (server *TCPServer) Shutdown() error {
