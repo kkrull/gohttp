@@ -16,13 +16,22 @@ type GetRequest struct {
 }
 
 func (request *GetRequest) Handle(client *bufio.Writer) error {
-	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
+	resolvedTarget := path.Join(request.BaseDirectory, request.Target) //TODO KDK: ioutil.ReadDir
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
 		writeStatusLine(client, 404, "Not Found")
 		writeHeader(client, "Content-Type", "text/plain")
 
 		message := fmt.Sprintf("Not found: %s", request.Target)
+		writeHeader(client, "Content-Length", strconv.Itoa(len(message)))
+		writeEndOfHeader(client)
+
+		writeBody(client, message)
+	} else if info.IsDir() {
+		writeStatusLine(client, 200, "OK")
+		writeHeader(client, "Content-Type", "text/plain")
+
+		message := fmt.Sprintf("one\n")
 		writeHeader(client, "Content-Length", strconv.Itoa(len(message)))
 		writeEndOfHeader(client)
 
@@ -50,7 +59,7 @@ func writeHeader(client *bufio.Writer, name string, value string) {
 }
 
 func writeEndOfHeader(client *bufio.Writer) {
-	fmt.Fprintf(client, "\r\n")
+	fmt.Fprint(client, "\r\n")
 }
 
 func copyToBody(client *bufio.Writer, bodyReader io.Reader) {
@@ -58,5 +67,5 @@ func copyToBody(client *bufio.Writer, bodyReader io.Reader) {
 }
 
 func writeBody(client *bufio.Writer, body string) {
-	fmt.Fprintf(client, body)
+	fmt.Fprint(client, body)
 }
