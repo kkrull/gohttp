@@ -198,7 +198,7 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("parses the request line as everything up to the first CRLF", func(done Done) {
+			It("parses the request with the given RequestParser", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				readString(conn)
 				parser.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
@@ -206,7 +206,7 @@ var _ = Describe("TCPServer", func() {
 			})
 		})
 
-		Context("when the request parser returns an error", func() {
+		Context("when the RequestParser returns an error", func() {
 			BeforeEach(func(done Done) {
 				parser = &mock.RequestParser{
 					ReturnsError: &http.ParseError{StatusCode: 400, Reason: "Bad Request"}}
@@ -223,6 +223,29 @@ var _ = Describe("TCPServer", func() {
 			It("responds with an HTTP status line of the status code and reason returned by the parser", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 400 Bad Request\r\n"))
+				close(done)
+			})
+		})
+
+		Context("when there is an error handling the request", func() {
+			var request *mock.Request
+
+			BeforeEach(func(done Done) {
+				request = &mock.Request{ReturnsError: "bang"}
+				parser = &mock.RequestParser{ReturnsRequest: request}
+				server = &http.TCPServer{
+					Host:   "localhost",
+					Parser: parser}
+
+				Expect(server.Start()).To(Succeed())
+				conn, connectError = net.Dial("tcp", server.Address().String())
+				Expect(connectError).NotTo(HaveOccurred())
+				close(done)
+			})
+
+			It("responds with 500 Internal Server Error", func(done Done) {
+				writeString(conn, "GET /bang HTTP/1.1\r\n\r\n")
+				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 500 Internal Server Error\r\n"))
 				close(done)
 			})
 		})

@@ -33,6 +33,18 @@ func (parser RequestParser) VerifyReceived(expected []byte) {
 	Expect(parser.received).To(Equal(expected))
 }
 
+type Request struct {
+	ReturnsError string
+}
+
+func (mock Request) Handle(connWriter *bufio.Writer) error {
+	if mock.ReturnsError != "" {
+		return fmt.Errorf(mock.ReturnsError)
+	}
+
+	return nil
+}
+
 type Server struct {
 	StartFails  string
 	startCalled bool

@@ -92,7 +92,12 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	}
 
 	writer := bufio.NewWriter(conn)
-	_ = request.Handle(writer) //TODO KDK: Write a test for the error case
+	requestError := request.Handle(writer)
+	if requestError != nil {
+		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", 500, "Internal Server Error")
+		return
+	}
+
 	_ = writer.Flush()
 }
 

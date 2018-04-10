@@ -11,6 +11,10 @@
   * Given HTTP/1.2+ -- should it respond with 501 Not Implemented?
     RFC 7231 seems to suggest that it's only meant for an unsupported _method_.
   * Given HTTP/2+ -- it could respond 505 HTTP Version Not Supported
+* Hard-coded responses can be turned into XyzResponse types
+  * 400 Bad Request
+  * 500 Internal Server Error
+
 
 ## Request parsing
 
