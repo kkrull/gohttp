@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -59,13 +58,7 @@ var _ = Describe("GetRequest", func() {
 					Version:       "HTTP/1.1"}
 
 				existingFile := path.Join(basePath, "readable.txt")
-
-				file, err := os.Create(existingFile)
-				Expect(err).NotTo(HaveOccurred())
-				contents := bytes.NewBufferString("A")
-				file.Write(contents.Bytes())
-
-				Expect(ioutil.ReadFile(existingFile)).NotTo(BeEmpty())
+				Expect(createTextFile(existingFile, "A")).To(Succeed())
 				err = request.Handle(bufio.NewWriter(response))
 			})
 
@@ -93,6 +86,23 @@ func makeEmptyTestDirectory(testName string, fileMode os.FileMode) string {
 	Expect(os.RemoveAll(testPath)).To(Succeed())
 	Expect(os.MkdirAll(testPath, fileMode)).To(Succeed())
 	return testPath
+}
+
+func createTextFile(filename string, contents string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	byteContents := bytes.NewBufferString(contents).Bytes()
+	bytesWritten, err := file.Write(byteContents)
+	if err != nil {
+		return err
+	} else if bytesWritten != len(byteContents) {
+		return fmt.Errorf("expected to write %d bytes to %s, but only wrote %d", len(byteContents), filename, bytesWritten)
+	}
+
+	return nil
 }
 
 func startWithStatusLine(status int, reason string) types.GomegaMatcher {
