@@ -42,11 +42,14 @@ var _ = Describe("GetRequest", func() {
 			It("Responds with 404 Not Found", func() {
 				Expect(response.String()).To(startWithStatusLine(404, "Not Found"))
 			})
-			It("sets Content-Length to 0", func() {
-				Expect(response.String()).To(containHeader("Content-Length", "0"))
+			It("sets Content-Length to the length of the response", func() {
+				Expect(response.String()).To(containHeader("Content-Length", "23"))
 			})
-			It("has no body", func() {
-				Expect(response.String()).To(HaveSuffix("\r\n\r\n"))
+			It("sets Content-Type to text/plain", func() {
+				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
+			})
+			It("writes an error message to the message body", func() {
+				Expect(response.String()).To(HaveSuffix("\r\nNot found: /missing.txt"))
 			})
 		})
 

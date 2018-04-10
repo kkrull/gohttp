@@ -20,8 +20,12 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
 		writeStatusLine(client, 404, "Not Found")
-		writeHeader(client, "Content-Length", strconv.FormatInt(0, 10))
+
+		message := fmt.Sprintf("Not found: %s", request.Target)
+		writeHeader(client, "Content-Length", strconv.Itoa(len(message)))
+		writeHeader(client, "Content-Type", "text/plain")
 		writeEndOfHeader(client)
+		fmt.Fprintf(client, message)
 	} else {
 		writeStatusLine(client, 200, "OK")
 		writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
