@@ -21,14 +21,8 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
-		writeStatusLine(client, 404, "Not Found")
-		writeHeader(client, "Content-Type", "text/plain")
-
-		message := fmt.Sprintf("Not found: %s", request.Target)
-		writeHeader(client, "Content-Length", strconv.Itoa(len(message)))
-		writeEndOfHeader(client)
-
-		writeBody(client, message)
+		response := &NotFoundResponse{client: client}
+		response.Issue(request.Target)
 	} else if info.IsDir() {
 		writeStatusLine(client, 200, "OK")
 		writeHeader(client, "Content-Type", "text/plain")
@@ -57,6 +51,21 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 
 	client.Flush()
 	return nil
+}
+
+type NotFoundResponse struct {
+	client *bufio.Writer
+}
+
+func (response NotFoundResponse) Issue(requestTarget string) {
+	writeStatusLine(response.client, 404, "Not Found")
+	writeHeader(response.client, "Content-Type", "text/plain")
+
+	message := fmt.Sprintf("Not found: %s", requestTarget)
+	writeHeader(response.client, "Content-Length", strconv.Itoa(len(message)))
+	writeEndOfHeader(response.client)
+
+	writeBody(response.client, message)
 }
 
 func writeStatusLine(client *bufio.Writer, status int, reason string) {
