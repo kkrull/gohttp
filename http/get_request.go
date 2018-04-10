@@ -24,21 +24,9 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 		response := &NotFoundResponse{client: client}
 		response.IssueForTarget(request.Target)
 	} else if info.IsDir() {
-		writeStatusLine(client, 200, "OK")
-		writeHeader(client, "Content-Type", "text/plain")
-
-		message := &bytes.Buffer{}
-		messageWriter := bufio.NewWriter(message)
 		files, _ := ioutil.ReadDir(resolvedTarget)
-		for _, file := range files {
-			messageWriter.WriteString(fmt.Sprintf("%s\n", file.Name()))
-		}
-		messageWriter.Flush()
-
-		writeHeader(client, "Content-Length", strconv.Itoa(message.Len()))
-		writeEndOfHeader(client)
-
-		writeBody(client, message.String())
+		response := &DirectoryListingResponse{client: client}
+		response.IssueForFiles(files)
 	} else {
 		response := &FileContentsResponse{client: client}
 		response.IssueForFile(resolvedTarget)
@@ -46,6 +34,28 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 
 	client.Flush()
 	return nil
+}
+
+
+type DirectoryListingResponse struct {
+	client *bufio.Writer
+}
+
+func (response DirectoryListingResponse) IssueForFiles(files []os.FileInfo) {
+	writeStatusLine(response.client, 200, "OK")
+	writeHeader(response.client, "Content-Type", "text/plain")
+
+	message := &bytes.Buffer{}
+	messageWriter := bufio.NewWriter(message)
+	for _, file := range files {
+		messageWriter.WriteString(fmt.Sprintf("%s\n", file.Name()))
+	}
+
+	messageWriter.Flush()
+	writeHeader(response.client, "Content-Length", strconv.Itoa(message.Len()))
+	writeEndOfHeader(response.client)
+
+	writeBody(response.client, message.String())
 }
 
 
