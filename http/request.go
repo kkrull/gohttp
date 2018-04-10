@@ -32,7 +32,7 @@ func parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 	}
 
-	switch fields[0] {
+	switch fields[0] { //TODO KDK: Set the base path
 	case "GET":
 		return &GetRequest{
 			Target:  fields[1],

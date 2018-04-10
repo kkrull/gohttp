@@ -40,7 +40,7 @@ var _ = Describe("GetRequest", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 			It("Responds with 404 Not Found", func() {
-				Expect(response.String()).To(startWithStatusLine(404, "Not Found"))
+				Expect(response.String()).To(haveStatus(404, "Not Found"))
 			})
 			It("sets Content-Length to the length of the response", func() {
 				Expect(response.String()).To(containHeader("Content-Length", "23"))
@@ -49,7 +49,7 @@ var _ = Describe("GetRequest", func() {
 				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 			It("writes an error message to the message body", func() {
-				Expect(response.String()).To(HaveSuffix("\r\nNot found: /missing.txt"))
+				Expect(response.String()).To(haveMessageBody("Not found: /missing.txt"))
 			})
 		})
 
@@ -69,7 +69,7 @@ var _ = Describe("GetRequest", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 			It("responds with 200 OK", func() {
-				Expect(response.String()).To(startWithStatusLine(200, "OK"))
+				Expect(response.String()).To(haveStatus(200, "OK"))
 			})
 			It("sets Content-Length to the number of bytes in the file", func() {
 				Expect(response.String()).To(containHeader("Content-Length", "1"))
@@ -78,7 +78,7 @@ var _ = Describe("GetRequest", func() {
 				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 			It("writes the contents of the file to the message body", func() {
-				Expect(response.String()).To(HaveSuffix("\r\n\r\nA"))
+				Expect(response.String()).To(haveMessageBody("A"))
 			})
 		})
 	})
@@ -108,10 +108,14 @@ func createTextFile(filename string, contents string) error {
 	return nil
 }
 
-func startWithStatusLine(status int, reason string) types.GomegaMatcher {
+func haveStatus(status int, reason string) types.GomegaMatcher {
 	return HavePrefix(fmt.Sprintf("HTTP/1.1 %d %s\r\n", status, reason))
 }
 
 func containHeader(name string, value string) types.GomegaMatcher {
 	return ContainSubstring(fmt.Sprintf("%s: %s\r\n", name, value))
+}
+
+func haveMessageBody(message string) types.GomegaMatcher {
+	return HaveSuffix(fmt.Sprintf("\r\n\r\n%s", message))
 }

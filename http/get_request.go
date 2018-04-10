@@ -20,28 +20,25 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
 		writeStatusLine(client, 404, "Not Found")
+		writeHeader(client, "Content-Type", "text/plain")
 
 		message := fmt.Sprintf("Not found: %s", request.Target)
 		writeHeader(client, "Content-Length", strconv.Itoa(len(message)))
-		writeHeader(client, "Content-Type", "text/plain")
 		writeEndOfHeader(client)
-		fmt.Fprintf(client, message)
+
+		writeBody(client, message)
 	} else {
 		writeStatusLine(client, 200, "OK")
-		writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 		writeHeader(client, "Content-Type", "text/plain")
+		writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 		writeEndOfHeader(client)
 
 		file, _ := os.Open(resolvedTarget)
-		writeBody(client, file)
+		copyToBody(client, file)
 	}
 
 	client.Flush()
 	return nil
-}
-
-func writeBody(client *bufio.Writer, body io.Reader) {
-	io.Copy(client, body)
 }
 
 func writeStatusLine(client *bufio.Writer, status int, reason string) {
@@ -54,4 +51,12 @@ func writeHeader(client *bufio.Writer, name string, value string) {
 
 func writeEndOfHeader(client *bufio.Writer) {
 	fmt.Fprintf(client, "\r\n")
+}
+
+func copyToBody(client *bufio.Writer, bodyReader io.Reader) {
+	io.Copy(client, bodyReader)
+}
+
+func writeBody(client *bufio.Writer, body string) {
+	fmt.Fprintf(client, body)
 }
