@@ -22,7 +22,7 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
 		response := &NotFoundResponse{client: client}
-		response.Issue(request.Target)
+		response.IssueForTarget(request.Target)
 	} else if info.IsDir() {
 		writeStatusLine(client, 200, "OK")
 		writeHeader(client, "Content-Type", "text/plain")
@@ -41,7 +41,7 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 		writeBody(client, message.String())
 	} else {
 		response := &FileContentsResponse{client: client}
-		response.Issue(resolvedTarget)
+		response.IssueForFile(resolvedTarget)
 	}
 
 	client.Flush()
@@ -53,7 +53,7 @@ type FileContentsResponse struct {
 	client *bufio.Writer
 }
 
-func (response FileContentsResponse) Issue(filename string) {
+func (response FileContentsResponse) IssueForFile(filename string) {
 	writeStatusLine(response.client, 200, "OK")
 	writeHeader(response.client, "Content-Type", "text/plain")
 
@@ -70,7 +70,7 @@ type NotFoundResponse struct {
 	client *bufio.Writer
 }
 
-func (response NotFoundResponse) Issue(requestTarget string) {
+func (response NotFoundResponse) IssueForTarget(requestTarget string) {
 	writeStatusLine(response.client, 404, "Not Found")
 	writeHeader(response.client, "Content-Type", "text/plain")
 
