@@ -28,7 +28,7 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 		response := &DirectoryListingResponse{client: client}
 		response.IssueForFiles(files)
 	} else {
-		response := &FileContentsResponse{client: client}
+		response := &TextFileContentsResponse{client: client}
 		response.IssueForFile(resolvedTarget)
 	}
 
@@ -45,6 +45,14 @@ func (response DirectoryListingResponse) IssueForFiles(files []os.FileInfo) {
 	writeStatusLine(response.client, 200, "OK")
 	writeHeader(response.client, "Content-Type", "text/plain")
 
+	message := messageListingFiles(files)
+	writeHeader(response.client, "Content-Length", strconv.Itoa(message.Len()))
+	writeEndOfMessageHeader(response.client)
+
+	writeBody(response.client, message.String())
+}
+
+func messageListingFiles(files []os.FileInfo) *bytes.Buffer {
 	message := &bytes.Buffer{}
 	messageWriter := bufio.NewWriter(message)
 	for _, file := range files {
@@ -52,27 +60,27 @@ func (response DirectoryListingResponse) IssueForFiles(files []os.FileInfo) {
 	}
 
 	messageWriter.Flush()
-	writeHeader(response.client, "Content-Length", strconv.Itoa(message.Len()))
-	writeEndOfHeader(response.client)
-
-	writeBody(response.client, message.String())
+	return message
 }
 
 
-type FileContentsResponse struct {
+type TextFileContentsResponse struct {
 	client *bufio.Writer
 }
 
-func (response FileContentsResponse) IssueForFile(filename string) {
+func (response TextFileContentsResponse) IssueForFile(filename string) {
 	writeStatusLine(response.client, 200, "OK")
-	writeHeader(response.client, "Content-Type", "text/plain")
-
-	info, _ := os.Stat(filename)
-	writeHeader(response.client, "Content-Length", strconv.FormatInt(info.Size(), 10))
-	writeEndOfHeader(response.client)
+	writeHeadersDescribingFile(response, filename)
+	writeEndOfMessageHeader(response.client)
 
 	file, _ := os.Open(filename)
 	copyToBody(response.client, file)
+}
+
+func writeHeadersDescribingFile(response TextFileContentsResponse, filename string) {
+	writeHeader(response.client, "Content-Type", "text/plain")
+	info, _ := os.Stat(filename)
+	writeHeader(response.client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }
 
 
@@ -86,7 +94,7 @@ func (response NotFoundResponse) IssueForTarget(requestTarget string) {
 
 	message := fmt.Sprintf("Not found: %s", requestTarget)
 	writeHeader(response.client, "Content-Length", strconv.Itoa(len(message)))
-	writeEndOfHeader(response.client)
+	writeEndOfMessageHeader(response.client)
 
 	writeBody(response.client, message)
 }
@@ -100,7 +108,7 @@ func writeHeader(client *bufio.Writer, name string, value string) {
 	fmt.Fprintf(client, "%s: %s\r\n", name, value)
 }
 
-func writeEndOfHeader(client *bufio.Writer) {
+func writeEndOfMessageHeader(client *bufio.Writer) {
 	fmt.Fprint(client, "\r\n")
 }
 
