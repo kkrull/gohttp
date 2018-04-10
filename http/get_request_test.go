@@ -3,6 +3,7 @@ package http_test
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -10,6 +11,7 @@ import (
 	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("GetRequest", func() {
@@ -39,10 +41,10 @@ var _ = Describe("GetRequest", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 			It("Responds with 404 Not Found", func() {
-				Expect(response.String()).To(HavePrefix("HTTP/1.1 404 Not Found\r\n"))
+				Expect(response.String()).To(startWithStatusLine(404, "Not Found"))
 			})
 			It("sets Content-Length to 0", func() {
-				Expect(response.String()).To(ContainSubstring("Content-Length: 0\r\n"))
+				Expect(response.String()).To(containHeader("Content-Length", "0"))
 			})
 			It("has no body", func() {
 				Expect(response.String()).To(HaveSuffix("\r\n\r\n"))
@@ -71,13 +73,13 @@ var _ = Describe("GetRequest", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 			It("responds with 200 OK", func() {
-				Expect(response.String()).To(HavePrefix("HTTP/1.1 200 OK\r\n"))
+				Expect(response.String()).To(startWithStatusLine(200, "OK"))
 			})
 			It("sets Content-Length to the number of bytes in the file", func() {
-				Expect(response.String()).To(ContainSubstring("Content-Length: 1\r\n"))
+				Expect(response.String()).To(containHeader("Content-Length", "1"))
 			})
 			It("sets Content-Type to text/plain", func() {
-				Expect(response.String()).To(ContainSubstring("Content-Type: text/plain\r\n"))
+				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 			It("writes the contents of the file to the message body", func() {
 				Expect(response.String()).To(HaveSuffix("\r\n\r\nA"))
@@ -91,4 +93,12 @@ func makeEmptyTestDirectory(testName string, fileMode os.FileMode) string {
 	Expect(os.RemoveAll(testPath)).To(Succeed())
 	Expect(os.MkdirAll(testPath, fileMode)).To(Succeed())
 	return testPath
+}
+
+func startWithStatusLine(status int, reason string) types.GomegaMatcher {
+	return HavePrefix(fmt.Sprintf("HTTP/1.1 %d %s\r\n", status, reason))
+}
+
+func containHeader(name string, value string) types.GomegaMatcher {
+	return ContainSubstring(fmt.Sprintf("%s: %s\r\n", name, value))
 }
