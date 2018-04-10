@@ -10,7 +10,7 @@ func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCP
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: RFC7230RequestParser{},
+		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
 	}
 }
 
@@ -18,7 +18,7 @@ func MakeTCPServer(contentRootDirectory string, host string, port uint16) *TCPSe
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: RFC7230RequestParser{},
+		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
 	}
 }
 
@@ -93,7 +93,7 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 
 	writer := bufio.NewWriter(conn)
 	_ = request.Handle(writer) //TODO KDK: Write a test for the error case
-	_ = writer.Flush() //TODO KDK: May not be necessary.  But then again, it doesn't hurt.
+	_ = writer.Flush()         //TODO KDK: May not be necessary.  But then again, it doesn't hurt.
 }
 
 func (server *TCPServer) Shutdown() error {

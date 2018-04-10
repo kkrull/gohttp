@@ -5,10 +5,12 @@ import (
 	"strings"
 )
 
-type RFC7230RequestParser struct{}
+type RFC7230RequestParser struct {
+	BaseDirectory string
+}
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (Request, *ParseError) {
-	request, err := parseRequestLine(reader)
+	request, err := parser.parseRequestLine(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +23,7 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (Request, 
 	return request, nil
 }
 
-func parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
+func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
@@ -32,11 +34,12 @@ func parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
 	}
 
-	switch fields[0] { //TODO KDK: Set the base path
+	switch fields[0] {
 	case "GET":
 		return &GetRequest{
-			Target:  fields[1],
-			Version: fields[2],
+			BaseDirectory: parser.BaseDirectory,
+			Target:        fields[1],
+			Version:       fields[2],
 		}, nil
 	default:
 		return nil, &ParseError{StatusCode: 501, Reason: "Not Implemented"}

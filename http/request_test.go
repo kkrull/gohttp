@@ -21,48 +21,48 @@ var _ = Describe("RFC7230RequestParser", func() {
 		)
 
 		BeforeEach(func() {
-			parser = &http.RFC7230RequestParser{}
+			parser = &http.RFC7230RequestParser{BaseDirectory: "/tmp"}
 		})
 
 		Describe("it returns 400 Bad Request", func() {
 			It("for a completely blank request", func() {
 				request, err = parser.ParseRequest(makeReader(""))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("for any line missing CR", func() {
 				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("for any line missing LF", func() {
 				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("for a request missing a request-line", func() {
 				request, err = parser.ParseRequest(makeReader("\r\n"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("for a request missing an ending CRLF", func() {
 				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("when multiple spaces are separating fields in request-line", func() {
 				request, err = parser.ParseRequest(makeReader("GET /  HTTP/1.1\r\n\r\n"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("when fields in request-line contain spaces", func() {
 				request, err = parser.ParseRequest(makeReader("GET /a\\ b HTTP/1.1\r\n\r\n"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 
 			It("when the request starts with whitespace", func() {
 				request, err = parser.ParseRequest(makeReader(" GET / HTTP/1.1\r\n\r\n"))
-				Expect(err).To(BeABadRequestError())
+				Expect(err).To(beABadRequestError())
 			})
 		})
 
@@ -75,12 +75,15 @@ var _ = Describe("RFC7230RequestParser", func() {
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
+
+				parser = &http.RFC7230RequestParser{BaseDirectory: "/public"}
 				request, err = parser.ParseRequest(reader)
 				typedRequest = request.(*http.GetRequest)
 			})
 
 			It("returns a GetRequest containing the contents of the request", func() {
 				Expect(request).To(BeEquivalentTo(&http.GetRequest{
+					BaseDirectory: "/public",
 					Target:  "/foo",
 					Version: "HTTP/1.1",
 				}))
@@ -111,6 +114,6 @@ func makeReader(template string, values ...string) *bufio.Reader {
 	return bufio.NewReader(bytes.NewBufferString(text))
 }
 
-func BeABadRequestError() types.GomegaMatcher {
+func beABadRequestError() types.GomegaMatcher {
 	return BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"})
 }
