@@ -2,8 +2,10 @@ package http
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -16,7 +18,7 @@ type GetRequest struct {
 }
 
 func (request *GetRequest) Handle(client *bufio.Writer) error {
-	resolvedTarget := path.Join(request.BaseDirectory, request.Target) //TODO KDK: ioutil.ReadDir
+	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
 		writeStatusLine(client, 404, "Not Found")
@@ -31,11 +33,18 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 		writeStatusLine(client, 200, "OK")
 		writeHeader(client, "Content-Type", "text/plain")
 
-		message := fmt.Sprintf("one\n")
-		writeHeader(client, "Content-Length", strconv.Itoa(len(message)))
+		message := &bytes.Buffer{}
+		messageWriter := bufio.NewWriter(message)
+		files, _ := ioutil.ReadDir(resolvedTarget)
+		for _, file := range files {
+			messageWriter.WriteString(fmt.Sprintf("%s\n", file.Name()))
+		}
+		messageWriter.Flush()
+
+		writeHeader(client, "Content-Length", strconv.Itoa(message.Len()))
 		writeEndOfHeader(client)
 
-		writeBody(client, message)
+		writeBody(client, message.String())
 	} else {
 		writeStatusLine(client, 200, "OK")
 		writeHeader(client, "Content-Type", "text/plain")
