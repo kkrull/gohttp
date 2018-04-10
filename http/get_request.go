@@ -14,7 +14,7 @@ import (
 type GetRequest struct {
 	BaseDirectory string
 	Target        string
-	Version       string
+	Version       string //TODO KDK: Not used
 }
 
 func (request *GetRequest) Handle(client *bufio.Writer) error {
@@ -40,18 +40,31 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 
 		writeBody(client, message.String())
 	} else {
-		writeStatusLine(client, 200, "OK")
-		writeHeader(client, "Content-Type", "text/plain")
-		writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
-		writeEndOfHeader(client)
-
-		file, _ := os.Open(resolvedTarget)
-		copyToBody(client, file)
+		response := &FileContentsResponse{client: client}
+		response.Issue(resolvedTarget)
 	}
 
 	client.Flush()
 	return nil
 }
+
+
+type FileContentsResponse struct {
+	client *bufio.Writer
+}
+
+func (response FileContentsResponse) Issue(filename string) {
+	writeStatusLine(response.client, 200, "OK")
+	writeHeader(response.client, "Content-Type", "text/plain")
+
+	info, _ := os.Stat(filename)
+	writeHeader(response.client, "Content-Length", strconv.FormatInt(info.Size(), 10))
+	writeEndOfHeader(response.client)
+
+	file, _ := os.Open(filename)
+	copyToBody(response.client, file)
+}
+
 
 type NotFoundResponse struct {
 	client *bufio.Writer
@@ -67,6 +80,7 @@ func (response NotFoundResponse) Issue(requestTarget string) {
 
 	writeBody(response.client, message)
 }
+
 
 func writeStatusLine(client *bufio.Writer, status int, reason string) {
 	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status, reason)
