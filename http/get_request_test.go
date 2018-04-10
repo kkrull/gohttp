@@ -50,18 +50,31 @@ var _ = Describe("GetRequest", func() {
 					Target:        "/readable.txt",
 					Version:       "HTTP/1.1"}
 
-				Expect(ioutil.WriteFile(
-					path.Join(basePath, "readable.txt"),
-					[]byte{42},
-					os.ModePerm)).To(Succeed())
+				existingFile := path.Join(basePath, "readable.txt")
+
+				file, err := os.Create(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				contents := bytes.NewBufferString("A")
+				file.Write(contents.Bytes())
+
+				Expect(ioutil.ReadFile(existingFile)).NotTo(BeEmpty())
 				err = request.Handle(bufio.NewWriter(response))
 			})
 
 			It("returns no error", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
-			It("Responds with 200 OK", func() {
-				Expect(response.String()).To(Equal("HTTP/1.1 200 OK\r\n"))
+			It("responds with 200 OK", func() {
+				Expect(response.String()).To(HavePrefix("HTTP/1.1 200 OK\r\n"))
+			})
+			It("sets Content-Length to the number of bytes in the file", func() {
+				Expect(response.String()).To(ContainSubstring("Content-Length: 1\r\n"))
+			})
+			It("sets Content-Type to text/plain", func() {
+				Expect(response.String()).To(ContainSubstring("Content-Type: text/plain\r\n"))
+			})
+			It("writes the contents of the file to the message body", func() {
+				Expect(response.String()).To(HaveSuffix("\r\n\r\nA"))
 			})
 		})
 	})

@@ -3,6 +3,9 @@ package http
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"os"
+	"path"
 )
 
 type GetRequest struct {
@@ -12,15 +15,18 @@ type GetRequest struct {
 }
 
 func (request *GetRequest) Handle(response *bufio.Writer) error {
-	switch request.Target {
-	case "/":
-		fmt.Fprint(response, "HTTP/1.1 200 OK\r\n")
-		fmt.Fprint(response, "Content-Length: 5\r\n")
-		fmt.Fprint(response, "Content-Type: text/plain\r\n")
-		fmt.Fprint(response, "\r\n")
-		fmt.Fprintf(response, "hello")
-	default:
+	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
+	info, err := os.Stat(resolvedTarget)
+	if err != nil {
 		fmt.Fprint(response, "HTTP/1.1 404 Not Found\r\n")
+	} else {
+		fmt.Fprintf(response, "HTTP/1.1 200 OK\r\n")
+		fmt.Fprintf(response, "Content-Length: %d\r\n", info.Size())
+		fmt.Fprintf(response, "Content-Type: text/plain\r\n")
+		fmt.Fprintf(response, "\r\n")
+
+		file, _ := os.Open(resolvedTarget)
+		io.Copy(response, file)
 	}
 
 	response.Flush()
