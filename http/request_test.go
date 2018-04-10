@@ -84,7 +84,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 			It("returns a GetRequest containing the contents of the request", func() {
 				Expect(request).To(BeEquivalentTo(&http.GetRequest{
 					BaseDirectory: "/public",
-					Target:  "/foo",
+					Target:        "/foo",
 				}))
 			})
 

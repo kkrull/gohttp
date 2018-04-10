@@ -35,7 +35,6 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 	return nil
 }
 
-
 type DirectoryListingResponse struct {
 	client *bufio.Writer
 }
@@ -62,7 +61,6 @@ func messageListingFiles(files []os.FileInfo) *bytes.Buffer {
 	return message
 }
 
-
 type TextFileContentsResponse struct {
 	client *bufio.Writer
 }
@@ -82,7 +80,6 @@ func writeHeadersDescribingFile(response TextFileContentsResponse, filename stri
 	writeHeader(response.client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }
 
-
 type NotFoundResponse struct {
 	client *bufio.Writer
 }
@@ -97,7 +94,6 @@ func (response NotFoundResponse) IssueForTarget(requestTarget string) {
 
 	writeBody(response.client, message)
 }
-
 
 func writeStatusLine(client *bufio.Writer, status int, reason string) {
 	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status, reason)
