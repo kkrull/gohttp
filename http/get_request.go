@@ -14,7 +14,6 @@ import (
 type GetRequest struct {
 	BaseDirectory string
 	Target        string
-	Version       string //TODO KDK: Not used
 }
 
 func (request *GetRequest) Handle(client *bufio.Writer) error {

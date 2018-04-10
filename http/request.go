@@ -39,7 +39,6 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetR
 		return &GetRequest{
 			BaseDirectory: parser.BaseDirectory,
 			Target:        fields[1],
-			Version:       fields[2],
 		}, nil
 	default:
 		return nil, &ParseError{StatusCode: 501, Reason: "Not Implemented"}

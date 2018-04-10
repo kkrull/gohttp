@@ -6,7 +6,11 @@
 * Missing ways to cause I/O errors with
   * `io.Writer`
   * `net.TCPConn`
-
+* HTTP version
+  * Given HTTP/1.0 -- it could respond 426 Upgrade Required with Upgrade: HTTP/1.1 and Connection: Upgrade
+  * Given HTTP/1.2+ -- should it respond with 501 Not Implemented?
+    RFC 7231 seems to suggest that it's only meant for an unsupported _method_.
+  * Given HTTP/2+ -- it could respond 505 HTTP Version Not Supported
 
 ## Request parsing
 

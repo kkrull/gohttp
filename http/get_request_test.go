@@ -31,8 +31,7 @@ var _ = Describe("GetRequest", func() {
 			BeforeEach(func() {
 				request = &http.GetRequest{
 					BaseDirectory: basePath,
-					Target:        "/missing.txt",
-					Version:       "HTTP/1.1"}
+					Target:        "/missing.txt"}
 				err = request.Handle(bufio.NewWriter(response))
 			})
 
@@ -57,8 +56,7 @@ var _ = Describe("GetRequest", func() {
 			BeforeEach(func() {
 				request = &http.GetRequest{
 					BaseDirectory: basePath,
-					Target:        "/readable.txt",
-					Version:       "HTTP/1.1"}
+					Target:        "/readable.txt"}
 
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -86,8 +84,7 @@ var _ = Describe("GetRequest", func() {
 			BeforeEach(func() {
 				request = &http.GetRequest{
 					BaseDirectory: basePath,
-					Target:        "/",
-					Version:       "HTTP/1.1"}
+					Target:        "/"}
 
 				existingFile := path.Join(basePath, "one")
 				Expect(createTextFile(existingFile, "1")).To(Succeed())
