@@ -27,7 +27,7 @@ func (request *GetRequest) Handle(client io.Writer) error {
 		response := &DirectoryListingResponse{Files: files}
 		response.WriteTo(client)
 	} else {
-		response := &TextFileContentsResponse{Filename: resolvedTarget}
+		response := &FileContentsResponse{Filename: resolvedTarget}
 		response.WriteTo(client)
 	}
 
@@ -58,11 +58,11 @@ func (response DirectoryListingResponse) messageListingFiles() *bytes.Buffer {
 	return message
 }
 
-type TextFileContentsResponse struct {
+type FileContentsResponse struct {
 	Filename string
 }
 
-func (response TextFileContentsResponse) WriteTo(client io.Writer) {
+func (response FileContentsResponse) WriteTo(client io.Writer) {
 	writeStatusLine(client, 200, "OK")
 	response.writeHeadersDescribingFile(client)
 	writeEndOfMessageHeader(client)
@@ -71,7 +71,7 @@ func (response TextFileContentsResponse) WriteTo(client io.Writer) {
 	copyToBody(client, file)
 }
 
-func (response TextFileContentsResponse) writeHeadersDescribingFile(client io.Writer) {
+func (response FileContentsResponse) writeHeadersDescribingFile(client io.Writer) {
 	writeHeader(client, "Content-Type", contentTypeFromFileExtension(response.Filename))
 	info, _ := os.Stat(response.Filename)
 	writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
