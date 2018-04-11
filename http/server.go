@@ -88,7 +88,7 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	request, parseError := server.Parser.ParseRequest(reader)
 	if parseError != nil {
-		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)
+		parseError.WriteTo(conn)
 		return
 	}
 
@@ -111,9 +111,13 @@ func (server *TCPServer) Shutdown() error {
 }
 
 type RequestParser interface {
-	ParseRequest(reader *bufio.Reader) (Request, *ParseError)
+	ParseRequest(reader *bufio.Reader) (ok Request, parseError Response)
 }
 
 type Request interface {
 	Handle(client io.Writer) error
+}
+
+type Response interface {
+	WriteTo(client io.Writer) error
 }

@@ -2,6 +2,8 @@ package http
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"strings"
 )
 
@@ -9,7 +11,7 @@ type RFC7230RequestParser struct {
 	BaseDirectory string
 }
 
-func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (Request, *ParseError) {
+func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
 	request, err := parser.parseRequestLine(reader)
 	if err != nil {
 		return nil, err
@@ -23,7 +25,7 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (Request, 
 	return request, nil
 }
 
-func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetRequest, *ParseError) {
+func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetRequest, Response) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
@@ -90,4 +92,9 @@ func (MalformedHeaderLine) Error() string {
 type ParseError struct {
 	StatusCode int
 	Reason     string
+}
+
+func (parseError ParseError) WriteTo(client io.Writer) error {
+	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)
+	return nil
 }

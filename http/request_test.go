@@ -17,7 +17,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		var (
 			parser  *http.RFC7230RequestParser
 			request http.Request
-			err     *http.ParseError
+			err     http.Response
 		)
 
 		BeforeEach(func() {
