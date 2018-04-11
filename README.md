@@ -1,4 +1,4 @@
-# HTTP Server for Go
+# HTTP Server for Go [![Build Status](https://travis-ci.org/kkrull/gohttp.svg?branch=master)](https://travis-ci.org/kkrull/gohttp)
 
 This is an HTTP server for Go.
 
