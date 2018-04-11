@@ -3,6 +3,7 @@ package mock
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/kkrull/gohttp/http"
@@ -37,7 +38,7 @@ type Request struct {
 	ReturnsError string
 }
 
-func (mock Request) Handle(connWriter *bufio.Writer) error {
+func (mock Request) Handle(connWriter io.Writer) error {
 	if mock.ReturnsError != "" {
 		return fmt.Errorf(mock.ReturnsError)
 	}

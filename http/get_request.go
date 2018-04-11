@@ -1,7 +1,6 @@
 package http
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -16,7 +15,7 @@ type GetRequest struct {
 	Target        string
 }
 
-func (request *GetRequest) Handle(client *bufio.Writer) error {
+func (request *GetRequest) Handle(client io.Writer) error {
 	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
@@ -31,12 +30,11 @@ func (request *GetRequest) Handle(client *bufio.Writer) error {
 		response.IssueForFile(resolvedTarget)
 	}
 
-	client.Flush()
 	return nil
 }
 
 type DirectoryListingResponse struct {
-	client *bufio.Writer
+	client io.Writer
 }
 
 func (response DirectoryListingResponse) IssueForFiles(files []os.FileInfo) {
@@ -52,17 +50,15 @@ func (response DirectoryListingResponse) IssueForFiles(files []os.FileInfo) {
 
 func messageListingFiles(files []os.FileInfo) *bytes.Buffer {
 	message := &bytes.Buffer{}
-	messageWriter := bufio.NewWriter(message)
 	for _, file := range files {
-		messageWriter.WriteString(fmt.Sprintf("%s\n", file.Name()))
+		fmt.Fprintf(message, "%s\n", file.Name())
 	}
 
-	messageWriter.Flush()
 	return message
 }
 
 type TextFileContentsResponse struct {
-	client *bufio.Writer
+	client io.Writer
 }
 
 func (response TextFileContentsResponse) IssueForFile(filename string) {
@@ -81,7 +77,7 @@ func writeHeadersDescribingFile(response TextFileContentsResponse, filename stri
 }
 
 type NotFoundResponse struct {
-	client *bufio.Writer
+	client io.Writer
 }
 
 func (response NotFoundResponse) IssueForTarget(requestTarget string) {
@@ -95,22 +91,22 @@ func (response NotFoundResponse) IssueForTarget(requestTarget string) {
 	writeBody(response.client, message)
 }
 
-func writeStatusLine(client *bufio.Writer, status int, reason string) {
+func writeStatusLine(client io.Writer, status int, reason string) {
 	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status, reason)
 }
 
-func writeHeader(client *bufio.Writer, name string, value string) {
+func writeHeader(client io.Writer, name string, value string) {
 	fmt.Fprintf(client, "%s: %s\r\n", name, value)
 }
 
-func writeEndOfMessageHeader(client *bufio.Writer) {
+func writeEndOfMessageHeader(client io.Writer) {
 	fmt.Fprint(client, "\r\n")
 }
 
-func copyToBody(client *bufio.Writer, bodyReader io.Reader) {
+func copyToBody(client io.Writer, bodyReader io.Reader) {
 	io.Copy(client, bodyReader)
 }
 
-func writeBody(client *bufio.Writer, body string) {
+func writeBody(client io.Writer, body string) {
 	fmt.Fprint(client, body)
 }

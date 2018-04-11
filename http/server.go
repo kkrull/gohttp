@@ -3,6 +3,7 @@ package http
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -91,14 +92,11 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 		return
 	}
 
-	writer := bufio.NewWriter(conn)
-	requestError := request.Handle(writer)
+	requestError := request.Handle(conn)
 	if requestError != nil {
 		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", 500, "Internal Server Error")
 		return
 	}
-
-	_ = writer.Flush()
 }
 
 func (server *TCPServer) Shutdown() error {
@@ -117,5 +115,5 @@ type RequestParser interface {
 }
 
 type Request interface {
-	Handle(connWriter *bufio.Writer) error
+	Handle(client io.Writer) error
 }

@@ -5,6 +5,7 @@
 * Missing ways to cause I/O errors with
   * `io.Writer`
   * `net.TCPConn`
+  * `os.File`
 * Hard-coded responses can be turned into XyzResponse types
   * 400 Bad Request
   * 500 Internal Server Error

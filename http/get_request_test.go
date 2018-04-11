@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"os"
@@ -32,7 +31,7 @@ var _ = Describe("GetRequest", func() {
 				request = &http.GetRequest{
 					BaseDirectory: basePath,
 					Target:        "/missing.txt"}
-				err = request.Handle(bufio.NewWriter(response))
+				err = request.Handle(response)
 			})
 
 			It("returns no error", func() {
@@ -60,7 +59,7 @@ var _ = Describe("GetRequest", func() {
 
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				err = request.Handle(bufio.NewWriter(response))
+				err = request.Handle(response)
 			})
 
 			It("returns no error", func() {
@@ -88,7 +87,7 @@ var _ = Describe("GetRequest", func() {
 
 				existingFile := path.Join(basePath, "one")
 				Expect(createTextFile(existingFile, "1")).To(Succeed())
-				err = request.Handle(bufio.NewWriter(response))
+				err = request.Handle(response)
 			})
 
 			It("returns no error", func() {
