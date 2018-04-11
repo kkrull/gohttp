@@ -14,6 +14,12 @@ func (response BadRequest) WriteTo(client io.Writer) error {
 	return nil
 }
 
+type InternalServerError struct{}
+
+func (response InternalServerError) WriteTo(client io.Writer) {
+	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", 500, "Internal Server Error")
+}
+
 type NotImplemented struct {
 	Method string
 }
