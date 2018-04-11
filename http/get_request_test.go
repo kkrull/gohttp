@@ -51,7 +51,7 @@ var _ = Describe("GetRequest", func() {
 			})
 		})
 
-		Context("when the target is a readable file in the base path", func() {
+		Context("when the target is a readable text file in the base path", func() {
 			BeforeEach(func() {
 				request = &http.GetRequest{
 					BaseDirectory: basePath,
@@ -72,10 +72,48 @@ var _ = Describe("GetRequest", func() {
 				Expect(response.String()).To(containHeader("Content-Length", "1"))
 			})
 			It("sets Content-Type to text/plain", func() {
-				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
+				Expect(response.String()).To(containHeader("Content-Type", "text/plain; charset=utf-8"))
 			})
 			It("writes the contents of the file to the message body", func() {
 				Expect(response.String()).To(haveMessageBody("A"))
+			})
+		})
+
+		Context("when the target is a readable file named with a registered extension", func() {
+			BeforeEach(func() {
+				request = &http.GetRequest{
+					BaseDirectory: basePath,
+					Target:        "/image.jpeg"}
+
+				existingFile := path.Join(basePath, "image.jpeg")
+				Expect(createTextFile(existingFile, "A")).To(Succeed())
+				err = request.Handle(response)
+			})
+
+			It("returns no error", func() {
+				Expect(err).NotTo(HaveOccurred())
+			})
+			It("sets Content-Type to the MIME type registered for that extension", func() {
+				Expect(response.String()).To(containHeader("Content-Type", "image/jpeg"))
+			})
+		})
+
+		Context("when the target is a readable file without an extension", func() {
+			BeforeEach(func() {
+				request = &http.GetRequest{
+					BaseDirectory: basePath,
+					Target:        "/assumed-text"}
+
+				existingFile := path.Join(basePath, "assumed-text")
+				Expect(createTextFile(existingFile, "A")).To(Succeed())
+				err = request.Handle(response)
+			})
+
+			It("returns no error", func() {
+				Expect(err).NotTo(HaveOccurred())
+			})
+			It("sets Content-Type to text/plain", func() {
+				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 		})
 
