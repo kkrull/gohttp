@@ -14,7 +14,7 @@ type DirectoryListing struct {
 	Files []os.FileInfo
 }
 
-func (response DirectoryListing) WriteTo(client io.Writer) {
+func (response DirectoryListing) WriteTo(client io.Writer) error {
 	writeStatusLine(client, 200, "OK")
 	writeHeader(client, "Content-Type", "text/plain")
 
@@ -23,6 +23,7 @@ func (response DirectoryListing) WriteTo(client io.Writer) {
 	writeEndOfMessageHeader(client)
 
 	writeBody(client, message.String())
+	return nil
 }
 
 func (response DirectoryListing) messageListingFiles() *bytes.Buffer {
@@ -38,13 +39,14 @@ type FileContents struct {
 	Filename string
 }
 
-func (response FileContents) WriteTo(client io.Writer) {
+func (response FileContents) WriteTo(client io.Writer) error {
 	writeStatusLine(client, 200, "OK")
 	response.writeHeadersDescribingFile(client)
 	writeEndOfMessageHeader(client)
 
 	file, _ := os.Open(response.Filename)
 	copyToBody(client, file)
+	return nil
 }
 
 func (response FileContents) writeHeadersDescribingFile(client io.Writer) {

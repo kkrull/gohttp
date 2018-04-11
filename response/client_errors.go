@@ -19,7 +19,7 @@ type NotFound struct {
 	Target string
 }
 
-func (response NotFound) WriteTo(client io.Writer) {
+func (response NotFound) WriteTo(client io.Writer) error {
 	writeStatusLine(client, 404, "Not Found")
 	writeHeader(client, "Content-Type", "text/plain")
 
@@ -28,4 +28,5 @@ func (response NotFound) WriteTo(client io.Writer) {
 	writeEndOfMessageHeader(client)
 
 	writeBody(client, message)
+	return nil
 }

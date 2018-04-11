@@ -4,8 +4,9 @@ import "io"
 
 type InternalServerError struct{}
 
-func (response InternalServerError) WriteTo(client io.Writer) {
+func (response InternalServerError) WriteTo(client io.Writer) error {
 	writeStatusLine(client, 500, "Internal Server Error")
+	return nil
 }
 
 type NotImplemented struct {
