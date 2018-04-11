@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"os"
 	"path"
 	"strconv"
@@ -71,9 +72,18 @@ func (response TextFileContentsResponse) IssueForFile(filename string) {
 }
 
 func writeHeadersDescribingFile(response TextFileContentsResponse, filename string) {
-	writeHeader(response.client, "Content-Type", "text/plain")
+	writeHeader(response.client, "Content-Type", contentTypeFromFileExtension(filename))
 	info, _ := os.Stat(filename)
 	writeHeader(response.client, "Content-Length", strconv.FormatInt(info.Size(), 10))
+}
+
+func contentTypeFromFileExtension(filename string) string {
+	extension := path.Ext(filename)
+	if extension == "" {
+		return "text/plain"
+	}
+
+	return mime.TypeByExtension(extension)
 }
 
 type NotFoundResponse struct {
