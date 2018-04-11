@@ -15,7 +15,7 @@ type BadRequest struct {
 }
 
 func (response BadRequest) WriteTo(client io.Writer) error {
-	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", 400, "Bad Request")
+	writeStatusLine(client, 400, "Bad Request")
 	return nil
 }
 
@@ -74,7 +74,7 @@ func contentTypeFromFileExtension(filename string) string {
 type InternalServerError struct{}
 
 func (response InternalServerError) WriteTo(client io.Writer) {
-	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", 500, "Internal Server Error")
+	writeStatusLine(client, 500, "Internal Server Error")
 }
 
 type NotFound struct {
@@ -97,7 +97,7 @@ type NotImplemented struct {
 }
 
 func (response NotImplemented) WriteTo(client io.Writer) error {
-	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", 501, "Not Implemented")
+	writeStatusLine(client, 501, "Not Implemented")
 	return nil
 }
 
