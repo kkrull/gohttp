@@ -6,7 +6,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/response/serverError"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCPServer {
@@ -96,8 +96,8 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 
 	requestError := request.Handle(conn)
 	if requestError != nil {
-		serverError := response.InternalServerError{}
-		serverError.WriteTo(conn)
+		response := serverError.InternalServerError{}
+		response.WriteTo(conn)
 	}
 }
 

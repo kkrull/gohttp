@@ -14,21 +14,21 @@ type DirectoryListing struct {
 	Files []os.FileInfo
 }
 
-func (response DirectoryListing) WriteTo(client io.Writer) error {
-	writeStatusLine(client, 200, "OK")
-	writeHeader(client, "Content-Type", "text/plain")
+func (listing DirectoryListing) WriteTo(client io.Writer) error {
+	WriteStatusLine(client, 200, "OK")
+	WriteHeader(client, "Content-Type", "text/plain")
 
-	message := response.messageListingFiles()
-	writeHeader(client, "Content-Length", strconv.Itoa(message.Len()))
-	writeEndOfMessageHeader(client)
+	message := listing.messageListingFiles()
+	WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
+	WriteEndOfMessageHeader(client)
 
-	writeBody(client, message.String())
+	WriteBody(client, message.String())
 	return nil
 }
 
-func (response DirectoryListing) messageListingFiles() *bytes.Buffer {
+func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {
 	message := &bytes.Buffer{}
-	for _, file := range response.Files {
+	for _, file := range listing.Files {
 		fmt.Fprintf(message, "%s\n", file.Name())
 	}
 
@@ -39,20 +39,20 @@ type FileContents struct {
 	Filename string
 }
 
-func (response FileContents) WriteTo(client io.Writer) error {
-	writeStatusLine(client, 200, "OK")
-	response.writeHeadersDescribingFile(client)
-	writeEndOfMessageHeader(client)
+func (contents FileContents) WriteTo(client io.Writer) error {
+	WriteStatusLine(client, 200, "OK")
+	contents.writeHeadersDescribingFile(client)
+	WriteEndOfMessageHeader(client)
 
-	file, _ := os.Open(response.Filename)
-	copyToBody(client, file)
+	file, _ := os.Open(contents.Filename)
+	CopyToBody(client, file)
 	return nil
 }
 
-func (response FileContents) writeHeadersDescribingFile(client io.Writer) {
-	writeHeader(client, "Content-Type", contentTypeFromFileExtension(response.Filename))
-	info, _ := os.Stat(response.Filename)
-	writeHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
+func (contents FileContents) writeHeadersDescribingFile(client io.Writer) {
+	WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
+	info, _ := os.Stat(contents.Filename)
+	WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }
 
 func contentTypeFromFileExtension(filename string) string {
