@@ -15,5 +15,5 @@ function sayFail() {
 
 cd "$base_dir"
 go get -t -u -v
-go test -v && sayPass || sayFail
+go test -v ./... && sayPass || sayFail
 
