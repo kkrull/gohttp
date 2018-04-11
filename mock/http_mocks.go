@@ -3,6 +3,7 @@ package mock
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/kkrull/gohttp/http"
@@ -10,12 +11,12 @@ import (
 )
 
 type RequestParser struct {
-	ReturnsRequest *http.Request
-	ReturnsError   *http.ParseError
+	ReturnsRequest http.Request
+	ReturnsError   http.Response
 	received       []byte
 }
 
-func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (*http.Request, *http.ParseError) {
+func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
 	parser.received = appendByte(allButLF, shouldBeLF)
@@ -31,6 +32,18 @@ func appendByte(allButLast []byte, last byte) []byte {
 
 func (parser RequestParser) VerifyReceived(expected []byte) {
 	Expect(parser.received).To(Equal(expected))
+}
+
+type Request struct {
+	ReturnsError string
+}
+
+func (mock Request) Handle(connWriter io.Writer) error {
+	if mock.ReturnsError != "" {
+		return fmt.Errorf(mock.ReturnsError)
+	}
+
+	return nil
 }
 
 type Server struct {

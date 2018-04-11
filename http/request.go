@@ -3,16 +3,16 @@ package http
 import (
 	"bufio"
 	"strings"
+
+	"github.com/kkrull/gohttp/response"
 )
 
-type RequestParser interface {
-	ParseRequest(reader *bufio.Reader) (*Request, *ParseError)
+type RFC7230RequestParser struct {
+	BaseDirectory string
 }
 
-type RFC7230RequestParser struct{}
-
-func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request, *ParseError) {
-	request, err := parseRequestLine(reader)
+func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
+	request, err := parser.parseRequestLine(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -25,73 +25,54 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (*Request,
 	return request, nil
 }
 
-func parseRequestLine(reader *bufio.Reader) (*Request, *ParseError) {
+func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetRequest, Response) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
-		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
+		return nil, err
 	}
 
 	fields := strings.Split(requestLine, " ")
 	if len(fields) != 3 {
-		return nil, &ParseError{StatusCode: 400, Reason: "Bad Request"}
+		return nil, &response.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	return &Request{
-		Method:  fields[0],
-		Target:  fields[1],
-		Version: fields[2],
-	}, nil
+	switch fields[0] {
+	case "GET":
+		return &GetRequest{
+			BaseDirectory: parser.BaseDirectory,
+			Target:        fields[1],
+		}, nil
+	default:
+		return nil, &response.NotImplemented{Method: fields[0]}
+	}
 }
 
-func parseHeaderLines(reader *bufio.Reader) *ParseError {
+func parseHeaderLines(reader *bufio.Reader) Response {
 	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {
 		line, err := readCRLFLine(reader)
 		if err != nil {
-			return &ParseError{StatusCode: 400, Reason: "Bad Request"}
+			return err
 		} else if isBlankLineBetweenHeadersAndBody(line) {
 			return nil
 		}
 	}
 }
 
-func readCRLFLine(reader *bufio.Reader) (string, error) {
+func readCRLFLine(reader *bufio.Reader) (string, Response) {
 	maybeEndsInCR, _ := reader.ReadString('\r')
 	if len(maybeEndsInCR) == 0 {
-		return "", MissingEndOfHeaderCRLF{}
+		return "", &response.BadRequest{DisplayText: "end of input before terminating CRLF"}
 	} else if !strings.HasSuffix(maybeEndsInCR, "\r") {
-		return "", MalformedHeaderLine{}
+		return "", &response.BadRequest{DisplayText: "line in request header not ending in CRLF"}
 	}
 
 	nextCharacter, _ := reader.ReadByte()
 	if nextCharacter != '\n' {
-		return "", MalformedHeaderLine{}
+		return "", &response.BadRequest{DisplayText: "message header line does not end in LF"}
 	}
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
-}
-
-type Request struct {
-	Method  string
-	Target  string
-	Version string
-}
-
-type MissingEndOfHeaderCRLF struct{}
-
-func (MissingEndOfHeaderCRLF) Error() string {
-	return "end of input before terminating CRLF"
-}
-
-type MalformedHeaderLine struct{}
-
-func (MalformedHeaderLine) Error() string {
-	return "line in request header not ending in CRLF"
-}
-
-type ParseError struct {
-	StatusCode int
-	Reason     string
 }

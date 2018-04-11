@@ -3,22 +3,23 @@ package http
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 )
 
-func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) Server {
+func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: RFC7230RequestParser{},
+		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
 	}
 }
 
-func MakeTCPServer(contentRootDirectory string, host string, port uint16) Server {
+func MakeTCPServer(contentRootDirectory string, host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: RFC7230RequestParser{},
+		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
 	}
 }
 
@@ -87,19 +88,14 @@ func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	request, parseError := server.Parser.ParseRequest(reader)
 	if parseError != nil {
-		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", parseError.StatusCode, parseError.Reason)
+		parseError.WriteTo(conn)
 		return
 	}
 
-	switch request.Target {
-	case "/":
-		fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-		fmt.Fprint(conn, "Content-Length: 5\r\n")
-		fmt.Fprint(conn, "Content-Type: text/plain\r\n")
-		fmt.Fprint(conn, "\r\n")
-		fmt.Fprintf(conn, "hello")
-	default:
-		fmt.Fprint(conn, "HTTP/1.1 404 Not Found\r\n")
+	requestError := request.Handle(conn)
+	if requestError != nil {
+		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", 500, "Internal Server Error")
+		return
 	}
 }
 
@@ -114,10 +110,14 @@ func (server *TCPServer) Shutdown() error {
 	return server.listener.Close()
 }
 
-/* Server */
+type RequestParser interface {
+	ParseRequest(reader *bufio.Reader) (ok Request, parseError Response)
+}
 
-type Server interface {
-	Address() net.Addr
-	Start() error
-	Shutdown() error
+type Request interface {
+	Handle(client io.Writer) error
+}
+
+type Response interface {
+	WriteTo(client io.Writer) error
 }
