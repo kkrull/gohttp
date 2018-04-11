@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/response"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -27,42 +28,42 @@ var _ = Describe("RFC7230RequestParser", func() {
 		Describe("it returns 400 Bad Request", func() {
 			It("for a completely blank request", func() {
 				request, err = parser.ParseRequest(makeReader(""))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
 			})
 
 			It("for any line missing CR", func() {
 				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
 			})
 
 			It("for any line missing LF", func() {
 				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("message header line does not end in LF"))
 			})
 
 			It("for a request missing a request-line", func() {
 				request, err = parser.ParseRequest(makeReader("\r\n"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 
 			It("for a request missing an ending CRLF", func() {
 				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
 			})
 
 			It("when multiple spaces are separating fields in request-line", func() {
 				request, err = parser.ParseRequest(makeReader("GET /  HTTP/1.1\r\n\r\n"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 
 			It("when fields in request-line contain spaces", func() {
 				request, err = parser.ParseRequest(makeReader("GET /a\\ b HTTP/1.1\r\n\r\n"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 
 			It("when the request starts with whitespace", func() {
 				request, err = parser.ParseRequest(makeReader(" GET / HTTP/1.1\r\n\r\n"))
-				Expect(err).To(beABadRequestError())
+				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 		})
 
@@ -98,11 +99,9 @@ var _ = Describe("RFC7230RequestParser", func() {
 		})
 
 		Context("given any other request method", func() {
-			It("returns a ParseError with 501 Not Implemented", func() {
+			It("returns a NotImplemented response", func() {
 				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
-				Expect(err).To(BeEquivalentTo(&http.ParseError{
-					StatusCode: 501,
-					Reason:     "Not Implemented"}))
+				Expect(err).To(BeEquivalentTo(&response.NotImplemented{Method: "get"}))
 			})
 		})
 	})
@@ -113,6 +112,6 @@ func makeReader(template string, values ...string) *bufio.Reader {
 	return bufio.NewReader(bytes.NewBufferString(text))
 }
 
-func beABadRequestError() types.GomegaMatcher {
-	return BeEquivalentTo(&http.ParseError{StatusCode: 400, Reason: "Bad Request"})
+func beABadRequestResponse(why string) types.GomegaMatcher {
+	return BeEquivalentTo(&response.BadRequest{DisplayText: why})
 }
