@@ -3,6 +3,8 @@ package fs_test
 import (
 	"bytes"
 	"fmt"
+	"strconv"
+	"strings"
 
 	. "github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
@@ -33,17 +35,54 @@ var _ = Describe("DirectoryListing", func() {
 				Expect(output.String()).To(haveStatus(200, "OK"))
 			})
 			It("sets Content-Length to the size of the message", func() {
-				Expect(output.String()).To(containHeader("Content-Length", "8"))
+				parser := HttpMessageParser{Text: output.String()}
+				contentLength, err := parser.HeaderAsInt("Content-Length")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(contentLength).To(BeNumerically(">", 0))
 			})
-			It("sets Content-Type to text/plain", func() {
-				Expect(output.String()).To(containHeader("Content-Type", "text/plain"))
+			It("sets Content-Type to text/html", func() {
+				Expect(output.String()).To(containHeader("Content-Type", "text/html"))
 			})
-			It("lists the files in the base path", func() {
+			It("lists links to the files in the base path", func() {
 				Expect(output.String()).To(haveMessageBody("one\ntwo\n"))
 			})
 		})
 	})
 })
+
+type HttpMessageParser struct {
+	Text string
+}
+
+func (parser HttpMessageParser) HeaderAsInt(name string) (int, error) {
+	headers := parser.headerFields()
+	return strconv.Atoi(headers[name])
+}
+
+func (parser HttpMessageParser) headerFields() map[string]string {
+	const indexAfterStartLine = 1
+	headerLines := strings.Split(parser.messageHeader(), "\r\n")[indexAfterStartLine:]
+	headers := make(map[string]string)
+	for _, line := range headerLines {
+		field, value := parseHeader(line)
+		headers[field] = value
+	}
+
+	return headers
+}
+
+func (parser HttpMessageParser) messageHeader() string {
+	const headerBodySeparator = "\r\n\r\n"
+	return strings.Split(parser.Text, headerBodySeparator)[0]
+}
+
+func parseHeader(line string) (field, value string) {
+	const optionalWhitespaceCharacters = " \t"
+	fields := strings.Split(line, ":")
+	field = fields[0]
+	value = strings.Trim(fields[1], optionalWhitespaceCharacters)
+	return
+}
 
 func haveStatus(status int, reason string) types.GomegaMatcher {
 	return HavePrefix(fmt.Sprintf("HTTP/1.1 %d %s\r\n", status, reason))

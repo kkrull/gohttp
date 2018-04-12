@@ -18,7 +18,7 @@ type DirectoryListing struct {
 
 func (listing DirectoryListing) WriteTo(client io.Writer) error {
 	response.WriteStatusLine(client, 200, "OK")
-	response.WriteHeader(client, "Content-Type", "text/plain")
+	response.WriteHeader(client, "Content-Type", "text/html")
 
 	message := listing.messageListingFiles()
 	response.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
