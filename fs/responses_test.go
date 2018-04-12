@@ -22,9 +22,9 @@ var _ = Describe("DirectoryListing", func() {
 			parser  *HttpMessageParser
 		)
 
-		Context("given 1 or more file names", func() {
+		Context("always", func() {
 			BeforeEach(func() {
-				listing = &DirectoryListing{Files: []string{"one", "two"}}
+				listing = &DirectoryListing{Files: []string{}}
 				output = &bytes.Buffer{}
 				listing.WriteTo(output)
 				parser = &HttpMessageParser{Text: output.String()}
@@ -44,9 +44,32 @@ var _ = Describe("DirectoryListing", func() {
 			It("sets Content-Type to text/html", func() {
 				Expect(output.String()).To(containHeader("Content-Type", "text/html"))
 			})
+		})
+
+		Context("given no file names", func() {
+			BeforeEach(func() {
+				listing = &DirectoryListing{Files: []string{}}
+				output = &bytes.Buffer{}
+				listing.WriteTo(output)
+				parser = &HttpMessageParser{Text: output.String()}
+			})
+
+			It("has an empty list of file names", func() {
+				parser.BodyShould(MatchRegexp(".*<ul>\\s*<[/]ul>.*"))
+			})
+		})
+
+		Context("given 1 or more file names", func() {
+			BeforeEach(func() {
+				listing = &DirectoryListing{Files: []string{"one", "two"}}
+				output = &bytes.Buffer{}
+				listing.WriteTo(output)
+				parser = &HttpMessageParser{Text: output.String()}
+			})
+
 			It("lists links to the files in the base path", func() {
-				parser.BodyShouldContain("<a href=\"/one\">one</a>")
-				parser.BodyShouldContain("<a href=\"/two\">two</a>")
+				parser.BodyShould(ContainSubstring("<a href=\"/one\">one</a>"))
+				parser.BodyShould(ContainSubstring("<a href=\"/two\">two</a>"))
 			})
 		})
 	})
@@ -56,9 +79,9 @@ type HttpMessageParser struct {
 	Text string
 }
 
-func (parser HttpMessageParser) BodyShouldContain(substring string) {
+func (parser *HttpMessageParser) BodyShould(matcher types.GomegaMatcher) {
 	_, body := parser.splitMessageHeaderAndBody()
-	Expect(body).To(ContainSubstring(substring))
+	Expect(body).To(matcher)
 }
 
 func (parser HttpMessageParser) HeaderAsInt(name string) (int, error) {
