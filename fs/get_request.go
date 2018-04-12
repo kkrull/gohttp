@@ -27,7 +27,9 @@ func (request *GetRequest) determineResponse(resolvedTarget string) getresponse 
 		return &clienterror.NotFound{Target: request.Target}
 	} else if info.IsDir() {
 		files, _ := ioutil.ReadDir(resolvedTarget)
-		return &DirectoryListing{Files: readFileNames(files)}
+		return &DirectoryListing{
+			Files: readFileNames(files),
+			HrefPrefix:request.Target}
 	} else {
 		return &FileContents{Filename: resolvedTarget}
 	}

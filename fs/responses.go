@@ -13,7 +13,8 @@ import (
 )
 
 type DirectoryListing struct {
-	Files []string
+	Files      []string
+	HrefPrefix string
 }
 
 func (listing DirectoryListing) WriteTo(client io.Writer) error {
@@ -52,7 +53,7 @@ func (listing DirectoryListing) writeBody(message *bytes.Buffer) {
 func (listing DirectoryListing) writeFileListing(message *bytes.Buffer) {
 	message.WriteString("<ul>\n")
 	for _, file := range listing.Files {
-		message.WriteString("  " + makeListItem(makeLink(file)))
+		message.WriteString(makeListItem(listing.makeLink(file)))
 		message.WriteString("\n")
 	}
 
@@ -63,8 +64,9 @@ func makeListItem(text string) string {
 	return fmt.Sprintf("<li>%s</li>", text)
 }
 
-func makeLink(filename string) string {
-	return fmt.Sprintf("<a href=\"/%s\">%s</a>", filename, filename)
+func (listing DirectoryListing) makeLink(filename string) string {
+	href := path.Join(listing.HrefPrefix, filename)
+	return fmt.Sprintf("<a href=\"%s\">%s</a>", href, filename)
 }
 
 type FileContents struct {
