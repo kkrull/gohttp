@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"strings"
 
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/fs"
+	"github.com/kkrull/gohttp/response/clienterror"
+	"github.com/kkrull/gohttp/response/servererror"
 )
 
 type RFC7230RequestParser struct {
@@ -25,7 +27,7 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Reques
 	return request, nil
 }
 
-func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetRequest, Response) {
+func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Request, Response) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, err
@@ -33,17 +35,17 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetR
 
 	fields := strings.Split(requestLine, " ")
 	if len(fields) != 3 {
-		return nil, &response.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
+		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
 	switch fields[0] {
 	case "GET":
-		return &GetRequest{
+		return &fs.GetRequest{
 			BaseDirectory: parser.BaseDirectory,
 			Target:        fields[1],
 		}, nil
 	default:
-		return nil, &response.NotImplemented{Method: fields[0]}
+		return nil, &servererror.NotImplemented{Method: fields[0]}
 	}
 }
 
@@ -63,14 +65,14 @@ func parseHeaderLines(reader *bufio.Reader) Response {
 func readCRLFLine(reader *bufio.Reader) (string, Response) {
 	maybeEndsInCR, _ := reader.ReadString('\r')
 	if len(maybeEndsInCR) == 0 {
-		return "", &response.BadRequest{DisplayText: "end of input before terminating CRLF"}
+		return "", &clienterror.BadRequest{DisplayText: "end of input before terminating CRLF"}
 	} else if !strings.HasSuffix(maybeEndsInCR, "\r") {
-		return "", &response.BadRequest{DisplayText: "line in request header not ending in CRLF"}
+		return "", &clienterror.BadRequest{DisplayText: "line in request header not ending in CRLF"}
 	}
 
 	nextCharacter, _ := reader.ReadByte()
 	if nextCharacter != '\n' {
-		return "", &response.BadRequest{DisplayText: "message header line does not end in LF"}
+		return "", &clienterror.BadRequest{DisplayText: "message header line does not end in LF"}
 	}
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")

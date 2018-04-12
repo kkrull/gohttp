@@ -5,8 +5,10 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/response/clienterror"
+	"github.com/kkrull/gohttp/response/servererror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -70,7 +72,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		Context("given a well-formed GET request", func() {
 			var (
 				reader       *bufio.Reader
-				typedRequest *http.GetRequest
+				typedRequest *fs.GetRequest
 			)
 
 			BeforeEach(func() {
@@ -79,11 +81,11 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 				parser = &http.RFC7230RequestParser{BaseDirectory: "/public"}
 				request, err = parser.ParseRequest(reader)
-				typedRequest = request.(*http.GetRequest)
+				typedRequest = request.(*fs.GetRequest)
 			})
 
 			It("returns a GetRequest containing the contents of the request", func() {
-				Expect(request).To(BeEquivalentTo(&http.GetRequest{
+				Expect(request).To(BeEquivalentTo(&fs.GetRequest{
 					BaseDirectory: "/public",
 					Target:        "/foo",
 				}))
@@ -101,7 +103,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		Context("given any other request method", func() {
 			It("returns a NotImplemented response", func() {
 				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
-				Expect(err).To(BeEquivalentTo(&response.NotImplemented{Method: "get"}))
+				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
 		})
 	})
@@ -113,5 +115,5 @@ func makeReader(template string, values ...string) *bufio.Reader {
 }
 
 func beABadRequestResponse(why string) types.GomegaMatcher {
-	return BeEquivalentTo(&response.BadRequest{DisplayText: why})
+	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})
 }
