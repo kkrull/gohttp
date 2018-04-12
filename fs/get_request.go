@@ -28,8 +28,8 @@ func (request *GetRequest) determineResponse(resolvedTarget string) getresponse 
 	} else if info.IsDir() {
 		files, _ := ioutil.ReadDir(resolvedTarget)
 		return &DirectoryListing{
-			Files: readFileNames(files),
-			HrefPrefix:request.Target}
+			Files:      readFileNames(files),
+			HrefPrefix: request.Target}
 	} else {
 		return &FileContents{Filename: resolvedTarget}
 	}

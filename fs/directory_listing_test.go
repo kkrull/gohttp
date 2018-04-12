@@ -61,7 +61,7 @@ var _ = Describe("DirectoryListing", func() {
 			BeforeEach(func() {
 				output := &bytes.Buffer{}
 				listing = &fs.DirectoryListing{
-					Files: []string{"one", "two"},
+					Files:      []string{"one", "two"},
 					HrefPrefix: "/files"}
 				listing.WriteTo(output)
 				message = &HttpMessage{Text: output.String()}
