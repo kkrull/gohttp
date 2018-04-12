@@ -7,7 +7,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/mock"
-	"github.com/kkrull/gohttp/response/clientError"
+	"github.com/kkrull/gohttp/response/clienterror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -210,7 +210,7 @@ var _ = Describe("TCPServer", func() {
 		Context("when the RequestParser returns an error", func() {
 			BeforeEach(func(done Done) {
 				parser = &mock.RequestParser{
-					ReturnsError: &clientError.BadRequest{DisplayText: "bang"}}
+					ReturnsError: &clienterror.BadRequest{DisplayText: "bang"}}
 				server = &http.TCPServer{
 					Host:   "localhost",
 					Parser: parser}

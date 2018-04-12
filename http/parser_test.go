@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/response/clientError"
-	"github.com/kkrull/gohttp/response/serverError"
+	"github.com/kkrull/gohttp/response/clienterror"
+	"github.com/kkrull/gohttp/response/servererror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -102,7 +102,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		Context("given any other request method", func() {
 			It("returns a NotImplemented response", func() {
 				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
-				Expect(err).To(BeEquivalentTo(&serverError.NotImplemented{Method: "get"}))
+				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
 		})
 	})
@@ -114,5 +114,5 @@ func makeReader(template string, values ...string) *bufio.Reader {
 }
 
 func beABadRequestResponse(why string) types.GomegaMatcher {
-	return BeEquivalentTo(&clientError.BadRequest{DisplayText: why})
+	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})
 }
