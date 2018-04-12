@@ -1,4 +1,4 @@
-package http_test
+package fs
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
@@ -15,7 +14,7 @@ import (
 var _ = Describe("GetRequest", func() {
 	Describe("#Handle", func() {
 		var (
-			request  *http.GetRequest
+			request  *GetRequest
 			basePath string
 			response *bytes.Buffer
 			err      error
@@ -28,7 +27,7 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the resolved target does not exist", func() {
 			BeforeEach(func() {
-				request = &http.GetRequest{
+				request = &GetRequest{
 					BaseDirectory: basePath,
 					Target:        "/missing.txt"}
 				err = request.Handle(response)
@@ -53,7 +52,7 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the target is a readable text file in the base path", func() {
 			BeforeEach(func() {
-				request = &http.GetRequest{
+				request = &GetRequest{
 					BaseDirectory: basePath,
 					Target:        "/readable.txt"}
 
@@ -81,7 +80,7 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the target is a readable file named with a registered extension", func() {
 			BeforeEach(func() {
-				request = &http.GetRequest{
+				request = &GetRequest{
 					BaseDirectory: basePath,
 					Target:        "/image.jpeg"}
 
@@ -100,7 +99,7 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the target is a readable file without an extension", func() {
 			BeforeEach(func() {
-				request = &http.GetRequest{
+				request = &GetRequest{
 					BaseDirectory: basePath,
 					Target:        "/assumed-text"}
 
@@ -119,7 +118,7 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the target is /", func() {
 			BeforeEach(func() {
-				request = &http.GetRequest{
+				request = &GetRequest{
 					BaseDirectory: basePath,
 					Target:        "/"}
 

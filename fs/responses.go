@@ -1,4 +1,4 @@
-package response
+package fs
 
 import (
 	"bytes"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"strconv"
+
+	"github.com/kkrull/gohttp/response"
 )
 
 type DirectoryListing struct {
@@ -15,14 +17,14 @@ type DirectoryListing struct {
 }
 
 func (listing DirectoryListing) WriteTo(client io.Writer) error {
-	WriteStatusLine(client, 200, "OK")
-	WriteHeader(client, "Content-Type", "text/plain")
+	response.WriteStatusLine(client, 200, "OK")
+	response.WriteHeader(client, "Content-Type", "text/plain")
 
 	message := listing.messageListingFiles()
-	WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
-	WriteEndOfMessageHeader(client)
+	response.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
+	response.WriteEndOfMessageHeader(client)
 
-	WriteBody(client, message.String())
+	response.WriteBody(client, message.String())
 	return nil
 }
 
@@ -40,19 +42,19 @@ type FileContents struct {
 }
 
 func (contents FileContents) WriteTo(client io.Writer) error {
-	WriteStatusLine(client, 200, "OK")
+	response.WriteStatusLine(client, 200, "OK")
 	contents.writeHeadersDescribingFile(client)
-	WriteEndOfMessageHeader(client)
+	response.WriteEndOfMessageHeader(client)
 
 	file, _ := os.Open(contents.Filename)
-	CopyToBody(client, file)
+	response.CopyToBody(client, file)
 	return nil
 }
 
 func (contents FileContents) writeHeadersDescribingFile(client io.Writer) {
-	WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
+	response.WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
 	info, _ := os.Stat(contents.Filename)
-	WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
+	response.WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }
 
 func contentTypeFromFileExtension(filename string) string {

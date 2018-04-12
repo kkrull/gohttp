@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/response/clienterror"
 	"github.com/kkrull/gohttp/response/servererror"
@@ -71,7 +72,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		Context("given a well-formed GET request", func() {
 			var (
 				reader       *bufio.Reader
-				typedRequest *http.GetRequest
+				typedRequest *fs.GetRequest
 			)
 
 			BeforeEach(func() {
@@ -80,11 +81,11 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 				parser = &http.RFC7230RequestParser{BaseDirectory: "/public"}
 				request, err = parser.ParseRequest(reader)
-				typedRequest = request.(*http.GetRequest)
+				typedRequest = request.(*fs.GetRequest)
 			})
 
 			It("returns a GetRequest containing the contents of the request", func() {
-				Expect(request).To(BeEquivalentTo(&http.GetRequest{
+				Expect(request).To(BeEquivalentTo(&fs.GetRequest{
 					BaseDirectory: "/public",
 					Target:        "/foo",
 				}))

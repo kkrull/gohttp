@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/response/clienterror"
@@ -188,7 +189,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{ReturnsRequest: &http.GetRequest{}}
+				parser = &mock.RequestParser{ReturnsRequest: &fs.GetRequest{}}
 				server = &http.TCPServer{
 					Host:   "localhost",
 					Parser: parser}

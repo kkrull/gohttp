@@ -1,4 +1,4 @@
-package http
+package fs
 
 import (
 	"io"
@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/kkrull/gohttp/response"
 	"github.com/kkrull/gohttp/response/clienterror"
 )
 
@@ -23,10 +22,10 @@ func (request *GetRequest) Handle(client io.Writer) error {
 		notFound.WriteTo(client)
 	} else if info.IsDir() {
 		files, _ := ioutil.ReadDir(resolvedTarget)
-		directoryListing := &response.DirectoryListing{Files: files}
+		directoryListing := &DirectoryListing{Files: files}
 		directoryListing.WriteTo(client)
 	} else {
-		fileContents := &response.FileContents{Filename: resolvedTarget}
+		fileContents := &FileContents{Filename: resolvedTarget}
 		fileContents.WriteTo(client)
 	}
 

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"strings"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/response/clienterror"
 	"github.com/kkrull/gohttp/response/servererror"
 )
@@ -26,7 +27,7 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Reques
 	return request, nil
 }
 
-func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetRequest, Response) {
+func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Request, Response) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, err
@@ -39,7 +40,7 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (*GetR
 
 	switch fields[0] {
 	case "GET":
-		return &GetRequest{
+		return &fs.GetRequest{
 			BaseDirectory: parser.BaseDirectory,
 			Target:        fields[1],
 		}, nil
