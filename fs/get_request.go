@@ -22,7 +22,12 @@ func (request *GetRequest) Handle(client io.Writer) error {
 		notFound.WriteTo(client)
 	} else if info.IsDir() {
 		files, _ := ioutil.ReadDir(resolvedTarget)
-		directoryListing := &DirectoryListing{Files: files}
+		fileNames := make([]string, len(files))
+		for i, file := range files {
+			fileNames[i] = file.Name()
+		}
+
+		directoryListing := &DirectoryListing{Files: fileNames}
 		directoryListing.WriteTo(client)
 	} else {
 		fileContents := &FileContents{Filename: resolvedTarget}

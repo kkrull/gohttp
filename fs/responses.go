@@ -13,7 +13,7 @@ import (
 )
 
 type DirectoryListing struct {
-	Files []os.FileInfo
+	Files []string
 }
 
 func (listing DirectoryListing) WriteTo(client io.Writer) error {
@@ -31,7 +31,7 @@ func (listing DirectoryListing) WriteTo(client io.Writer) error {
 func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {
 	message := &bytes.Buffer{}
 	for _, file := range listing.Files {
-		fmt.Fprintf(message, "%s\n", file.Name())
+		fmt.Fprintf(message, "%s\n", file)
 	}
 
 	return message
