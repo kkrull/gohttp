@@ -19,6 +19,7 @@ var _ = Describe("DirectoryListing", func() {
 			listing http.Response
 			output  *bytes.Buffer
 			err     error
+			parser  *HttpMessageParser
 		)
 
 		Context("given 1 or more file names", func() {
@@ -26,6 +27,7 @@ var _ = Describe("DirectoryListing", func() {
 				listing = &DirectoryListing{Files: []string{"one", "two"}}
 				output = &bytes.Buffer{}
 				listing.WriteTo(output)
+				parser = &HttpMessageParser{Text: output.String()}
 			})
 
 			It("returns no error", func() {
@@ -35,7 +37,6 @@ var _ = Describe("DirectoryListing", func() {
 				Expect(output.String()).To(haveStatus(200, "OK"))
 			})
 			It("sets Content-Length to the size of the message", func() {
-				parser := HttpMessageParser{Text: output.String()}
 				contentLength, err := parser.HeaderAsInt("Content-Length")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(contentLength).To(BeNumerically(">", 0))
@@ -44,7 +45,8 @@ var _ = Describe("DirectoryListing", func() {
 				Expect(output.String()).To(containHeader("Content-Type", "text/html"))
 			})
 			It("lists links to the files in the base path", func() {
-				Expect(output.String()).To(haveMessageBody("one\ntwo\n"))
+				parser.BodyShouldContain("<a href=\"/one\">one</a>")
+				parser.BodyShouldContain("<a href=\"/two\">two</a>")
 			})
 		})
 	})
@@ -54,6 +56,11 @@ type HttpMessageParser struct {
 	Text string
 }
 
+func (parser HttpMessageParser) BodyShouldContain(substring string) {
+	_, body := parser.splitMessageHeaderAndBody()
+	Expect(body).To(ContainSubstring(substring))
+}
+
 func (parser HttpMessageParser) HeaderAsInt(name string) (int, error) {
 	headers := parser.headerFields()
 	return strconv.Atoi(headers[name])
@@ -61,7 +68,8 @@ func (parser HttpMessageParser) HeaderAsInt(name string) (int, error) {
 
 func (parser HttpMessageParser) headerFields() map[string]string {
 	const indexAfterStartLine = 1
-	headerLines := strings.Split(parser.messageHeader(), "\r\n")[indexAfterStartLine:]
+	messageHeader, _ := parser.splitMessageHeaderAndBody()
+	headerLines := strings.Split(messageHeader, "\r\n")[indexAfterStartLine:]
 	headers := make(map[string]string)
 	for _, line := range headerLines {
 		field, value := parseHeader(line)
@@ -71,9 +79,10 @@ func (parser HttpMessageParser) headerFields() map[string]string {
 	return headers
 }
 
-func (parser HttpMessageParser) messageHeader() string {
+func (parser HttpMessageParser) splitMessageHeaderAndBody() (messageHeader, messageBody string) {
 	const headerBodySeparator = "\r\n\r\n"
-	return strings.Split(parser.Text, headerBodySeparator)[0]
+	split := strings.Split(parser.Text, headerBodySeparator)
+	return split[0], split[1]
 }
 
 func parseHeader(line string) (field, value string) {
@@ -90,8 +99,4 @@ func haveStatus(status int, reason string) types.GomegaMatcher {
 
 func containHeader(name string, value string) types.GomegaMatcher {
 	return ContainSubstring(fmt.Sprintf("%s: %s\r\n", name, value))
-}
-
-func haveMessageBody(message string) types.GomegaMatcher {
-	return HaveSuffix(fmt.Sprintf("\r\n\r\n%s", message))
 }

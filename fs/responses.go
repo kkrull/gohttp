@@ -30,10 +30,16 @@ func (listing DirectoryListing) WriteTo(client io.Writer) error {
 
 func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {
 	message := &bytes.Buffer{}
+	message.WriteString("<html>")
+	message.WriteString("<head><title>gohttp</title></head>")
+
+	message.WriteString("<body>")
 	for _, file := range listing.Files {
-		fmt.Fprintf(message, "%s\n", file)
+		fmt.Fprintf(message, "<a href=\"/%s\">%s</a>", file, file)
 	}
 
+	message.WriteString("</body>")
+	message.WriteString("</html>")
 	return message
 }
 
