@@ -1,8 +1,6 @@
 package fs
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"mime"
 	"os"
@@ -11,31 +9,6 @@ import (
 
 	"github.com/kkrull/gohttp/response"
 )
-
-type DirectoryListing struct {
-	Files []os.FileInfo
-}
-
-func (listing DirectoryListing) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 200, "OK")
-	response.WriteHeader(client, "Content-Type", "text/plain")
-
-	message := listing.messageListingFiles()
-	response.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
-	response.WriteEndOfMessageHeader(client)
-
-	response.WriteBody(client, message.String())
-	return nil
-}
-
-func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {
-	message := &bytes.Buffer{}
-	for _, file := range listing.Files {
-		fmt.Fprintf(message, "%s\n", file.Name())
-	}
-
-	return message
-}
 
 type FileContents struct {
 	Filename string

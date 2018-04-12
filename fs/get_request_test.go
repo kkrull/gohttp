@@ -133,15 +133,6 @@ var _ = Describe("GetRequest", func() {
 			It("responds with 200 OK", func() {
 				Expect(response.String()).To(haveStatus(200, "OK"))
 			})
-			It("sets Content-Length to the size of the message", func() {
-				Expect(response.String()).To(containHeader("Content-Length", "4"))
-			})
-			It("sets Content-Type to text/plain", func() {
-				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
-			})
-			It("lists the files in the base path", func() {
-				Expect(response.String()).To(haveMessageBody("one\n"))
-			})
 		})
 	})
 })
