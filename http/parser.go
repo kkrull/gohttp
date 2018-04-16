@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"strings"
 
-	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 )
@@ -29,32 +28,24 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Reques
 }
 
 func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Request, Response) {
-	requestLine, err := readCRLFLine(reader)
+	requestLineText, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, err
 	}
 
-	fields := strings.Split(requestLine, " ")
-	if len(fields) != 3 {
-		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
+	requested, err := parseRequestLine(requestLineText)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, route := range parser.Routes {
-		request := route.Route(fields[0], fields[1])
+		request := route.Route(requested.Method, requested.Target)
 		if request != nil {
 			return request, nil
 		}
 	}
 
-	switch fields[0] {
-	case "GET":
-		return &fs.GetRequest{
-			BaseDirectory: parser.BaseDirectory,
-			Target:        fields[1],
-		}, nil
-	default:
-		return nil, &servererror.NotImplemented{Method: fields[0]}
-	}
+	return nil, &servererror.NotImplemented{Method: requested.Method}
 }
 
 func parseHeaderLines(reader *bufio.Reader) Response {
@@ -85,6 +76,23 @@ func readCRLFLine(reader *bufio.Reader) (string, Response) {
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
+}
+
+func parseRequestLine(text string) (*RequestLine, Response) {
+	fields := strings.Split(text, " ")
+	if len(fields) != 3 {
+		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
+	}
+
+	return &RequestLine{
+		Method: fields[0],
+		Target: fields[1],
+	}, nil
+}
+
+type RequestLine struct {
+	Method string
+	Target string
 }
 
 type Route interface {

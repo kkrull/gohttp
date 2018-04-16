@@ -106,7 +106,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 			})
 		})
 
-		Context("given a well-formed GET request", func() {
+		XContext("given a well-formed GET request", func() {
 			var (
 				reader       *bufio.Reader
 				typedRequest *fs.GetRequest
