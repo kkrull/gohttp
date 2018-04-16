@@ -16,6 +16,8 @@ type RequestParser struct {
 	received       []byte
 }
 
+func (parser *RequestParser) AddRoute(route http.Route) {}
+
 func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 )
 
@@ -45,11 +46,28 @@ type CliCommandParser struct {
 
 func NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
 	server := http.MakeTCPServer(contentRootPath, host, port)
+	server.AddRoute(&FsRoute{ContentRootPath: contentRootPath})
 	return NewRunServerCommand(server)
 }
 
 type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (
 	command CliCommand, quit chan bool)
+
+type FsRoute struct {
+	ContentRootPath string
+}
+
+func (route FsRoute) Route(method string, target string) http.Request {
+	switch method {
+	case "GET":
+		return &fs.GetRequest{
+			BaseDirectory: route.ContentRootPath,
+			Target:        target,
+		}
+	default:
+		return nil
+	}
+}
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)

@@ -13,6 +13,10 @@ type RFC7230RequestParser struct {
 	Routes        []Route
 }
 
+func (parser *RFC7230RequestParser) AddRoute(route Route) {
+	parser.Routes = append(parser.Routes, route)
+}
+
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
 	request, err := parser.parseRequestLine(reader)
 	if err != nil {

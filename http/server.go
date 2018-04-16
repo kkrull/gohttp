@@ -13,7 +13,7 @@ func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCP
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
+		Parser: &RFC7230RequestParser{BaseDirectory: contentRootDirectory},
 	}
 }
 
@@ -21,7 +21,7 @@ func MakeTCPServer(contentRootDirectory string, host string, port uint16) *TCPSe
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
+		Parser: &RFC7230RequestParser{BaseDirectory: contentRootDirectory},
 	}
 }
 
@@ -74,6 +74,10 @@ func (server TCPServer) hostAndPort() string {
 	return fmt.Sprintf("%s:%d", server.Host, server.Port)
 }
 
+func (server *TCPServer) AddRoute(route Route) {
+	server.Parser.AddRoute(route)
+}
+
 func (server TCPServer) acceptConnections() {
 	for {
 		conn, listenerClosed := server.listener.AcceptTCP()
@@ -113,6 +117,7 @@ func (server *TCPServer) Shutdown() error {
 }
 
 type RequestParser interface {
+	AddRoute(route Route)
 	ParseRequest(reader *bufio.Reader) (ok Request, parseError Response)
 }
 
