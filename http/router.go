@@ -92,13 +92,17 @@ func parseRequestLine(text string) (*RequestLine, Response) {
 
 func (router RequestLineRouter) routeRequest(requested *RequestLine) Request {
 	for _, route := range router.Routes {
-		request := route.Route(requested.Method, requested.Target)
+		request := route.Route(requested)
 		if request != nil {
 			return request
 		}
 	}
 
 	return nil
+}
+
+type Route interface {
+	Route(requested *RequestLine) Request
 }
 
 type RequestLine struct {
@@ -108,8 +112,4 @@ type RequestLine struct {
 
 func (requestLine *RequestLine) NotImplemented() Response {
 	return &servererror.NotImplemented{Method: requestLine.Method}
-}
-
-type Route interface {
-	Route(method string, target string) Request
 }

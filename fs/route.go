@@ -6,12 +6,12 @@ type Route struct {
 	ContentRootPath string
 }
 
-func (route Route) Route(method string, target string) http.Request {
-	switch method {
+func (route Route) Route(requested *http.RequestLine) http.Request {
+	switch requested.Method {
 	case "GET":
 		return &GetRequest{
 			BaseDirectory: route.ContentRootPath,
-			Target:        target,
+			Target:        requested.Target,
 		}
 	default:
 		return nil
