@@ -11,7 +11,7 @@ import (
 
 type RFC7230RequestParser struct {
 	BaseDirectory string
-	Routers       []RequestRouter
+	Routes        []Route
 }
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
@@ -39,8 +39,8 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Reque
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	if parser.Routers != nil {
-		return parser.Routers[0].Route(fields[0], fields[1]), nil
+	if parser.Routes != nil {
+		return parser.Routes[0].Route(fields[0], fields[1]), nil
 	}
 
 	switch fields[0] {
@@ -84,6 +84,6 @@ func readCRLFLine(reader *bufio.Reader) (string, Response) {
 	return trimmed, nil
 }
 
-type RequestRouter interface {
+type Route interface {
 	Route(method string, target string) Request
 }

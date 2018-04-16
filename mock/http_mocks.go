@@ -46,18 +46,18 @@ func (mock Request) Handle(connWriter io.Writer) error {
 	return nil
 }
 
-type RequestRouter struct {
+type Route struct {
 	routeMethod string
 	routeTarget string
 }
 
-func (mock *RequestRouter) Route(method string, target string) http.Request {
+func (mock *Route) Route(method string, target string) http.Request {
 	mock.routeMethod = method
 	mock.routeTarget = target
 	return nil
 }
 
-func (mock *RequestRouter) ShouldHaveRouted(method string, target string) {
+func (mock *Route) ShouldHaveReceived(method string, target string) {
 	Expect(mock.routeMethod).To(Equal(method))
 	Expect(mock.routeTarget).To(Equal(target))
 }
