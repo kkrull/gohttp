@@ -7,6 +7,7 @@ import (
 
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 
@@ -66,6 +67,28 @@ var _ = Describe("RFC7230RequestParser", func() {
 			It("when the request starts with whitespace", func() {
 				request, err = parser.ParseRequest(makeReader(" GET / HTTP/1.1\r\n\r\n"))
 				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
+			})
+		})
+
+		Context("given a well-formed request that no RequestHandler can handle", func() {
+			XIt("returns a NotImplemented response")
+		})
+
+		Context("given a well-formed request", func() {
+			var (
+				matchingHandler *mock.RequestHandler
+			)
+
+			BeforeEach(func() {
+				matchingHandler = &mock.RequestHandler{}
+				parser = &http.RFC7230RequestParser{
+					BaseDirectory: "/tmp",
+					Handlers: []http.RequestHandler{matchingHandler}}
+			})
+
+			It("delegates that request to a RequestHandler", func() {
+				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
+				matchingHandler.ShouldHaveHandled("HEAD", "/foo")
 			})
 		})
 

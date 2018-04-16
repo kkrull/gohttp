@@ -11,6 +11,7 @@ import (
 
 type RFC7230RequestParser struct {
 	BaseDirectory string
+	Handlers      []RequestHandler
 }
 
 func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
@@ -36,6 +37,10 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Reque
 	fields := strings.Split(requestLine, " ")
 	if len(fields) != 3 {
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
+	}
+
+	if parser.Handlers != nil {
+		return parser.Handlers[0].Handle(fields[0], fields[1]), nil
 	}
 
 	switch fields[0] {
@@ -77,4 +82,8 @@ func readCRLFLine(reader *bufio.Reader) (string, Response) {
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
+}
+
+type RequestHandler interface {
+	Handle(method string, target string) Request
 }

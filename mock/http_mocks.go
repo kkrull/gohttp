@@ -46,6 +46,22 @@ func (mock Request) Handle(connWriter io.Writer) error {
 	return nil
 }
 
+type RequestHandler struct {
+	handleMethod string
+	handleTarget string
+}
+
+func (mock *RequestHandler) Handle(method string, target string) http.Request {
+	mock.handleMethod = method
+	mock.handleTarget = target
+	return nil
+}
+
+func (mock *RequestHandler) ShouldHaveHandled(method string, target string) {
+	Expect(mock.handleMethod).To(Equal(method))
+	Expect(mock.handleTarget).To(Equal(target))
+}
+
 type Server struct {
 	StartFails  string
 	startCalled bool
