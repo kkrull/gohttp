@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
@@ -30,7 +31,7 @@ func (request *GetRequest) Handle(client io.Writer) error {
 	return nil
 }
 
-func (request *GetRequest) determineResponse(resolvedTarget string) getresponse {
+func (request *GetRequest) determineResponse(resolvedTarget string) http.Response {
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {
 		return &clienterror.NotFound{Target: request.Target}
@@ -51,8 +52,4 @@ func readFileNames(files []os.FileInfo) []string {
 	}
 
 	return fileNames
-}
-
-type getresponse interface {
-	WriteTo(client io.Writer) error
 }
