@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/msg/clienterror"
@@ -19,18 +18,21 @@ import (
 var _ = Describe("RFC7230RequestParser", func() {
 	Describe("#ParseRequest", func() {
 		var (
-			parser  *http.RFC7230RequestParser
-			request http.Request
-			err     http.Response
+			parser        *http.RFC7230RequestParser
+			request       http.Request
+			err           http.Response
+			matchAllRoute http.Route
 		)
+
+		BeforeEach(func() {
+			matchAllRoute = &mock.Route{RouteReturns: mock.Request{}}
+		})
 
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
 				parser = &http.RFC7230RequestParser{
 					BaseDirectory: "/tmp",
-					Routes: []http.Route{
-						&mock.Route{RouteReturns: mock.Request{}},
-					}}
+					Routes:        []http.Route{matchAllRoute}}
 			})
 
 			It("for a completely blank request", func() {
@@ -74,6 +76,29 @@ var _ = Describe("RFC7230RequestParser", func() {
 			})
 		})
 
+		Context("given a well-formed request", func() {
+			var (
+				reader *bufio.Reader
+			)
+
+			BeforeEach(func() {
+				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
+				reader = bufio.NewReader(buffer)
+				parser = &http.RFC7230RequestParser{
+					BaseDirectory: "/public",
+					Routes:        []http.Route{matchAllRoute}}
+				request, err = parser.ParseRequest(reader)
+			})
+
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+
+			It("reads the entire request until reaching a line with only CRLF", func() {
+				Expect(reader.Buffered()).To(Equal(0))
+			})
+		})
+
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
 				parser = &http.RFC7230RequestParser{BaseDirectory: "/tmp"}
@@ -103,37 +128,6 @@ var _ = Describe("RFC7230RequestParser", func() {
 			It("returns the request from the first matching Route", func() {
 				Expect(request).To(Equal(matchingRoute.RouteReturns))
 				Expect(err).NotTo(HaveOccurred())
-			})
-		})
-
-		XContext("given a well-formed GET request", func() {
-			var (
-				reader       *bufio.Reader
-				typedRequest *fs.GetRequest
-			)
-
-			BeforeEach(func() {
-				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
-				reader = bufio.NewReader(buffer)
-
-				parser = &http.RFC7230RequestParser{BaseDirectory: "/public"}
-				request, err = parser.ParseRequest(reader)
-				typedRequest = request.(*fs.GetRequest)
-			})
-
-			It("returns a GetRequest containing the contents of the request", func() {
-				Expect(request).To(BeEquivalentTo(&fs.GetRequest{
-					BaseDirectory: "/public",
-					Target:        "/foo",
-				}))
-			})
-
-			It("returns no error", func() {
-				Expect(err).To(BeNil())
-			})
-
-			It("reads the entire request until reaching a line with only CRLF", func() {
-				Expect(reader.Buffered()).To(Equal(0))
 			})
 		})
 	})
