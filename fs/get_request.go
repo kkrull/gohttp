@@ -9,6 +9,15 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
+type HeadRequest struct {
+	BaseDirectory string
+	Target        string
+}
+
+func (*HeadRequest) Handle(client io.Writer) error {
+	panic("implement me")
+}
+
 type GetRequest struct {
 	BaseDirectory string
 	Target        string

@@ -13,6 +13,11 @@ func (route Route) Route(requested *http.RequestLine) http.Request {
 			BaseDirectory: route.ContentRootPath,
 			Target:        requested.Target,
 		}
+	case "HEAD":
+		return &HeadRequest{
+			BaseDirectory: route.ContentRootPath,
+			Target:        requested.Target,
+		}
 	default:
 		return nil
 	}
