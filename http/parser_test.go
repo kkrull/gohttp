@@ -7,8 +7,8 @@ import (
 
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/response/clienterror"
-	"github.com/kkrull/gohttp/response/servererror"
+	"github.com/kkrull/gohttp/msg/clienterror"
+	"github.com/kkrull/gohttp/msg/servererror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

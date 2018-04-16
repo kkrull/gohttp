@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/kkrull/gohttp/response/clienterror"
+	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
 type GetRequest struct {

@@ -7,7 +7,7 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/msg"
 )
 
 type FileContents struct {
@@ -15,19 +15,19 @@ type FileContents struct {
 }
 
 func (contents FileContents) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatusLine(client, 200, "OK")
 	contents.writeHeadersDescribingFile(client)
-	response.WriteEndOfMessageHeader(client)
+	msg.WriteEndOfMessageHeader(client)
 
 	file, _ := os.Open(contents.Filename)
-	response.CopyToBody(client, file)
+	msg.CopyToBody(client, file)
 	return nil
 }
 
 func (contents FileContents) writeHeadersDescribingFile(client io.Writer) {
-	response.WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
+	msg.WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
 	info, _ := os.Stat(contents.Filename)
-	response.WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
+	msg.WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }
 
 func contentTypeFromFileExtension(filename string) string {

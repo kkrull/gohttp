@@ -7,7 +7,7 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/msg"
 )
 
 type DirectoryListing struct {
@@ -16,14 +16,14 @@ type DirectoryListing struct {
 }
 
 func (listing DirectoryListing) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 200, "OK")
-	response.WriteHeader(client, "Content-Type", "text/html")
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteHeader(client, "Content-Type", "text/html")
 
 	message := listing.messageListingFiles()
-	response.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
-	response.WriteEndOfMessageHeader(client)
+	msg.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
+	msg.WriteEndOfMessageHeader(client)
 
-	response.WriteBody(client, message.String())
+	msg.WriteBody(client, message.String())
 	return nil
 }
 

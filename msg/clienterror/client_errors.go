@@ -6,7 +6,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/msg"
 )
 
 type BadRequest struct {
@@ -14,7 +14,7 @@ type BadRequest struct {
 }
 
 func (badRequest BadRequest) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 400, "Bad Request")
+	msg.WriteStatusLine(client, 400, "Bad Request")
 	return nil
 }
 
@@ -23,13 +23,13 @@ type NotFound struct {
 }
 
 func (notFound NotFound) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 404, "Not Found")
-	response.WriteHeader(client, "Content-Type", "text/plain")
+	msg.WriteStatusLine(client, 404, "Not Found")
+	msg.WriteHeader(client, "Content-Type", "text/plain")
 
 	message := fmt.Sprintf("Not found: %s", notFound.Target)
-	response.WriteHeader(client, "Content-Length", strconv.Itoa(len(message)))
-	response.WriteEndOfMessageHeader(client)
+	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(message)))
+	msg.WriteEndOfMessageHeader(client)
 
-	response.WriteBody(client, message)
+	msg.WriteBody(client, message)
 	return nil
 }

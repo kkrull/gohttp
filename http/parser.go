@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/kkrull/gohttp/fs"
-	"github.com/kkrull/gohttp/response/clienterror"
-	"github.com/kkrull/gohttp/response/servererror"
+	"github.com/kkrull/gohttp/msg/clienterror"
+	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 type RFC7230RequestParser struct {

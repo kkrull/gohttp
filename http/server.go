@@ -6,7 +6,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/kkrull/gohttp/response/servererror"
+	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCPServer {
