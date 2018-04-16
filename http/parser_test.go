@@ -24,11 +24,15 @@ var _ = Describe("RFC7230RequestParser", func() {
 			err     http.Response
 		)
 
-		BeforeEach(func() {
-			parser = &http.RFC7230RequestParser{BaseDirectory: "/tmp"}
-		})
-
 		Describe("it returns 400 Bad Request", func() {
+			BeforeEach(func() {
+				parser = &http.RFC7230RequestParser{
+					BaseDirectory: "/tmp",
+					Routes: []http.Route{
+						&mock.Route{RouteReturns: mock.Request{}},
+					}}
+			})
+
 			It("for a completely blank request", func() {
 				request, err = parser.ParseRequest(makeReader(""))
 				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
@@ -70,11 +74,15 @@ var _ = Describe("RFC7230RequestParser", func() {
 			})
 		})
 
-		Context("given a well-formed request that no Route can handle", func() {
-			XIt("returns a NotImplemented response")
+		Context("given a well-formed request not matched by any Route", func() {
+			It("returns a NotImplemented response", func() {
+				parser = &http.RFC7230RequestParser{BaseDirectory: "/tmp"}
+				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
+				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
+			})
 		})
 
-		Context("given a well-formed request", func() {
+		Context("given a well-formed request matched by 1 or more Routes", func() {
 			var (
 				unrelatedRoute = &mock.Route{RouteReturns: nil}
 				matchingRoute  = &mock.Route{RouteReturns: mock.Request{}}
@@ -126,13 +134,6 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 			It("reads the entire request until reaching a line with only CRLF", func() {
 				Expect(reader.Buffered()).To(Equal(0))
-			})
-		})
-
-		Context("given any other request method", func() {
-			It("returns a NotImplemented response", func() {
-				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
-				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
 		})
 	})
