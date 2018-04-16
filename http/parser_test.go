@@ -15,10 +15,10 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var _ = Describe("RFC7230RequestParser", func() {
+var _ = Describe("RequestLineRouter", func() {
 	Describe("#ParseRequest", func() {
 		var (
-			parser        *http.RFC7230RequestParser
+			parser        *http.RequestLineRouter
 			request       http.Request
 			err           http.Response
 			matchAllRoute http.Route
@@ -30,7 +30,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
-				parser = &http.RFC7230RequestParser{
+				parser = &http.RequestLineRouter{
 					Routes: []http.Route{matchAllRoute}}
 			})
 
@@ -83,7 +83,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
-				parser = &http.RFC7230RequestParser{
+				parser = &http.RequestLineRouter{
 					Routes: []http.Route{matchAllRoute}}
 				request, err = parser.ParseRequest(reader)
 			})
@@ -99,7 +99,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
-				parser = &http.RFC7230RequestParser{}
+				parser = &http.RequestLineRouter{}
 				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
 				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
@@ -112,7 +112,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 			)
 
 			BeforeEach(func() {
-				parser = &http.RFC7230RequestParser{
+				parser = &http.RequestLineRouter{
 					Routes: []http.Route{unrelatedRoute, matchingRoute}}
 				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
 			})

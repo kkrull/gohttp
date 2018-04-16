@@ -8,16 +8,16 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-type RFC7230RequestParser struct {
+type RequestLineRouter struct {
 	Routes []Route
 }
 
-func (parser *RFC7230RequestParser) AddRoute(route Route) {
-	parser.Routes = append(parser.Routes, route)
+func (router *RequestLineRouter) AddRoute(route Route) {
+	router.Routes = append(router.Routes, route)
 }
 
-func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
-	request, err := parser.parseRequestLine(reader)
+func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
+	request, err := router.parseRequestLine(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (parser RFC7230RequestParser) ParseRequest(reader *bufio.Reader) (ok Reques
 	return request, nil
 }
 
-func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Request, Response) {
+func (router RequestLineRouter) parseRequestLine(reader *bufio.Reader) (Request, Response) {
 	requestLineText, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Reque
 		return nil, err
 	}
 
-	if request := parser.routeRequest(requested); request != nil {
+	if request := router.routeRequest(requested); request != nil {
 		return request, nil
 	}
 
@@ -90,8 +90,8 @@ func parseRequestLine(text string) (*RequestLine, Response) {
 	}, nil
 }
 
-func (parser RFC7230RequestParser) routeRequest(requested *RequestLine) Request {
-	for _, route := range parser.Routes {
+func (router RequestLineRouter) routeRequest(requested *RequestLine) Request {
+	for _, route := range router.Routes {
 		request := route.Route(requested.Method, requested.Target)
 		if request != nil {
 			return request

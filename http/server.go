@@ -13,7 +13,7 @@ func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: &RFC7230RequestParser{},
+		Parser: &RequestLineRouter{},
 	}
 }
 
@@ -21,11 +21,9 @@ func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: &RFC7230RequestParser{},
+		Parser: &RequestLineRouter{},
 	}
 }
-
-/* TCPServer */
 
 type TCPServer struct {
 	Host     string
