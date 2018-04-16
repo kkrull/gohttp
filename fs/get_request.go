@@ -16,7 +16,7 @@ type HeadRequest struct {
 }
 
 func (*HeadRequest) Handle(client io.Writer) error {
-	panic("implement me")
+	return nil
 }
 
 type GetRequest struct {
