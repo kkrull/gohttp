@@ -38,14 +38,11 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Reque
 		return nil, err
 	}
 
-	for _, route := range parser.Routes {
-		request := route.Route(requested.Method, requested.Target)
-		if request != nil {
-			return request, nil
-		}
+	if request := parser.routeRequest(requested); request != nil {
+		return request, nil
 	}
 
-	return nil, &servererror.NotImplemented{Method: requested.Method}
+	return nil, requested.NotImplemented()
 }
 
 func parseHeaderLines(reader *bufio.Reader) Response {
@@ -90,9 +87,24 @@ func parseRequestLine(text string) (*RequestLine, Response) {
 	}, nil
 }
 
+func (parser RFC7230RequestParser) routeRequest(requested *RequestLine) Request {
+	for _, route := range parser.Routes {
+		request := route.Route(requested.Method, requested.Target)
+		if request != nil {
+			return request
+		}
+	}
+
+	return nil
+}
+
 type RequestLine struct {
 	Method string
 	Target string
+}
+
+func (requestLine *RequestLine) NotImplemented() Response {
+	return &servererror.NotImplemented{Method: requestLine.Method}
 }
 
 type Route interface {
