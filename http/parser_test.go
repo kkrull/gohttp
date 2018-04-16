@@ -76,19 +76,31 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Context("given a well-formed request", func() {
 			var (
+				unrelatedRoute = &mock.Route{RouteReturns: nil}
 				matchingRoute *mock.Route
 			)
 
 			BeforeEach(func() {
-				matchingRoute = &mock.Route{}
+				matchingRoute = &mock.Route{RouteReturns: mock.Request{}}
 				parser = &http.RFC7230RequestParser{
 					BaseDirectory: "/tmp",
-					Routes:        []http.Route{matchingRoute}}
+					Routes:        []http.Route{unrelatedRoute, matchingRoute}}
 			})
 
-			It("delegates the request to a Route", func() {
+			It("tries routing the method and target from the request until it finds a match", func() {
 				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
+				unrelatedRoute.ShouldHaveReceived("HEAD", "/foo")
 				matchingRoute.ShouldHaveReceived("HEAD", "/foo")
+			})
+
+			It("returns the request from the first matching Route", func() {
+				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
+				Expect(request).To(Equal(matchingRoute.RouteReturns))
+			})
+
+			It("returns no error", func() {
+				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
+				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 

@@ -47,14 +47,15 @@ func (mock Request) Handle(connWriter io.Writer) error {
 }
 
 type Route struct {
-	routeMethod string
-	routeTarget string
+	routeMethod  string
+	routeTarget  string
+	RouteReturns http.Request
 }
 
 func (mock *Route) Route(method string, target string) http.Request {
 	mock.routeMethod = method
 	mock.routeTarget = target
-	return nil
+	return mock.RouteReturns
 }
 
 func (mock *Route) ShouldHaveReceived(method string, target string) {

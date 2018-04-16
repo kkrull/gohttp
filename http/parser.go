@@ -39,8 +39,11 @@ func (parser RFC7230RequestParser) parseRequestLine(reader *bufio.Reader) (Reque
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	if parser.Routes != nil {
-		return parser.Routes[0].Route(fields[0], fields[1]), nil
+	for _, route := range parser.Routes {
+		request := route.Route(fields[0], fields[1])
+		if request != nil {
+			return request, nil
+		}
 	}
 
 	switch fields[0] {
