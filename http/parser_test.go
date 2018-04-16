@@ -31,8 +31,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
 				parser = &http.RFC7230RequestParser{
-					BaseDirectory: "/tmp",
-					Routes:        []http.Route{matchAllRoute}}
+					Routes: []http.Route{matchAllRoute}}
 			})
 
 			It("for a completely blank request", func() {
@@ -85,8 +84,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
 				parser = &http.RFC7230RequestParser{
-					BaseDirectory: "/public",
-					Routes:        []http.Route{matchAllRoute}}
+					Routes: []http.Route{matchAllRoute}}
 				request, err = parser.ParseRequest(reader)
 			})
 
@@ -101,7 +99,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
-				parser = &http.RFC7230RequestParser{BaseDirectory: "/tmp"}
+				parser = &http.RFC7230RequestParser{}
 				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
 				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
@@ -115,8 +113,7 @@ var _ = Describe("RFC7230RequestParser", func() {
 
 			BeforeEach(func() {
 				parser = &http.RFC7230RequestParser{
-					BaseDirectory: "/tmp",
-					Routes:        []http.Route{unrelatedRoute, matchingRoute}}
+					Routes: []http.Route{unrelatedRoute, matchingRoute}}
 				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
 			})
 

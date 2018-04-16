@@ -9,19 +9,19 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCPServer {
+func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: &RFC7230RequestParser{BaseDirectory: contentRootDirectory},
+		Parser: &RFC7230RequestParser{},
 	}
 }
 
-func MakeTCPServer(contentRootDirectory string, host string, port uint16) *TCPServer {
+func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: &RFC7230RequestParser{BaseDirectory: contentRootDirectory},
+		Parser: &RFC7230RequestParser{},
 	}
 }
 

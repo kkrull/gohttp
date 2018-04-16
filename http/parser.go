@@ -9,8 +9,7 @@ import (
 )
 
 type RFC7230RequestParser struct {
-	BaseDirectory string
-	Routes        []Route
+	Routes []Route
 }
 
 func (parser *RFC7230RequestParser) AddRoute(route Route) {
