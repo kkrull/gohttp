@@ -70,25 +70,25 @@ var _ = Describe("RFC7230RequestParser", func() {
 			})
 		})
 
-		Context("given a well-formed request that no RequestHandler can handle", func() {
+		Context("given a well-formed request that no RequestRouter can handle", func() {
 			XIt("returns a NotImplemented response")
 		})
 
 		Context("given a well-formed request", func() {
 			var (
-				matchingHandler *mock.RequestHandler
+				matchingRouter *mock.RequestRouter
 			)
 
 			BeforeEach(func() {
-				matchingHandler = &mock.RequestHandler{}
+				matchingRouter = &mock.RequestRouter{}
 				parser = &http.RFC7230RequestParser{
 					BaseDirectory: "/tmp",
-					Handlers: []http.RequestHandler{matchingHandler}}
+					Routers:       []http.RequestRouter{matchingRouter}}
 			})
 
-			It("delegates that request to a RequestHandler", func() {
+			It("delegates the request to a RequestRouter", func() {
 				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
-				matchingHandler.ShouldHaveHandled("HEAD", "/foo")
+				matchingRouter.ShouldHaveRouted("HEAD", "/foo")
 			})
 		})
 

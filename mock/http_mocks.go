@@ -46,20 +46,20 @@ func (mock Request) Handle(connWriter io.Writer) error {
 	return nil
 }
 
-type RequestHandler struct {
-	handleMethod string
-	handleTarget string
+type RequestRouter struct {
+	routeMethod string
+	routeTarget string
 }
 
-func (mock *RequestHandler) Handle(method string, target string) http.Request {
-	mock.handleMethod = method
-	mock.handleTarget = target
+func (mock *RequestRouter) Route(method string, target string) http.Request {
+	mock.routeMethod = method
+	mock.routeTarget = target
 	return nil
 }
 
-func (mock *RequestHandler) ShouldHaveHandled(method string, target string) {
-	Expect(mock.handleMethod).To(Equal(method))
-	Expect(mock.handleTarget).To(Equal(target))
+func (mock *RequestRouter) ShouldHaveRouted(method string, target string) {
+	Expect(mock.routeMethod).To(Equal(method))
+	Expect(mock.routeTarget).To(Equal(target))
 }
 
 type Server struct {
