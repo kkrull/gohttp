@@ -10,19 +10,19 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type RequestParser struct {
+type Router struct {
 	ReturnsRequest http.Request
 	ReturnsError   http.Response
 	received       []byte
 }
 
-func (parser *RequestParser) AddRoute(route http.Route) {}
+func (mock *Router) AddRoute(route http.Route) {}
 
-func (parser *RequestParser) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
+func (mock *Router) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
-	parser.received = appendByte(allButLF, shouldBeLF)
-	return parser.ReturnsRequest, parser.ReturnsError
+	mock.received = appendByte(allButLF, shouldBeLF)
+	return mock.ReturnsRequest, mock.ReturnsError
 }
 
 func appendByte(allButLast []byte, last byte) []byte {
@@ -32,8 +32,8 @@ func appendByte(allButLast []byte, last byte) []byte {
 	return whole
 }
 
-func (parser RequestParser) VerifyReceived(expected []byte) {
-	Expect(parser.received).To(Equal(expected))
+func (mock Router) VerifyReceived(expected []byte) {
+	Expect(mock.received).To(Equal(expected))
 }
 
 type Request struct {

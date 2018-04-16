@@ -183,14 +183,14 @@ var _ = Describe("TCPServer", func() {
 	})
 
 	Describe("when running", func() {
-		var parser *mock.RequestParser
+		var router *mock.Router
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{ReturnsRequest: &fs.GetRequest{}}
+				router = &mock.Router{ReturnsRequest: &fs.GetRequest{}}
 				server = &http.TCPServer{
 					Host:   "localhost",
-					Parser: parser}
+					Router: router}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
@@ -198,21 +198,21 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("parses the request with the given RequestParser", func(done Done) {
+			It("parses the request with the given Router", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				readString(conn)
-				parser.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
+				router.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
 				close(done)
 			})
 		})
 
-		Context("when the RequestParser returns an error", func() {
+		Context("when the Router returns an error", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{
+				router = &mock.Router{
 					ReturnsError: &clienterror.BadRequest{DisplayText: "bang"}}
 				server = &http.TCPServer{
 					Host:   "localhost",
-					Parser: parser}
+					Router: router}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
@@ -220,7 +220,7 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("responds with an HTTP status line of the status code and reason returned by the parser", func(done Done) {
+			It("responds with an HTTP status line of the status code and reason returned by the router", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 400 Bad Request\r\n"))
 				close(done)
@@ -232,10 +232,10 @@ var _ = Describe("TCPServer", func() {
 
 			BeforeEach(func(done Done) {
 				request = &mock.Request{ReturnsError: "bang"}
-				parser = &mock.RequestParser{ReturnsRequest: request}
+				router = &mock.Router{ReturnsRequest: request}
 				server = &http.TCPServer{
 					Host:   "localhost",
-					Parser: parser}
+					Router: router}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())

@@ -13,7 +13,7 @@ func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: &RequestLineRouter{},
+		Router: &RequestLineRouter{},
 	}
 }
 
@@ -21,14 +21,14 @@ func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: &RequestLineRouter{},
+		Router: &RequestLineRouter{},
 	}
 }
 
 type TCPServer struct {
 	Host     string
 	Port     uint16
-	Parser   RequestParser
+	Router   Router
 	listener *net.TCPListener
 }
 
@@ -73,7 +73,7 @@ func (server TCPServer) hostAndPort() string {
 }
 
 func (server *TCPServer) AddRoute(route Route) {
-	server.Parser.AddRoute(route)
+	server.Router.AddRoute(route)
 }
 
 func (server TCPServer) acceptConnections() {
@@ -90,7 +90,7 @@ func (server TCPServer) acceptConnections() {
 
 func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	request, parseError := server.Parser.ParseRequest(reader)
+	request, parseError := server.Router.ParseRequest(reader)
 	if parseError != nil {
 		parseError.WriteTo(conn)
 		return
@@ -114,9 +114,9 @@ func (server *TCPServer) Shutdown() error {
 	return server.listener.Close()
 }
 
-type RequestParser interface {
+type Router interface {
 	AddRoute(route Route)
-	ParseRequest(reader *bufio.Reader) (ok Request, parseError Response)
+	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
 }
 
 type Request interface {

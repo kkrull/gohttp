@@ -18,7 +18,7 @@ import (
 var _ = Describe("RequestLineRouter", func() {
 	Describe("#ParseRequest", func() {
 		var (
-			parser        *http.RequestLineRouter
+			router        *http.RequestLineRouter
 			request       http.Request
 			err           http.Response
 			matchAllRoute http.Route
@@ -30,47 +30,47 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
-				parser = &http.RequestLineRouter{
+				router = &http.RequestLineRouter{
 					Routes: []http.Route{matchAllRoute}}
 			})
 
 			It("for a completely blank request", func() {
-				request, err = parser.ParseRequest(makeReader(""))
+				request, err = router.ParseRequest(makeReader(""))
 				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
 			})
 
 			It("for any line missing CR", func() {
-				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
+				request, err = router.ParseRequest(makeReader("GET / HTTP/1.1\r\n\n"))
 				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
 			})
 
 			It("for any line missing LF", func() {
-				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r"))
+				request, err = router.ParseRequest(makeReader("GET / HTTP/1.1\r"))
 				Expect(err).To(beABadRequestResponse("message header line does not end in LF"))
 			})
 
 			It("for a request missing a request-line", func() {
-				request, err = parser.ParseRequest(makeReader("\r\n"))
+				request, err = router.ParseRequest(makeReader("\r\n"))
 				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 
 			It("for a request missing an ending CRLF", func() {
-				request, err = parser.ParseRequest(makeReader("GET / HTTP/1.1\r\n"))
+				request, err = router.ParseRequest(makeReader("GET / HTTP/1.1\r\n"))
 				Expect(err).To(beABadRequestResponse("line in request header not ending in CRLF"))
 			})
 
 			It("when multiple spaces are separating fields in request-line", func() {
-				request, err = parser.ParseRequest(makeReader("GET /  HTTP/1.1\r\n\r\n"))
+				request, err = router.ParseRequest(makeReader("GET /  HTTP/1.1\r\n\r\n"))
 				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 
 			It("when fields in request-line contain spaces", func() {
-				request, err = parser.ParseRequest(makeReader("GET /a\\ b HTTP/1.1\r\n\r\n"))
+				request, err = router.ParseRequest(makeReader("GET /a\\ b HTTP/1.1\r\n\r\n"))
 				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 
 			It("when the request starts with whitespace", func() {
-				request, err = parser.ParseRequest(makeReader(" GET / HTTP/1.1\r\n\r\n"))
+				request, err = router.ParseRequest(makeReader(" GET / HTTP/1.1\r\n\r\n"))
 				Expect(err).To(beABadRequestResponse("incorrectly formatted or missing request-line"))
 			})
 		})
@@ -83,9 +83,9 @@ var _ = Describe("RequestLineRouter", func() {
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
-				parser = &http.RequestLineRouter{
+				router = &http.RequestLineRouter{
 					Routes: []http.Route{matchAllRoute}}
-				request, err = parser.ParseRequest(reader)
+				request, err = router.ParseRequest(reader)
 			})
 
 			It("returns no error", func() {
@@ -99,8 +99,8 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
-				parser = &http.RequestLineRouter{}
-				request, err = parser.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
+				router = &http.RequestLineRouter{}
+				request, err = router.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
 				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
 		})
@@ -112,9 +112,9 @@ var _ = Describe("RequestLineRouter", func() {
 			)
 
 			BeforeEach(func() {
-				parser = &http.RequestLineRouter{
+				router = &http.RequestLineRouter{
 					Routes: []http.Route{unrelatedRoute, matchingRoute}}
-				request, err = parser.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
+				request, err = router.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
 			})
 
 			It("tries routing the method and target from the request until it finds a match", func() {
