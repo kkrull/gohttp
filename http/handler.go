@@ -24,3 +24,16 @@ func (handler *ConnectionHandler) Handle(requestReader *bufio.Reader, responseWr
 		response.WriteTo(responseWriter)
 	}
 }
+
+type Router interface {
+	AddRoute(route Route)
+	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
+}
+
+type Request interface {
+	Handle(client io.Writer) error
+}
+
+type Response interface {
+	WriteTo(client io.Writer) error
+}

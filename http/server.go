@@ -85,14 +85,9 @@ func (server TCPServer) acceptConnections() {
 			return
 		}
 
-		server.handleConnection(conn)
+		server.Handler.Handle(bufio.NewReader(conn), conn)
 		_ = conn.Close()
 	}
-}
-
-func (server TCPServer) handleConnection(conn *net.TCPConn) {
-	reader := bufio.NewReader(conn)
-	server.Handler.Handle(reader, conn)
 }
 
 func (server *TCPServer) Shutdown() error {
@@ -107,18 +102,5 @@ func (server *TCPServer) Shutdown() error {
 }
 
 type Handler interface {
-	Handle(requestReader *bufio.Reader, responseWriter io.Writer)
-}
-
-type Router interface {
-	AddRoute(route Route)
-	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
-}
-
-type Request interface {
-	Handle(client io.Writer) error
-}
-
-type Response interface {
-	WriteTo(client io.Writer) error
+	Handle(request *bufio.Reader, response io.Writer)
 }
