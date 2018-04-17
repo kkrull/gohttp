@@ -12,16 +12,18 @@ import (
 var _ = Describe("Handler", func() {
 	Describe("#NewHandle", func() {
 		var (
-			handler *http.ConnectionHandler
-			router  *mock.Router
+			handler  *http.ConnectionHandler
+			response = &mock.Response{}
+			request  = &mock.Request{RespondReturns: response}
+			router   = &mock.Router{ReturnsRequest: request}
+
+			requestReader  = anyReader()
+			responseWriter = anyWriter()
 		)
 
 		It("parses the request with the Router", func() {
-			router = &mock.Router{ReturnsRequest: &mock.Request{RespondReturns: &mock.Response{}}}
-			requestReader := makeReader("any request")
-
 			handler = &http.ConnectionHandler{Router: router}
-			handler.NewHandle(requestReader, anyWriter())
+			handler.NewHandle(requestReader, responseWriter)
 			router.VerifyReceived(requestReader)
 		})
 
@@ -31,29 +33,15 @@ var _ = Describe("Handler", func() {
 				router = &mock.Router{ReturnsError: errorResponse}
 
 				handler = &http.ConnectionHandler{Router: router}
-				responseWriter := anyWriter()
-				handler.NewHandle(anyReader(), responseWriter)
+				handler.NewHandle(requestReader, responseWriter)
 				errorResponse.VerifyWrittenTo(responseWriter)
 			})
 		})
 
-		It("determines the response to the request", func() {
-			request := &mock.Request{RespondReturns: &mock.Response{}}
-			router = &mock.Router{ReturnsRequest: request}
-
+		It("responds to the request on the given writer", func() {
 			handler = &http.ConnectionHandler{Router: router}
 			handler.NewHandle(anyReader(), anyWriter())
 			request.VerifyRespond()
-		})
-
-		It("writes a response to a routed request", func() {
-			response := &mock.Response{}
-			request := &mock.Request{RespondReturns: response}
-			router = &mock.Router{ReturnsRequest: request}
-
-			handler = &http.ConnectionHandler{Router: router}
-			responseWriter := anyWriter()
-			handler.NewHandle(anyReader(), responseWriter)
 			response.VerifyWrittenTo(responseWriter)
 		})
 	})

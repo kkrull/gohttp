@@ -26,14 +26,17 @@ func (handler *ConnectionHandler) Handle(requestReader *bufio.Reader, responseWr
 }
 
 func (handler *ConnectionHandler) NewHandle(reader *bufio.Reader, responseWriter io.Writer) {
+	response := handler.determineResponse(reader)
+	response.WriteTo(responseWriter)
+}
+
+func (handler *ConnectionHandler) determineResponse(reader *bufio.Reader) Response {
 	request, routeErrorResponse := handler.Router.ParseRequest(reader)
 	if routeErrorResponse != nil {
-		routeErrorResponse.WriteTo(responseWriter)
-		return
+		return routeErrorResponse
 	}
 
-	response := request.Respond()
-	response.WriteTo(responseWriter)
+	return request.Respond()
 }
 
 type Router interface {
