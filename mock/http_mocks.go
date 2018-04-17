@@ -28,13 +28,15 @@ func (mock *Handler) ShouldHandleConnection() {
 type Router struct {
 	ReturnsRequest http.Request
 	ReturnsError   http.Response
-	received       []byte
+	receivedReader *bufio.Reader
+	parsed         []byte
 }
 
 func (mock *Router) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
+	mock.receivedReader = reader
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
-	mock.received = appendByte(allButLF, shouldBeLF)
+	mock.parsed = appendByte(allButLF, shouldBeLF)
 	return mock.ReturnsRequest, mock.ReturnsError
 }
 
@@ -45,12 +47,14 @@ func appendByte(allButLast []byte, last byte) []byte {
 	return whole
 }
 
-func (mock Router) VerifyReceived(expected []byte) {
-	Expect(mock.received).To(Equal(expected))
+func (mock Router) VerifyReceived(reader *bufio.Reader) {
+	Expect(mock.receivedReader).To(BeIdenticalTo(reader))
 }
 
 type Request struct {
-	ReturnsError string
+	ReturnsError   string
+	RespondReturns http.Response
+	respondCalled  bool
 }
 
 func (mock Request) Handle(connWriter io.Writer) error {
@@ -59,6 +63,15 @@ func (mock Request) Handle(connWriter io.Writer) error {
 	}
 
 	return nil
+}
+
+func (mock *Request) Respond() http.Response {
+	mock.respondCalled = true
+	return mock.RespondReturns
+}
+
+func (mock *Request) VerifyRespond() {
+	ExpectWithOffset(1, mock.respondCalled).To(BeTrue())
 }
 
 type Route struct {
@@ -75,6 +88,19 @@ func (mock *Route) ShouldHaveReceived(method string, target string) {
 	Expect(mock.routeRequested).To(BeEquivalentTo(&http.RequestLine{
 		Method: method,
 		Target: target}))
+}
+
+type Response struct {
+	writtenTo io.Writer
+}
+
+func (mock *Response) WriteTo(client io.Writer) error {
+	mock.writtenTo = client
+	return nil
+}
+
+func (mock *Response) VerifyWrittenTo(writer *bufio.Writer) {
+	ExpectWithOffset(1, mock.writtenTo).To(BeIdenticalTo(writer))
 }
 
 type Server struct {

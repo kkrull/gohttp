@@ -15,7 +15,11 @@ type HeadRequest struct {
 	Target        string
 }
 
-func (*HeadRequest) Handle(client io.Writer) error {
+func (request *HeadRequest) Handle(client io.Writer) error {
+	return nil
+}
+
+func (request *HeadRequest) Respond() http.Response {
 	return nil
 }
 
@@ -29,6 +33,11 @@ func (request *GetRequest) Handle(client io.Writer) error {
 	response := request.determineResponse(resolvedTarget)
 	response.WriteTo(client)
 	return nil
+}
+
+func (request *GetRequest) Respond() http.Response {
+	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
+	return request.determineResponse(resolvedTarget)
 }
 
 func (request *GetRequest) determineResponse(resolvedTarget string) http.Response {
