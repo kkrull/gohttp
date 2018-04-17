@@ -5,11 +5,8 @@ import (
 	"io/ioutil"
 	"net"
 
-	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/mock"
-	"github.com/kkrull/gohttp/msg/clienterror"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -29,7 +26,7 @@ var _ = Describe("TCPServer", func() {
 		}
 
 		Expect(server.Shutdown()).To(Succeed())
-		server = &http.TCPServer{}
+		server = nil
 		close(done)
 	})
 
@@ -183,14 +180,14 @@ var _ = Describe("TCPServer", func() {
 	})
 
 	Describe("when running", func() {
-		var router *mock.Router
+		var handler *mock.Handler
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				router = &mock.Router{ReturnsRequest: &fs.GetRequest{}}
+				handler = &mock.Handler{}
 				server = &http.TCPServer{
-					Host:   "localhost",
-					Router: router}
+					Handler: handler,
+					Host:    "localhost"}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
@@ -198,54 +195,10 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("parses the request with the given Router", func(done Done) {
+			It("passes the request to the configured Handler", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				readString(conn)
-				router.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
-				close(done)
-			})
-		})
-
-		Context("when the Router returns an error", func() {
-			BeforeEach(func(done Done) {
-				router = &mock.Router{
-					ReturnsError: &clienterror.BadRequest{DisplayText: "bang"}}
-				server = &http.TCPServer{
-					Host:   "localhost",
-					Router: router}
-
-				Expect(server.Start()).To(Succeed())
-				conn, connectError = net.Dial("tcp", server.Address().String())
-				Expect(connectError).NotTo(HaveOccurred())
-				close(done)
-			})
-
-			It("responds with an HTTP status line of the status code and reason returned by the router", func(done Done) {
-				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
-				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 400 Bad Request\r\n"))
-				close(done)
-			})
-		})
-
-		Context("when there is an error handling the request", func() {
-			var request *mock.Request
-
-			BeforeEach(func(done Done) {
-				request = &mock.Request{ReturnsError: "bang"}
-				router = &mock.Router{ReturnsRequest: request}
-				server = &http.TCPServer{
-					Host:   "localhost",
-					Router: router}
-
-				Expect(server.Start()).To(Succeed())
-				conn, connectError = net.Dial("tcp", server.Address().String())
-				Expect(connectError).NotTo(HaveOccurred())
-				close(done)
-			})
-
-			It("responds with 500 Internal Server Error", func(done Done) {
-				writeString(conn, "GET /bang HTTP/1.1\r\n\r\n")
-				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 500 Internal Server Error\r\n"))
+				handler.ShouldHandleConnection()
 				close(done)
 			})
 		})

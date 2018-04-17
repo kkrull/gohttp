@@ -10,6 +10,21 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type Handler struct {
+	handleRequestReader  *bufio.Reader
+	handleResponseWriter io.Writer
+}
+
+func (mock *Handler) Handle(requestReader *bufio.Reader, responseWriter io.Writer) {
+	mock.handleRequestReader = requestReader
+	mock.handleResponseWriter = responseWriter
+}
+
+func (mock *Handler) ShouldHandleConnection() {
+	Expect(mock.handleRequestReader).NotTo(BeNil())
+	Expect(mock.handleResponseWriter).NotTo(BeNil())
+}
+
 type Router struct {
 	ReturnsRequest http.Request
 	ReturnsError   http.Response
