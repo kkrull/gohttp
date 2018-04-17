@@ -90,9 +90,9 @@ func (server TCPServer) acceptConnections() {
 
 func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	request, parseError := server.Router.ParseRequest(reader)
-	if parseError != nil {
-		parseError.WriteTo(conn)
+	request, routeErrorResponse := server.Router.ParseRequest(reader)
+	if routeErrorResponse != nil {
+		routeErrorResponse.WriteTo(conn)
 		return
 	}
 
