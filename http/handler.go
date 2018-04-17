@@ -26,7 +26,6 @@ func (handler *ConnectionHandler) Handle(requestReader *bufio.Reader, responseWr
 }
 
 type Router interface {
-	AddRoute(route Route)
 	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
 }
 

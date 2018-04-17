@@ -31,8 +31,6 @@ type Router struct {
 	received       []byte
 }
 
-func (mock *Router) AddRoute(route http.Route) {}
-
 func (mock *Router) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
