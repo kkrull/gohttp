@@ -30,8 +30,8 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
-				router = &http.RequestLineRouter{
-					Routes: []http.Route{matchAllRoute}}
+				router = &http.RequestLineRouter{}
+				router.AddRoute(matchAllRoute)
 			})
 
 			It("for a completely blank request", func() {
