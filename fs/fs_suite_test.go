@@ -1,7 +1,6 @@
 package fs_test
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -14,20 +13,6 @@ import (
 func TestFs(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "fs Suite")
-}
-
-/* Message parsing */
-
-func haveStatus(status int, reason string) types.GomegaMatcher {
-	return HavePrefix(fmt.Sprintf("HTTP/1.1 %d %s\r\n", status, reason))
-}
-
-func containHeader(name string, value string) types.GomegaMatcher {
-	return ContainSubstring(fmt.Sprintf("%s: %s\r\n", name, value))
-}
-
-func haveMessageBody(message string) types.GomegaMatcher {
-	return HaveSuffix(fmt.Sprintf("\r\n\r\n%s", message))
 }
 
 /* HttpMessage */
@@ -50,7 +35,7 @@ func (message HttpMessage) HeaderAsInt(name string) (int, error) {
 	return strconv.Atoi(headers[name])
 }
 
-func (message *HttpMessage) ShouldHaveHeader(name string, match types.GomegaMatcher) {
+func (message *HttpMessage) HeaderShould(name string, match types.GomegaMatcher) {
 	value := message.headerFields()[name]
 	Expect(value).To(match)
 }

@@ -37,7 +37,7 @@ var _ = Describe("DirectoryListing", func() {
 				Expect(contentLength).To(BeNumerically(">", 0))
 			})
 			It("sets Content-Type to text/html", func() {
-				message.ShouldHaveHeader("Content-Type", Equal("text/html"))
+				message.HeaderShould("Content-Type", Equal("text/html"))
 			})
 		})
 
