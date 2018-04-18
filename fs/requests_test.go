@@ -13,34 +13,34 @@ import (
 
 var _ = Describe("Controller", func() {
 	var (
-		controller *fs.Controller
-		basePath   string
-		response   *bytes.Buffer
+		controller     *fs.Controller
+		basePath       string
+		responseBuffer *bytes.Buffer
 	)
 
 	BeforeEach(func() {
 		basePath = makeEmptyTestDirectory("Controller", os.ModePerm)
 		controller = &fs.Controller{BaseDirectory: basePath}
-		response = &bytes.Buffer{}
+		responseBuffer = &bytes.Buffer{}
 	})
 
 	Describe("#Get", func() {
 		Context("when the resolved target does not exist", func() {
 			BeforeEach(func() {
-				controller.Get(response, "/missing.txt")
+				controller.Get(responseBuffer, "/missing.txt")
 			})
 
 			It("Responds with 404 Not Found", func() {
-				Expect(response.String()).To(haveStatus(404, "Not Found"))
+				Expect(responseBuffer.String()).To(haveStatus(404, "Not Found"))
 			})
 			It("sets Content-Length to the length of the response", func() {
-				Expect(response.String()).To(containHeader("Content-Length", "23"))
+				Expect(responseBuffer.String()).To(containHeader("Content-Length", "23"))
 			})
 			It("sets Content-Type to text/plain", func() {
-				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
+				Expect(responseBuffer.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 			It("writes an error message to the message body", func() {
-				Expect(response.String()).To(haveMessageBody("Not found: /missing.txt"))
+				Expect(responseBuffer.String()).To(haveMessageBody("Not found: /missing.txt"))
 			})
 		})
 
@@ -48,20 +48,20 @@ var _ = Describe("Controller", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				controller.Get(response, "/readable.txt")
+				controller.Get(responseBuffer, "/readable.txt")
 			})
 
 			It("responds with 200 OK", func() {
-				Expect(response.String()).To(haveStatus(200, "OK"))
+				Expect(responseBuffer.String()).To(haveStatus(200, "OK"))
 			})
 			It("sets Content-Length to the number of bytes in the file", func() {
-				Expect(response.String()).To(containHeader("Content-Length", "1"))
+				Expect(responseBuffer.String()).To(containHeader("Content-Length", "1"))
 			})
 			It("sets Content-Type to text/plain", func() {
-				Expect(response.String()).To(containHeader("Content-Type", "text/plain; charset=utf-8"))
+				Expect(responseBuffer.String()).To(containHeader("Content-Type", "text/plain; charset=utf-8"))
 			})
 			It("writes the contents of the file to the message body", func() {
-				Expect(response.String()).To(haveMessageBody("A"))
+				Expect(responseBuffer.String()).To(haveMessageBody("A"))
 			})
 		})
 
@@ -72,8 +72,8 @@ var _ = Describe("Controller", func() {
 			})
 
 			It("sets Content-Type to the MIME type registered for that extension", func() {
-				controller.Get(response, "/image.jpeg")
-				Expect(response.String()).To(containHeader("Content-Type", "image/jpeg"))
+				controller.Get(responseBuffer, "/image.jpeg")
+				Expect(responseBuffer.String()).To(containHeader("Content-Type", "image/jpeg"))
 			})
 		})
 
@@ -84,8 +84,8 @@ var _ = Describe("Controller", func() {
 			})
 
 			It("sets Content-Type to text/plain", func() {
-				controller.Get(response, "/assumed-text")
-				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
+				controller.Get(responseBuffer, "/assumed-text")
+				Expect(responseBuffer.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 		})
 
@@ -96,30 +96,34 @@ var _ = Describe("Controller", func() {
 			})
 
 			It("responds with 200 OK", func() {
-				controller.Get(response, "/")
-				Expect(response.String()).To(haveStatus(200, "OK"))
+				controller.Get(responseBuffer, "/")
+				Expect(responseBuffer.String()).To(haveStatus(200, "OK"))
 			})
 		})
 	})
 
 	Describe("#Head", func() {
-		var getResponse = &bytes.Buffer{}
+		var (
+			getResponseBuffer = &bytes.Buffer{}
+			response          *HttpMessage
+		)
 
 		BeforeEach(func() {
-			controller.Get(getResponse, "/missing.txt")
-			controller.Head(response, "/missing.txt")
+			controller.Get(getResponseBuffer, "/missing.txt")
+			controller.Head(responseBuffer, "/missing.txt")
+			response = &HttpMessage{Text: responseBuffer.String()}
 		})
 
 		It("responds with the same status as #Get would have", func() {
-			Expect(getResponse.String()).To(haveStatus(404, "Not Found"))
-			Expect(response.String()).To(haveStatus(404, "Not Found"))
+			Expect(getResponseBuffer.String()).To(haveStatus(404, "Not Found"))
+			response.StatusShouldBe(404, "Not Found")
 		})
 		It("responds with the same headers as #Get would have", func() {
-			Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
-			Expect(response.String()).To(containHeader("Content-Length", "23"))
+			response.ShouldHaveHeader("Content-Type", Equal("text/plain"))
+			response.ShouldHaveHeader("Content-Length", Equal("23"))
 		})
-		It("does not write a message body", func() {
-			Expect(response.String()).To(HaveSuffix("\r\n\r\n"))
+		It("does not write a response body", func() {
+			response.BodyShould(BeEmpty())
 		})
 	})
 })
