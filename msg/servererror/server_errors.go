@@ -9,8 +9,13 @@ import (
 
 type InternalServerError struct{}
 
-func (internalError InternalServerError) WriteTo(client io.Writer) error {
+func (internalError *InternalServerError) WriteTo(client io.Writer) error {
+	return internalError.WriteHeader(client)
+}
+
+func (internalError *InternalServerError) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 500, "Internal Server Error")
+	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }
 
@@ -18,7 +23,12 @@ type NotImplemented struct {
 	Method string
 }
 
-func (notImplemented NotImplemented) WriteTo(client io.Writer) error {
+func (notImplemented *NotImplemented) WriteTo(client io.Writer) error {
+	return notImplemented.WriteHeader(client)
+}
+
+func (notImplemented *NotImplemented) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 501, "Not Implemented")
+	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }

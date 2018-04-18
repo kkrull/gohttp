@@ -2,16 +2,29 @@ package fs
 
 import "github.com/kkrull/gohttp/http"
 
-type Route struct {
-	ContentRootPath string
+func NewRoute(contentRootPath string) http.Route {
+	return &route{
+		ContentRootPath: contentRootPath,
+		Controller:      &Controller{BaseDirectory: contentRootPath},
+	}
 }
 
-func (route Route) Route(requested *http.RequestLine) http.Request {
+type route struct {
+	ContentRootPath string
+	Controller      *Controller
+}
+
+func (route route) Route(requested *http.RequestLine) http.Request {
 	switch requested.Method {
 	case "GET":
 		return &GetRequest{
-			BaseDirectory: route.ContentRootPath,
-			Target:        requested.Target,
+			Controller: route.Controller,
+			Target:     requested.Target,
+		}
+	case "HEAD":
+		return &HeadRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
 		}
 	default:
 		return nil

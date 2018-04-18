@@ -13,17 +13,22 @@ import (
 type DirectoryListing struct {
 	Files      []string
 	HrefPrefix string
+	body       *bytes.Buffer
 }
 
-func (listing DirectoryListing) WriteTo(client io.Writer) error {
+func (listing *DirectoryListing) WriteTo(client io.Writer) error {
+	listing.WriteHeader(client)
+	msg.WriteBody(client, listing.body.String())
+	return nil
+}
+
+func (listing *DirectoryListing) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteHeader(client, "Content-Type", "text/html")
 
-	message := listing.messageListingFiles()
-	msg.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
+	listing.body = listing.messageListingFiles()
+	msg.WriteHeader(client, "Content-Length", strconv.Itoa(listing.body.Len()))
 	msg.WriteEndOfMessageHeader(client)
-
-	msg.WriteBody(client, message.String())
 	return nil
 }
 

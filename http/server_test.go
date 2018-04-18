@@ -195,7 +195,7 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("passes the request to the configured Handler", func(done Done) {
+			It("passes the request to the configured ConnectionHandler", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				readString(conn)
 				handler.ShouldHandleConnection()

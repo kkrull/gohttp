@@ -14,13 +14,16 @@ type FileContents struct {
 	Filename string
 }
 
-func (contents FileContents) WriteTo(client io.Writer) error {
+func (contents *FileContents) WriteTo(client io.Writer) error {
+	contents.WriteHeader(client)
+	contents.writeBody(client)
+	return nil
+}
+
+func (contents *FileContents) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 200, "OK")
 	contents.writeHeadersDescribingFile(client)
 	msg.WriteEndOfMessageHeader(client)
-
-	file, _ := os.Open(contents.Filename)
-	msg.CopyToBody(client, file)
 	return nil
 }
 
@@ -37,4 +40,9 @@ func contentTypeFromFileExtension(filename string) string {
 	}
 
 	return mime.TypeByExtension(extension)
+}
+
+func (contents *FileContents) writeBody(client io.Writer) {
+	file, _ := os.Open(contents.Filename)
+	msg.CopyToBody(client, file)
 }

@@ -86,11 +86,17 @@ func (mock *Route) ShouldHaveReceived(method string, target string) {
 }
 
 type Response struct {
-	writtenTo io.Writer
+	writeHeaderReceived io.Writer
+	writtenTo           io.Writer
 }
 
 func (mock *Response) WriteTo(client io.Writer) error {
 	mock.writtenTo = client
+	return nil
+}
+
+func (mock *Response) WriteHeader(client io.Writer) error {
+	mock.writeHeaderReceived = client
 	return nil
 }
 
