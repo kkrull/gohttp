@@ -25,7 +25,7 @@ func (badRequest *BadRequest) WriteHeader(client io.Writer) error {
 
 type NotFound struct {
 	Target string
-	body string
+	body   string
 }
 
 func (notFound *NotFound) WriteTo(client io.Writer) error {
