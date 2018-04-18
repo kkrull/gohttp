@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/kkrull/gohttp/mock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -55,14 +54,14 @@ var _ = Describe("CliCommands", func() {
 	Describe("RunServerCommand", func() {
 		var (
 			command cmd.RunServerCommand
-			server  mock.Server
+			server  ServerMock
 			quit    chan bool
 		)
 
 		Describe("#Run", func() {
 			Context("given a workable configuration", func() {
 				BeforeEach(func() {
-					server = mock.Server{}
+					server = ServerMock{}
 					command, quit = cmd.NewRunServerCommand(&server)
 				})
 
@@ -82,7 +81,7 @@ var _ = Describe("CliCommands", func() {
 
 			Context("when everything has run ok", func() {
 				BeforeEach(func() {
-					server = mock.Server{}
+					server = ServerMock{}
 					command, quit = cmd.NewRunServerCommand(&server)
 				})
 
@@ -96,7 +95,7 @@ var _ = Describe("CliCommands", func() {
 
 			Context("when there is an error starting the server", func() {
 				It("returns the error and an exit code indicating failure", func() {
-					server = mock.Server{StartFails: "no listening ears"}
+					server = ServerMock{StartFails: "no listening ears"}
 					command, quit = cmd.NewRunServerCommand(&server)
 					code, err = command.Run(stderr)
 					Expect(code).To(Equal(2))
@@ -106,7 +105,7 @@ var _ = Describe("CliCommands", func() {
 
 			Context("when there is an error shutting down", func() {
 				It("returns the error and an exit code indicating failure", func() {
-					server = mock.Server{ShutdownFails: "backfire"}
+					server = ServerMock{ShutdownFails: "backfire"}
 					command, quit = cmd.NewRunServerCommand(&server)
 					go scheduleShutdown(quit)
 					code, err = command.Run(stderr)
