@@ -1,4 +1,4 @@
-package fs
+package fs_test
 
 import (
 	"bytes"
@@ -6,21 +6,21 @@ import (
 	"os"
 	"path"
 
+	"github.com/kkrull/gohttp/fs"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("Controller", func() {
 	var (
-		controller *Controller
+		controller *fs.Controller
 		basePath   string
 		response   *bytes.Buffer
 	)
 
 	BeforeEach(func() {
 		basePath = makeEmptyTestDirectory("Controller", os.ModePerm)
-		controller = &Controller{BaseDirectory: basePath}
+		controller = &fs.Controller{BaseDirectory: basePath}
 		response = &bytes.Buffer{}
 	})
 
@@ -146,16 +146,4 @@ func createTextFile(filename string, contents string) error {
 	}
 
 	return nil
-}
-
-func haveStatus(status int, reason string) types.GomegaMatcher {
-	return HavePrefix(fmt.Sprintf("HTTP/1.1 %d %s\r\n", status, reason))
-}
-
-func containHeader(name string, value string) types.GomegaMatcher {
-	return ContainSubstring(fmt.Sprintf("%s: %s\r\n", name, value))
-}
-
-func haveMessageBody(message string) types.GomegaMatcher {
-	return HaveSuffix(fmt.Sprintf("\r\n\r\n%s", message))
 }
