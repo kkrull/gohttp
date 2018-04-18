@@ -4,13 +4,13 @@ package servererror
 import (
 	"io"
 
-	"github.com/kkrull/gohttp/response"
+	"github.com/kkrull/gohttp/msg"
 )
 
 type InternalServerError struct{}
 
 func (internalError InternalServerError) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 500, "Internal Server Error")
+	msg.WriteStatusLine(client, 500, "Internal Server Error")
 	return nil
 }
 
@@ -19,6 +19,6 @@ type NotImplemented struct {
 }
 
 func (notImplemented NotImplemented) WriteTo(client io.Writer) error {
-	response.WriteStatusLine(client, 501, "Not Implemented")
+	msg.WriteStatusLine(client, 501, "Not Implemented")
 	return nil
 }

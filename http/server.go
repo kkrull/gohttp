@@ -6,31 +6,29 @@ import (
 	"io"
 	"net"
 
-	"github.com/kkrull/gohttp/response/servererror"
+	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-func MakeTCPServerOnAvailablePort(contentRootDirectory string, host string) *TCPServer {
+func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   0,
-		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
+		Router: &RequestLineRouter{},
 	}
 }
 
-func MakeTCPServer(contentRootDirectory string, host string, port uint16) *TCPServer {
+func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:   host,
 		Port:   port,
-		Parser: RFC7230RequestParser{BaseDirectory: contentRootDirectory},
+		Router: &RequestLineRouter{},
 	}
 }
-
-/* TCPServer */
 
 type TCPServer struct {
 	Host     string
 	Port     uint16
-	Parser   RequestParser
+	Router   Router
 	listener *net.TCPListener
 }
 
@@ -74,6 +72,10 @@ func (server TCPServer) hostAndPort() string {
 	return fmt.Sprintf("%s:%d", server.Host, server.Port)
 }
 
+func (server *TCPServer) AddRoute(route Route) {
+	server.Router.AddRoute(route)
+}
+
 func (server TCPServer) acceptConnections() {
 	for {
 		conn, listenerClosed := server.listener.AcceptTCP()
@@ -88,7 +90,7 @@ func (server TCPServer) acceptConnections() {
 
 func (server TCPServer) handleConnection(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	request, parseError := server.Parser.ParseRequest(reader)
+	request, parseError := server.Router.ParseRequest(reader)
 	if parseError != nil {
 		parseError.WriteTo(conn)
 		return
@@ -112,8 +114,9 @@ func (server *TCPServer) Shutdown() error {
 	return server.listener.Close()
 }
 
-type RequestParser interface {
-	ParseRequest(reader *bufio.Reader) (ok Request, parseError Response)
+type Router interface {
+	AddRoute(route Route)
+	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
 }
 
 type Request interface {

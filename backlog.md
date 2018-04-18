@@ -1,5 +1,39 @@
 # Developer backlog
 
+
+## HEAD requests
+
+* `http.Server` -- ok
+  * parses the request with `RequestParser`
+  * runs it with `Request#Handle(io.Writer)`
+* `http.RequestParser`
+  * reads the request from the `bufio.Reader`
+  * returns a `fs.GetRequest`
+  * returns a `servererror.NotImplemented`
+* `GetRequest`
+  * Checks the existence and type of `Target`
+  * Constructs a `getresponse` aka `http.Response` with the contents of the filesystem
+  * Writes the response back to the client with `getresponse#WriteTo(io.Writer)`
+* `fs.DirectoryListing` -- ok
+  * Writes the HTTP response to the client as an HTML page
+* The `msg` package -- ok
+  * Handles details of how to format the response as a string
+
+
+### Improvements
+
+It might be nice for `fs.DirectoryListing#WriteTo` to accept `msg.ResponseBuilder`
+
+* `#WithStatus(status, reason)`
+* `#WithHeader(name, value)`
+* `#WithContentLength(int)`
+* `#WriteToBody(string|[]byte)`
+* `#Send(io.Writer)`
+
+
+Why to `http.Request` and `http.Response` look exactly the same?  That seems odd.
+
+
 ## Handling requests
 
 * Missing ways to cause I/O errors with
@@ -26,6 +60,8 @@
 
 ## Packaging
 
+* `http.RequestParser` shouldn't depend on `fs.GetRequest`.  It may be better to configure `RequestParser` with
+  what it needs to handle the request, once it has been parsed.
 * Is the current request handling, parsing, and error handling getting large enough to benefit from being in a separate
   `handler/filesystem` package?
 

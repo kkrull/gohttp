@@ -8,7 +8,7 @@ import (
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/mock"
-	"github.com/kkrull/gohttp/response/clienterror"
+	"github.com/kkrull/gohttp/msg/clienterror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,8 +18,6 @@ var (
 	server       *http.TCPServer
 	conn         net.Conn
 	connectError error
-
-	contentRoot = "/tmp"
 )
 
 var _ = Describe("TCPServer", func() {
@@ -38,7 +36,7 @@ var _ = Describe("TCPServer", func() {
 	Describe("#Address", func() {
 		Context("when the server is not running", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 				Expect(server.Shutdown()).To(Succeed())
 				close(done)
@@ -51,7 +49,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when the server is running", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServer(contentRoot, "localhost", 8420)
+				server = http.MakeTCPServer("localhost", 8420)
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
@@ -68,7 +66,7 @@ var _ = Describe("TCPServer", func() {
 	Describe("#Start", func() {
 		Context("when the server is already running", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
@@ -82,7 +80,7 @@ var _ = Describe("TCPServer", func() {
 		Context("when there is an error resolving the given host and port to an address", func() {
 			It("immediately returns an error", func(done Done) {
 				invalidHostAddress := "666.666.666.666"
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, invalidHostAddress)
+				server = http.MakeTCPServerOnAvailablePort(invalidHostAddress)
 				Expect(server.Start()).To(MatchError(HaveSuffix("no such host")))
 				close(done)
 			}, 5)
@@ -91,7 +89,7 @@ var _ = Describe("TCPServer", func() {
 		Context("when there is an error binding to resolved address", func() {
 			It("immediately returns the error", func(done Done) {
 				var portOnlyAvailableToRoot uint16 = 1
-				server = http.MakeTCPServer(contentRoot, "localhost", portOnlyAvailableToRoot)
+				server = http.MakeTCPServer("localhost", portOnlyAvailableToRoot)
 				Expect(server.Start()).To(MatchError(HaveSuffix("bind: permission denied")))
 				close(done)
 			})
@@ -99,13 +97,13 @@ var _ = Describe("TCPServer", func() {
 
 		Context("given an available host address and port", func() {
 			It("returns no error as soon as the socket is open", func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
 
 			It("accepts connections on the specified address", func(done Done) {
-				server = http.MakeTCPServer(contentRoot, "localhost", 8421)
+				server = http.MakeTCPServer("localhost", 8421)
 				Expect(server.Start()).To(Succeed())
 
 				conn, connectError = net.Dial("tcp", "localhost:8421")
@@ -116,7 +114,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("given no port number", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
@@ -131,7 +129,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when the server is running", func() {
 			BeforeEach(func() {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 			})
 
@@ -151,14 +149,14 @@ var _ = Describe("TCPServer", func() {
 	Describe("#Shutdown", func() {
 		Context("when the server has not been started", func() {
 			It("returns no error", func() {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Shutdown()).To(Succeed())
 			})
 		})
 
 		Context("when the server is running", func() {
 			It("stops accepting connections", func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 				oldAddress := server.Address().String()
 
@@ -171,7 +169,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when the server is stopped", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort(contentRoot, "localhost")
+				server = http.MakeTCPServerOnAvailablePort("localhost")
 				Expect(server.Start()).To(Succeed())
 				Expect(server.Shutdown()).To(Succeed())
 				close(done)
@@ -185,14 +183,14 @@ var _ = Describe("TCPServer", func() {
 	})
 
 	Describe("when running", func() {
-		var parser *mock.RequestParser
+		var router *mock.Router
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{ReturnsRequest: &fs.GetRequest{}}
+				router = &mock.Router{ReturnsRequest: &fs.GetRequest{}}
 				server = &http.TCPServer{
 					Host:   "localhost",
-					Parser: parser}
+					Router: router}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
@@ -200,21 +198,21 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("parses the request with the given RequestParser", func(done Done) {
+			It("parses the request with the given Router", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				readString(conn)
-				parser.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
+				router.VerifyReceived([]byte("GET / HTTP/1.1\r\n"))
 				close(done)
 			})
 		})
 
-		Context("when the RequestParser returns an error", func() {
+		Context("when the Router returns an error", func() {
 			BeforeEach(func(done Done) {
-				parser = &mock.RequestParser{
+				router = &mock.Router{
 					ReturnsError: &clienterror.BadRequest{DisplayText: "bang"}}
 				server = &http.TCPServer{
 					Host:   "localhost",
-					Parser: parser}
+					Router: router}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
@@ -222,7 +220,7 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			It("responds with an HTTP status line of the status code and reason returned by the parser", func(done Done) {
+			It("responds with an HTTP status line of the status code and reason returned by the router", func(done Done) {
 				writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 				Expect(readString(conn)).To(HavePrefix("HTTP/1.1 400 Bad Request\r\n"))
 				close(done)
@@ -234,10 +232,10 @@ var _ = Describe("TCPServer", func() {
 
 			BeforeEach(func(done Done) {
 				request = &mock.Request{ReturnsError: "bang"}
-				parser = &mock.RequestParser{ReturnsRequest: request}
+				router = &mock.Router{ReturnsRequest: request}
 				server = &http.TCPServer{
 					Host:   "localhost",
-					Parser: parser}
+					Router: router}
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
