@@ -10,12 +10,11 @@ import (
 )
 
 var _ = Describe("Handler", func() {
-	Describe("#NewHandle", func() {
+	Describe("#Handle", func() {
 		var (
-			handler  *http.ConnectionHandler
-			response = &mock.Response{}
-			request  = &mock.Request{RespondReturns: response}
-			router   = &mock.Router{ReturnsRequest: request}
+			handler *http.ConnectionHandler
+			request = &mock.Request{}
+			router  = &mock.Router{ReturnsRequest: request}
 
 			requestReader  = anyReader()
 			responseWriter = anyWriter()
@@ -23,7 +22,7 @@ var _ = Describe("Handler", func() {
 
 		It("parses the request with the Router", func() {
 			handler = &http.ConnectionHandler{Router: router}
-			handler.NewHandle(requestReader, responseWriter)
+			handler.Handle(requestReader, responseWriter)
 			router.VerifyReceived(requestReader)
 		})
 
@@ -33,16 +32,15 @@ var _ = Describe("Handler", func() {
 				router = &mock.Router{ReturnsError: errorResponse}
 
 				handler = &http.ConnectionHandler{Router: router}
-				handler.NewHandle(requestReader, responseWriter)
+				handler.Handle(requestReader, responseWriter)
 				errorResponse.VerifyWrittenTo(responseWriter)
 			})
 		})
 
-		It("responds to the request on the given writer", func() {
+		It("handles the request", func() {
 			handler = &http.ConnectionHandler{Router: router}
-			handler.NewHandle(anyReader(), anyWriter())
-			request.VerifyRespond()
-			response.VerifyWrittenTo(responseWriter)
+			handler.Handle(requestReader, responseWriter)
+			request.VerifyHandle(responseWriter)
 		})
 	})
 })

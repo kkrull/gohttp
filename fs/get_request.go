@@ -22,11 +22,6 @@ func (request *GetRequest) Handle(client io.Writer) error {
 	return nil
 }
 
-func (request *GetRequest) Respond() http.Response {
-	resolvedTarget := path.Join(request.BaseDirectory, request.Target)
-	return request.determineResponse(resolvedTarget)
-}
-
 func (request *GetRequest) determineResponse(resolvedTarget string) http.Response {
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {

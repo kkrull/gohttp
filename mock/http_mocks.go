@@ -52,26 +52,21 @@ func (mock Router) VerifyReceived(reader *bufio.Reader) {
 }
 
 type Request struct {
-	ReturnsError   string
-	RespondReturns http.Response
-	respondCalled  bool
+	HandleReturns  string
+	handleReceived io.Writer
 }
 
-func (mock Request) Handle(connWriter io.Writer) error {
-	if mock.ReturnsError != "" {
-		return fmt.Errorf(mock.ReturnsError)
+func (mock *Request) Handle(writer io.Writer) error {
+	mock.handleReceived = writer
+	if mock.HandleReturns != "" {
+		return fmt.Errorf(mock.HandleReturns)
 	}
 
 	return nil
 }
 
-func (mock *Request) Respond() http.Response {
-	mock.respondCalled = true
-	return mock.RespondReturns
-}
-
-func (mock *Request) VerifyRespond() {
-	ExpectWithOffset(1, mock.respondCalled).To(BeTrue())
+func (mock *Request) VerifyHandle(writer *bufio.Writer) {
+	ExpectWithOffset(1, mock.handleReceived).To(BeIdenticalTo(writer))
 }
 
 type Route struct {
