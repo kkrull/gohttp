@@ -28,8 +28,8 @@ var _ = Describe("GetRequest", func() {
 		Context("when the resolved target does not exist", func() {
 			BeforeEach(func() {
 				request = &GetRequest{
-					BaseDirectory: basePath,
-					Target:        "/missing.txt"}
+					Controller: &Controller{BaseDirectory: basePath},
+					Target:     "/missing.txt"}
 				err = request.Handle(response)
 			})
 
@@ -53,8 +53,8 @@ var _ = Describe("GetRequest", func() {
 		Context("when the target is a readable text file in the base path", func() {
 			BeforeEach(func() {
 				request = &GetRequest{
-					BaseDirectory: basePath,
-					Target:        "/readable.txt"}
+					Controller: &Controller{BaseDirectory: basePath},
+					Target:     "/readable.txt"}
 
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -81,8 +81,8 @@ var _ = Describe("GetRequest", func() {
 		Context("when the target is a readable file named with a registered extension", func() {
 			BeforeEach(func() {
 				request = &GetRequest{
-					BaseDirectory: basePath,
-					Target:        "/image.jpeg"}
+					Controller: &Controller{BaseDirectory: basePath},
+					Target:     "/image.jpeg"}
 
 				existingFile := path.Join(basePath, "image.jpeg")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -100,8 +100,8 @@ var _ = Describe("GetRequest", func() {
 		Context("when the target is a readable file without an extension", func() {
 			BeforeEach(func() {
 				request = &GetRequest{
-					BaseDirectory: basePath,
-					Target:        "/assumed-text"}
+					Controller: &Controller{BaseDirectory: basePath},
+					Target:     "/assumed-text"}
 
 				existingFile := path.Join(basePath, "assumed-text")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -119,8 +119,8 @@ var _ = Describe("GetRequest", func() {
 		Context("when the target is /", func() {
 			BeforeEach(func() {
 				request = &GetRequest{
-					BaseDirectory: basePath,
-					Target:        "/"}
+					Controller: &Controller{BaseDirectory: basePath},
+					Target:     "/"}
 
 				existingFile := path.Join(basePath, "one")
 				Expect(createTextFile(existingFile, "1")).To(Succeed())

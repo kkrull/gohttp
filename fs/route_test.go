@@ -17,8 +17,8 @@ var _ = Describe("route", func() {
 			requested := &http.RequestLine{Method: "GET", Target: "/foo"}
 			Expect(router.Route(requested)).To(BeEquivalentTo(
 				&fs.GetRequest{
-					BaseDirectory: "/public",
-					Target:        "/foo",
+					Controller: &fs.Controller{BaseDirectory: "/public"},
+					Target:     "/foo",
 				}))
 		})
 	})
