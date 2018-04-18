@@ -14,14 +14,29 @@ import (
 )
 
 func main() {
-	parser := NewCliCommandParser(subscribeToSignals(os.Interrupt))
-	command := parser.Parse(os.Args)
-	code, runErr := command.Run(os.Stderr)
-	if runErr != nil {
-		fmt.Fprintf(os.Stderr, "gohttp: %s\n", runErr.Error())
+	gohttp := &GoHTTP{
+		Stderr: os.Stderr,
+		Interrupts: subscribeToSignals(os.Interrupt),
+	}
+
+	code, err := gohttp.Run(os.Args)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "gohttp: %s\n", err.Error())
 	}
 
 	os.Exit(code)
+}
+
+type GoHTTP struct {
+	Stderr io.Writer
+	Interrupts <-chan os.Signal
+}
+
+func (gohttp *GoHTTP) Run(args []string) (exitCode int, runErr error) {
+	parser := NewCliCommandParser(gohttp.Interrupts)
+	command := parser.Parse(args)
+	exitCode, runErr = command.Run(gohttp.Stderr)
+	return
 }
 
 func subscribeToSignals(sig os.Signal) <-chan os.Signal {
@@ -46,7 +61,7 @@ type CliCommandParser struct {
 
 func NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
 	router := &http.RequestLineRouter{}
-	router.AddRoute(fs.NewRoute(contentRootPath))
+	router.AddRoute(fs.NewRoute(contentRootPath)) //TODO KDK: Add a route here for coffee pots
 	server := http.MakeTCPServerWithHandler(
 		host,
 		port,
