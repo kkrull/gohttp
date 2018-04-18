@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Route", func() {
+var _ = Describe("route", func() {
 	var (
-		router = &fs.Route{ContentRootPath: "/public"}
+		router = fs.NewRoute("/public")
 	)
 
 	Describe("#Route", func() {

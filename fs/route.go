@@ -2,11 +2,15 @@ package fs
 
 import "github.com/kkrull/gohttp/http"
 
-type Route struct {
+func NewRoute(contentRootPath string) http.Route {
+	return &route{ContentRootPath: contentRootPath}
+}
+
+type route struct {
 	ContentRootPath string
 }
 
-func (route Route) Route(requested *http.RequestLine) http.Request {
+func (route route) Route(requested *http.RequestLine) http.Request {
 	switch requested.Method {
 	case "GET":
 		return &GetRequest{
