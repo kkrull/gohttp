@@ -101,6 +101,27 @@ var _ = Describe("Controller", func() {
 			})
 		})
 	})
+
+	Describe("#Head", func() {
+		var getResponse = &bytes.Buffer{}
+
+		BeforeEach(func() {
+			controller.Get(getResponse, "/missing.txt")
+			controller.Head(response, "/missing.txt")
+		})
+
+		It("responds with the same status as #Get would have", func() {
+			Expect(getResponse.String()).To(haveStatus(404, "Not Found"))
+			Expect(response.String()).To(haveStatus(404, "Not Found"))
+		})
+		It("responds with the same headers as #Get would have", func() {
+			Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
+			Expect(response.String()).To(containHeader("Content-Length", "23"))
+		})
+		It("does not write a message body", func() {
+			Expect(response.String()).To(HaveSuffix("\r\n\r\n"))
+		})
+	})
 })
 
 func makeEmptyTestDirectory(testName string, fileMode os.FileMode) string {
