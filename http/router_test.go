@@ -25,13 +25,13 @@ var _ = Describe("RequestLineRouter", func() {
 		)
 
 		BeforeEach(func() {
-			matchAllRoute = &mock.Route{RouteReturns: mock.Request{}}
+			matchAllRoute = &mock.Route{RouteReturns: &mock.Request{}}
 		})
 
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
-				router = &http.RequestLineRouter{
-					Routes: []http.Route{matchAllRoute}}
+				router = &http.RequestLineRouter{}
+				router.AddRoute(matchAllRoute)
 			})
 
 			It("for a completely blank request", func() {
@@ -108,7 +108,7 @@ var _ = Describe("RequestLineRouter", func() {
 		Context("given a well-formed request matched by 1 or more Routes", func() {
 			var (
 				unrelatedRoute = &mock.Route{RouteReturns: nil}
-				matchingRoute  = &mock.Route{RouteReturns: mock.Request{}}
+				matchingRoute  = &mock.Route{RouteReturns: &mock.Request{}}
 			)
 
 			BeforeEach(func() {

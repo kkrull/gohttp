@@ -5,30 +5,36 @@ import (
 	"fmt"
 	"io"
 	"net"
-
-	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
-		Host:   host,
-		Port:   0,
-		Router: &RequestLineRouter{},
+		Host:    host,
+		Port:    0,
+		Handler: &ConnectionHandler{Router: &RequestLineRouter{}},
 	}
 }
 
 func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
-		Host:   host,
-		Port:   port,
-		Router: &RequestLineRouter{},
+		Host:    host,
+		Port:    port,
+		Handler: &ConnectionHandler{Router: &RequestLineRouter{}},
+	}
+}
+
+func MakeTCPServerWithHandler(host string, port uint16, handler Handler) *TCPServer {
+	return &TCPServer{
+		Host:    host,
+		Port:    port,
+		Handler: handler,
 	}
 }
 
 type TCPServer struct {
 	Host     string
 	Port     uint16
-	Router   Router
+	Handler  Handler
 	listener *net.TCPListener
 }
 
@@ -72,10 +78,6 @@ func (server TCPServer) hostAndPort() string {
 	return fmt.Sprintf("%s:%d", server.Host, server.Port)
 }
 
-func (server *TCPServer) AddRoute(route Route) {
-	server.Router.AddRoute(route)
-}
-
 func (server TCPServer) acceptConnections() {
 	for {
 		conn, listenerClosed := server.listener.AcceptTCP()
@@ -83,23 +85,8 @@ func (server TCPServer) acceptConnections() {
 			return
 		}
 
-		server.handleConnection(conn)
+		server.Handler.Handle(bufio.NewReader(conn), conn)
 		_ = conn.Close()
-	}
-}
-
-func (server TCPServer) handleConnection(conn *net.TCPConn) {
-	reader := bufio.NewReader(conn)
-	request, parseError := server.Router.ParseRequest(reader)
-	if parseError != nil {
-		parseError.WriteTo(conn)
-		return
-	}
-
-	requestError := request.Handle(conn)
-	if requestError != nil {
-		response := servererror.InternalServerError{}
-		response.WriteTo(conn)
 	}
 }
 
@@ -114,15 +101,6 @@ func (server *TCPServer) Shutdown() error {
 	return server.listener.Close()
 }
 
-type Router interface {
-	AddRoute(route Route)
-	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
-}
-
-type Request interface {
-	Handle(client io.Writer) error
-}
-
-type Response interface {
-	WriteTo(client io.Writer) error
+type Handler interface {
+	Handle(request *bufio.Reader, response io.Writer)
 }

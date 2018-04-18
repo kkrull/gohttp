@@ -16,7 +16,7 @@ func (router *RequestLineRouter) AddRoute(route Route) {
 	router.Routes = append(router.Routes, route)
 }
 
-func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, parseError Response) {
+func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, routeError Response) {
 	request, err := router.parseRequestLine(reader)
 	if err != nil {
 		return nil, err

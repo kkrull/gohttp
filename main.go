@@ -45,8 +45,10 @@ type CliCommandParser struct {
 }
 
 func NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
-	server := http.MakeTCPServer(host, port)
-	server.AddRoute(&fs.Route{ContentRootPath: contentRootPath})
+	router := &http.RequestLineRouter{}
+	router.AddRoute(&fs.Route{ContentRootPath: contentRootPath})
+	handler := &http.ConnectionHandler{Router: router}
+	server := http.MakeTCPServerWithHandler(host, port, handler)
 	return NewRunServerCommand(server)
 }
 

@@ -10,18 +10,33 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type Handler struct {
+	handleRequestReader  *bufio.Reader
+	handleResponseWriter io.Writer
+}
+
+func (mock *Handler) Handle(requestReader *bufio.Reader, responseWriter io.Writer) {
+	mock.handleRequestReader = requestReader
+	mock.handleResponseWriter = responseWriter
+}
+
+func (mock *Handler) ShouldHandleConnection() {
+	Expect(mock.handleRequestReader).NotTo(BeNil())
+	Expect(mock.handleResponseWriter).NotTo(BeNil())
+}
+
 type Router struct {
 	ReturnsRequest http.Request
 	ReturnsError   http.Response
-	received       []byte
+	receivedReader *bufio.Reader
+	parsed         []byte
 }
 
-func (mock *Router) AddRoute(route http.Route) {}
-
 func (mock *Router) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
+	mock.receivedReader = reader
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()
-	mock.received = appendByte(allButLF, shouldBeLF)
+	mock.parsed = appendByte(allButLF, shouldBeLF)
 	return mock.ReturnsRequest, mock.ReturnsError
 }
 
@@ -32,20 +47,26 @@ func appendByte(allButLast []byte, last byte) []byte {
 	return whole
 }
 
-func (mock Router) VerifyReceived(expected []byte) {
-	Expect(mock.received).To(Equal(expected))
+func (mock Router) VerifyReceived(reader *bufio.Reader) {
+	Expect(mock.receivedReader).To(BeIdenticalTo(reader))
 }
 
 type Request struct {
-	ReturnsError string
+	HandleReturns  string
+	handleReceived io.Writer
 }
 
-func (mock Request) Handle(connWriter io.Writer) error {
-	if mock.ReturnsError != "" {
-		return fmt.Errorf(mock.ReturnsError)
+func (mock *Request) Handle(writer io.Writer) error {
+	mock.handleReceived = writer
+	if mock.HandleReturns != "" {
+		return fmt.Errorf(mock.HandleReturns)
 	}
 
 	return nil
+}
+
+func (mock *Request) VerifyHandle(writer *bufio.Writer) {
+	ExpectWithOffset(1, mock.handleReceived).To(BeIdenticalTo(writer))
 }
 
 type Route struct {
@@ -62,6 +83,19 @@ func (mock *Route) ShouldHaveReceived(method string, target string) {
 	Expect(mock.routeRequested).To(BeEquivalentTo(&http.RequestLine{
 		Method: method,
 		Target: target}))
+}
+
+type Response struct {
+	writtenTo io.Writer
+}
+
+func (mock *Response) WriteTo(client io.Writer) error {
+	mock.writtenTo = client
+	return nil
+}
+
+func (mock *Response) VerifyWrittenTo(writer *bufio.Writer) {
+	ExpectWithOffset(1, mock.writtenTo).To(BeIdenticalTo(writer))
 }
 
 type Server struct {
