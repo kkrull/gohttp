@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-var _ = Describe("BlockingConnectionHandler", func() {
+var _ = Describe("blockingConnectionHandler", func() {
 	Describe("#Handle", func() {
 		var (
-			handler *http.BlockingConnectionHandler
+			handler http.ConnectionHandler
 			request = &mock.Request{}
 			router  = &mock.Router{ReturnsRequest: request}
 
@@ -21,7 +21,7 @@ var _ = Describe("BlockingConnectionHandler", func() {
 		)
 
 		It("parses the request with the Router", func() {
-			handler = &http.BlockingConnectionHandler{Router: router}
+			handler = http.NewConnectionHandler(router)
 			handler.Handle(requestReader, responseWriter)
 			router.VerifyReceived(requestReader)
 		})
@@ -31,14 +31,14 @@ var _ = Describe("BlockingConnectionHandler", func() {
 				errorResponse := &mock.Response{}
 				router = &mock.Router{ReturnsError: errorResponse}
 
-				handler = &http.BlockingConnectionHandler{Router: router}
+				handler = http.NewConnectionHandler(router)
 				handler.Handle(requestReader, responseWriter)
 				errorResponse.VerifyWrittenTo(responseWriter)
 			})
 		})
 
 		It("handles the request", func() {
-			handler = &http.BlockingConnectionHandler{Router: router}
+			handler = http.NewConnectionHandler(router)
 			handler.Handle(requestReader, responseWriter)
 			request.VerifyHandle(responseWriter)
 		})

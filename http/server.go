@@ -11,7 +11,7 @@ func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
 		Host:    host,
 		Port:    0,
-		Handler: &BlockingConnectionHandler{Router: &RequestLineRouter{}},
+		Handler: NewConnectionHandler(&RequestLineRouter{}),
 	}
 }
 
@@ -19,7 +19,7 @@ func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:    host,
 		Port:    port,
-		Handler: &BlockingConnectionHandler{Router: &RequestLineRouter{}},
+		Handler: NewConnectionHandler(&RequestLineRouter{}),
 	}
 }
 
