@@ -7,11 +7,12 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-type ConnectionHandler struct {
+// A ConnectionHandler that uses blocking I/O
+type BlockingConnectionHandler struct {
 	Router Router
 }
 
-func (handler *ConnectionHandler) Handle(requestReader *bufio.Reader, responseWriter io.Writer) {
+func (handler *BlockingConnectionHandler) Handle(requestReader *bufio.Reader, responseWriter io.Writer) {
 	request, routeErrorResponse := handler.Router.ParseRequest(requestReader)
 	if routeErrorResponse != nil {
 		routeErrorResponse.WriteTo(responseWriter)

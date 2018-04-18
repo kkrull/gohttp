@@ -21,5 +21,6 @@ var _ = Describe("route", func() {
 					Target:     "/foo",
 				}))
 		})
+		XIt("routes HEAD requests to HeadRequest")
 	})
 })

@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-var _ = Describe("Handler", func() {
+var _ = Describe("BlockingConnectionHandler", func() {
 	Describe("#Handle", func() {
 		var (
-			handler *http.ConnectionHandler
+			handler *http.BlockingConnectionHandler
 			request = &mock.Request{}
 			router  = &mock.Router{ReturnsRequest: request}
 
@@ -21,7 +21,7 @@ var _ = Describe("Handler", func() {
 		)
 
 		It("parses the request with the Router", func() {
-			handler = &http.ConnectionHandler{Router: router}
+			handler = &http.BlockingConnectionHandler{Router: router}
 			handler.Handle(requestReader, responseWriter)
 			router.VerifyReceived(requestReader)
 		})
@@ -31,16 +31,20 @@ var _ = Describe("Handler", func() {
 				errorResponse := &mock.Response{}
 				router = &mock.Router{ReturnsError: errorResponse}
 
-				handler = &http.ConnectionHandler{Router: router}
+				handler = &http.BlockingConnectionHandler{Router: router}
 				handler.Handle(requestReader, responseWriter)
 				errorResponse.VerifyWrittenTo(responseWriter)
 			})
 		})
 
 		It("handles the request", func() {
-			handler = &http.ConnectionHandler{Router: router}
+			handler = &http.BlockingConnectionHandler{Router: router}
 			handler.Handle(requestReader, responseWriter)
 			request.VerifyHandle(responseWriter)
+		})
+
+		Context("when there is an error handling the request", func() {
+			XIt("responds with InternalServerError")
 		})
 	})
 })

@@ -11,7 +11,7 @@ func MakeTCPServerOnAvailablePort(host string) *TCPServer {
 	return &TCPServer{
 		Host:    host,
 		Port:    0,
-		Handler: &ConnectionHandler{Router: &RequestLineRouter{}},
+		Handler: &BlockingConnectionHandler{Router: &RequestLineRouter{}},
 	}
 }
 
@@ -19,11 +19,11 @@ func MakeTCPServer(host string, port uint16) *TCPServer {
 	return &TCPServer{
 		Host:    host,
 		Port:    port,
-		Handler: &ConnectionHandler{Router: &RequestLineRouter{}},
+		Handler: &BlockingConnectionHandler{Router: &RequestLineRouter{}},
 	}
 }
 
-func MakeTCPServerWithHandler(host string, port uint16, handler Handler) *TCPServer {
+func MakeTCPServerWithHandler(host string, port uint16, handler ConnectionHandler) *TCPServer {
 	return &TCPServer{
 		Host:    host,
 		Port:    port,
@@ -34,7 +34,7 @@ func MakeTCPServerWithHandler(host string, port uint16, handler Handler) *TCPSer
 type TCPServer struct {
 	Host     string
 	Port     uint16
-	Handler  Handler
+	Handler  ConnectionHandler
 	listener *net.TCPListener
 }
 
@@ -101,6 +101,6 @@ func (server *TCPServer) Shutdown() error {
 	return server.listener.Close()
 }
 
-type Handler interface {
+type ConnectionHandler interface {
 	Handle(request *bufio.Reader, response io.Writer)
 }
