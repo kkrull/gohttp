@@ -35,28 +35,27 @@ type Controller struct {
 }
 
 func (controller *Controller) Get(client io.Writer, target string) {
-	resolvedTarget := path.Join(controller.BaseDirectory, target)
-	response := controller.determineResponse(target, resolvedTarget)
+	response := controller.determineResponse(target)
 	response.WriteTo(client)
 }
 
 func (controller *Controller) Head(client io.Writer, target string) {
-	resolvedTarget := path.Join(controller.BaseDirectory, target)
-	response := controller.determineResponse(target, resolvedTarget)
+	response := controller.determineResponse(target)
 	response.WriteHeader(client)
 }
 
-func (controller *Controller) determineResponse(requested, resolved string) http.Response {
-	info, err := os.Stat(resolved)
+func (controller *Controller) determineResponse(requestedTarget string) http.Response {
+	resolvedTarget := path.Join(controller.BaseDirectory, requestedTarget)
+	info, err := os.Stat(resolvedTarget)
 	if err != nil {
-		return &clienterror.NotFound{Target: requested}
+		return &clienterror.NotFound{Target: requestedTarget}
 	} else if info.IsDir() {
-		files, _ := ioutil.ReadDir(resolved)
+		files, _ := ioutil.ReadDir(resolvedTarget)
 		return &DirectoryListing{
 			Files:      readFileNames(files),
-			HrefPrefix: requested}
+			HrefPrefix: requestedTarget}
 	} else {
-		return &FileContents{Filename: resolved}
+		return &FileContents{Filename: resolvedTarget}
 	}
 }
 
