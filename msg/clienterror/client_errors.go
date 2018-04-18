@@ -15,6 +15,13 @@ type BadRequest struct {
 
 func (badRequest BadRequest) WriteTo(client io.Writer) error {
 	msg.WriteStatusLine(client, 400, "Bad Request")
+	//msg.WriteEndOfMessageHeader(client)
+	return nil
+}
+
+func (badRequest BadRequest) WriteHeader(client io.Writer) error {
+	msg.WriteStatusLine(client, 400, "Bad Request")
+	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }
 
@@ -31,5 +38,15 @@ func (notFound NotFound) WriteTo(client io.Writer) error {
 	msg.WriteEndOfMessageHeader(client)
 
 	msg.WriteBody(client, message)
+	return nil
+}
+
+func (notFound NotFound) WriteHeader(client io.Writer) error {
+	msg.WriteStatusLine(client, 404, "Not Found")
+	msg.WriteHeader(client, "Content-Type", "text/plain")
+
+	message := fmt.Sprintf("Not found: %s", notFound.Target)
+	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(message)))
+	msg.WriteEndOfMessageHeader(client)
 	return nil
 }

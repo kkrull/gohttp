@@ -11,6 +11,13 @@ type InternalServerError struct{}
 
 func (internalError InternalServerError) WriteTo(client io.Writer) error {
 	msg.WriteStatusLine(client, 500, "Internal Server Error")
+	//msg.WriteEndOfMessageHeader(client)
+	return nil
+}
+
+func (internalError InternalServerError) WriteHeader(client io.Writer) error {
+	msg.WriteStatusLine(client, 500, "Internal Server Error")
+	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }
 
@@ -20,5 +27,12 @@ type NotImplemented struct {
 
 func (notImplemented NotImplemented) WriteTo(client io.Writer) error {
 	msg.WriteStatusLine(client, 501, "Not Implemented")
+	//msg.WriteEndOfMessageHeader(client)
+	return nil
+}
+
+func (notImplemented NotImplemented) WriteHeader(client io.Writer) error {
+	msg.WriteStatusLine(client, 501, "Not Implemented")
+	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }

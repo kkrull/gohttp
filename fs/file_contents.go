@@ -24,6 +24,13 @@ func (contents FileContents) WriteTo(client io.Writer) error {
 	return nil
 }
 
+func (contents FileContents) WriteHeader(client io.Writer) error {
+	msg.WriteStatusLine(client, 200, "OK")
+	contents.writeHeadersDescribingFile(client)
+	msg.WriteEndOfMessageHeader(client)
+	return nil
+}
+
 func (contents FileContents) writeHeadersDescribingFile(client io.Writer) {
 	msg.WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
 	info, _ := os.Stat(contents.Filename)

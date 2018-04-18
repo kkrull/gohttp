@@ -27,6 +27,16 @@ func (listing DirectoryListing) WriteTo(client io.Writer) error {
 	return nil
 }
 
+func (listing DirectoryListing) WriteHeader(client io.Writer) error {
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteHeader(client, "Content-Type", "text/html")
+
+	message := listing.messageListingFiles()
+	msg.WriteHeader(client, "Content-Length", strconv.Itoa(message.Len()))
+	msg.WriteEndOfMessageHeader(client)
+	return nil
+}
+
 func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {
 	message := &bytes.Buffer{}
 	message.WriteString("<html>\n")

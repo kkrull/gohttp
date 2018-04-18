@@ -35,4 +35,5 @@ type Request interface {
 
 type Response interface {
 	WriteTo(client io.Writer) error
+	WriteHeader(client io.Writer) error
 }

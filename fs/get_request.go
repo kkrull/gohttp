@@ -10,6 +10,20 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
+type HeadRequest struct {
+	Controller Controller
+	Target     string
+}
+
+func (request *HeadRequest) Handle(client io.Writer) error {
+	request.Controller.Head(client, request.Target)
+	return nil
+}
+
+type Controller struct {
+	BaseDirectory string
+}
+
 type GetRequest struct {
 	BaseDirectory string
 	Target        string
@@ -43,4 +57,24 @@ func readFileNames(files []os.FileInfo) []string {
 	}
 
 	return fileNames
+}
+
+func (controller *Controller) Head(client io.Writer, target string) {
+	resolvedTarget := path.Join(controller.BaseDirectory, target)
+	response := controller.determineResponse(target, resolvedTarget)
+	response.WriteHeader(client)
+}
+
+func (controller *Controller) determineResponse(requested, resolved string) http.Response {
+	info, err := os.Stat(resolved)
+	if err != nil {
+		return &clienterror.NotFound{Target: requested}
+	} else if info.IsDir() {
+		files, _ := ioutil.ReadDir(resolved)
+		return &DirectoryListing{
+			Files:      readFileNames(files),
+			HrefPrefix: requested}
+	} else {
+		return &FileContents{Filename: resolved}
+	}
 }

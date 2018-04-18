@@ -3,11 +3,15 @@ package fs
 import "github.com/kkrull/gohttp/http"
 
 func NewRoute(contentRootPath string) http.Route {
-	return &route{ContentRootPath: contentRootPath}
+	return &route{
+		ContentRootPath: contentRootPath,
+		Controller:      Controller{BaseDirectory: contentRootPath},
+	}
 }
 
 type route struct {
 	ContentRootPath string
+	Controller      Controller
 }
 
 func (route route) Route(requested *http.RequestLine) http.Request {
@@ -16,6 +20,11 @@ func (route route) Route(requested *http.RequestLine) http.Request {
 		return &GetRequest{
 			BaseDirectory: route.ContentRootPath,
 			Target:        requested.Target,
+		}
+	case "HEAD":
+		return &HeadRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
 		}
 	default:
 		return nil
