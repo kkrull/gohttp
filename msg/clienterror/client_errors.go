@@ -13,13 +13,11 @@ type BadRequest struct {
 	DisplayText string
 }
 
-func (badRequest BadRequest) WriteTo(client io.Writer) error {
-	msg.WriteStatusLine(client, 400, "Bad Request")
-	//msg.WriteEndOfMessageHeader(client)
-	return nil
+func (badRequest *BadRequest) WriteTo(client io.Writer) error {
+	return badRequest.WriteHeader(client)
 }
 
-func (badRequest BadRequest) WriteHeader(client io.Writer) error {
+func (badRequest *BadRequest) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 400, "Bad Request")
 	//msg.WriteEndOfMessageHeader(client)
 	return nil
@@ -27,26 +25,21 @@ func (badRequest BadRequest) WriteHeader(client io.Writer) error {
 
 type NotFound struct {
 	Target string
+	body string
 }
 
-func (notFound NotFound) WriteTo(client io.Writer) error {
-	msg.WriteStatusLine(client, 404, "Not Found")
-	msg.WriteHeader(client, "Content-Type", "text/plain")
-
-	message := fmt.Sprintf("Not found: %s", notFound.Target)
-	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(message)))
-	msg.WriteEndOfMessageHeader(client)
-
-	msg.WriteBody(client, message)
+func (notFound *NotFound) WriteTo(client io.Writer) error {
+	notFound.WriteHeader(client)
+	msg.WriteBody(client, notFound.body)
 	return nil
 }
 
-func (notFound NotFound) WriteHeader(client io.Writer) error {
+func (notFound *NotFound) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 404, "Not Found")
 	msg.WriteHeader(client, "Content-Type", "text/plain")
 
-	message := fmt.Sprintf("Not found: %s", notFound.Target)
-	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(message)))
+	notFound.body = fmt.Sprintf("Not found: %s", notFound.Target)
+	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(notFound.body)))
 	msg.WriteEndOfMessageHeader(client)
 	return nil
 }
