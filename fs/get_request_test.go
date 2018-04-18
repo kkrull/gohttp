@@ -137,29 +137,6 @@ var _ = Describe("GetRequest", func() {
 	})
 })
 
-var _ = Describe("HeadRequest", func() {
-	Describe("#Handle", func() {
-		var (
-			request  *HeadRequest
-			basePath string
-			response *bytes.Buffer
-			err      error
-		)
-
-		BeforeEach(func() {
-			basePath = makeEmptyTestDirectory("HeadRequest", os.ModePerm)
-			response = &bytes.Buffer{}
-		})
-
-		It("works", func() {
-			request = &HeadRequest{
-				BaseDirectory: basePath,
-				Target:        "/missing.txt"}
-			err = request.Handle(response)
-		})
-	})
-})
-
 func makeEmptyTestDirectory(testName string, fileMode os.FileMode) string {
 	testPath := path.Join(".test", testName)
 	Expect(os.RemoveAll(testPath)).To(Succeed())

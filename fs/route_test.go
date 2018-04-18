@@ -21,14 +21,5 @@ var _ = Describe("Route", func() {
 					Target:        "/foo",
 				}))
 		})
-
-		It("routes HEAD requests to HeadRequest", func() {
-			requested := &http.RequestLine{Method: "HEAD", Target: "/foo"}
-			Expect(router.Route(requested)).To(BeEquivalentTo(
-				&fs.HeadRequest{
-					BaseDirectory: "/public",
-					Target:        "/foo",
-				}))
-		})
 	})
 })

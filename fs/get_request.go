@@ -10,19 +10,6 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
-type HeadRequest struct {
-	BaseDirectory string
-	Target        string
-}
-
-func (request *HeadRequest) Handle(client io.Writer) error {
-	return nil
-}
-
-func (request *HeadRequest) Respond() http.Response {
-	return nil
-}
-
 type GetRequest struct {
 	BaseDirectory string
 	Target        string
