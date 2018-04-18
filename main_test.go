@@ -27,7 +27,8 @@ var _ = Describe("CliCommandParser", func() {
 
 		BeforeEach(func() {
 			interrupts = make(chan os.Signal, 1)
-			parser = NewCliCommandParser(interrupts)
+			factory := InterruptFactory{Interrupts: interrupts}
+			parser = factory.NewCliCommandParser()
 			stderr = &bytes.Buffer{}
 		})
 
@@ -52,7 +53,8 @@ var _ = Describe("CliCommandParser", func() {
 
 		Context("given a complete configuration for the HTTP server", func() {
 			It("returns a RunServerCommand", func() {
-				parser = NewCliCommandParser(interrupts)
+				factory := InterruptFactory{Interrupts: interrupts}
+				parser = factory.NewCliCommandParser()
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				Expect(command).To(BeAssignableToTypeOf(cmd.RunServerCommand{}))
 			})

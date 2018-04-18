@@ -14,10 +14,10 @@ import (
 )
 
 func main() {
+	factory := &InterruptFactory{Interrupts: subscribeToSignals(os.Interrupt)}
 	gohttp := &GoHTTP{
-		Stderr: os.Stderr,
-		Interrupts: subscribeToSignals(os.Interrupt),
-	}
+		Factory: factory,
+		Stderr:  os.Stderr}
 
 	code, err := gohttp.Run(os.Args)
 	if err != nil {
@@ -28,12 +28,12 @@ func main() {
 }
 
 type GoHTTP struct {
-	Stderr io.Writer
-	Interrupts <-chan os.Signal
+	Factory Factory
+	Stderr  io.Writer
 }
 
 func (gohttp *GoHTTP) Run(args []string) (exitCode int, runErr error) {
-	parser := NewCliCommandParser(gohttp.Interrupts)
+	parser := gohttp.Factory.NewCliCommandParser()
 	command := parser.Parse(args)
 	exitCode, runErr = command.Run(gohttp.Stderr)
 	return
@@ -45,14 +45,22 @@ func subscribeToSignals(sig os.Signal) <-chan os.Signal {
 	return interrupts
 }
 
-/* Command parsing */
+type Factory interface {
+	NewCliCommandParser() *CliCommandParser
+}
 
-func NewCliCommandParser(interrupts <-chan os.Signal) *CliCommandParser {
+type InterruptFactory struct {
+	Interrupts <-chan os.Signal
+}
+
+func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
 	return &CliCommandParser{
-		Interrupts:                interrupts,
+		Interrupts:                factory.Interrupts,
 		NewCommandToRunHTTPServer: NewCommandToRunHTTPServer,
 	}
 }
+
+/* Command parsing */
 
 type CliCommandParser struct {
 	Interrupts                <-chan os.Signal
