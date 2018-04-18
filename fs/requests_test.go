@@ -11,31 +11,25 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var _ = Describe("GetRequest", func() {
-	Describe("#Handle", func() {
-		var (
-			request  *GetRequest
-			basePath string
-			response *bytes.Buffer
-			err      error
-		)
+var _ = Describe("Controller", func() {
+	var (
+		controller *Controller
+		basePath   string
+		response   *bytes.Buffer
+	)
 
-		BeforeEach(func() {
-			basePath = makeEmptyTestDirectory("GetRequest", os.ModePerm)
-			response = &bytes.Buffer{}
-		})
+	BeforeEach(func() {
+		basePath = makeEmptyTestDirectory("Controller", os.ModePerm)
+		controller = &Controller{BaseDirectory: basePath}
+		response = &bytes.Buffer{}
+	})
 
+	Describe("#Get", func() {
 		Context("when the resolved target does not exist", func() {
 			BeforeEach(func() {
-				request = &GetRequest{
-					Controller: &Controller{BaseDirectory: basePath},
-					Target:     "/missing.txt"}
-				err = request.Handle(response)
+				controller.Get(response, "/missing.txt")
 			})
 
-			It("returns no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-			})
 			It("Responds with 404 Not Found", func() {
 				Expect(response.String()).To(haveStatus(404, "Not Found"))
 			})
@@ -52,18 +46,11 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the target is a readable text file in the base path", func() {
 			BeforeEach(func() {
-				request = &GetRequest{
-					Controller: &Controller{BaseDirectory: basePath},
-					Target:     "/readable.txt"}
-
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				err = request.Handle(response)
+				controller.Get(response, "/readable.txt")
 			})
 
-			It("returns no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-			})
 			It("responds with 200 OK", func() {
 				Expect(response.String()).To(haveStatus(200, "OK"))
 			})
@@ -80,57 +67,36 @@ var _ = Describe("GetRequest", func() {
 
 		Context("when the target is a readable file named with a registered extension", func() {
 			BeforeEach(func() {
-				request = &GetRequest{
-					Controller: &Controller{BaseDirectory: basePath},
-					Target:     "/image.jpeg"}
-
 				existingFile := path.Join(basePath, "image.jpeg")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				err = request.Handle(response)
 			})
 
-			It("returns no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-			})
 			It("sets Content-Type to the MIME type registered for that extension", func() {
+				controller.Get(response, "/image.jpeg")
 				Expect(response.String()).To(containHeader("Content-Type", "image/jpeg"))
 			})
 		})
 
 		Context("when the target is a readable file without an extension", func() {
 			BeforeEach(func() {
-				request = &GetRequest{
-					Controller: &Controller{BaseDirectory: basePath},
-					Target:     "/assumed-text"}
-
 				existingFile := path.Join(basePath, "assumed-text")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				err = request.Handle(response)
 			})
 
-			It("returns no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-			})
 			It("sets Content-Type to text/plain", func() {
+				controller.Get(response, "/assumed-text")
 				Expect(response.String()).To(containHeader("Content-Type", "text/plain"))
 			})
 		})
 
 		Context("when the target is /", func() {
 			BeforeEach(func() {
-				request = &GetRequest{
-					Controller: &Controller{BaseDirectory: basePath},
-					Target:     "/"}
-
 				existingFile := path.Join(basePath, "one")
 				Expect(createTextFile(existingFile, "1")).To(Succeed())
-				err = request.Handle(response)
 			})
 
-			It("returns no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-			})
 			It("responds with 200 OK", func() {
+				controller.Get(response, "/")
 				Expect(response.String()).To(haveStatus(200, "OK"))
 			})
 		})
