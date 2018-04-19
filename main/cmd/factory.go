@@ -13,15 +13,17 @@ type InterruptFactory struct {
 }
 
 func (factory *InterruptFactory) ErrorCommand(err error) CliCommand {
-	return ErrorCommand{Error: err}
+	return &ErrorCommand{Error: err}
 }
 
 func (factory *InterruptFactory) HelpCommand(flagSet *flag.FlagSet) CliCommand {
-	return HelpCommand{FlagSet: flagSet}
+	return &HelpCommand{FlagSet: flagSet}
 }
 
-func (factory *InterruptFactory) RunCommand(server Server) (CliCommand, chan bool) {
-	return NewRunServerCommand(server)
+func (factory *InterruptFactory) RunCommand(server Server) (command CliCommand, quit chan bool) {
+	quit = make(chan bool, 1)
+	command = RunServerCommand{Server: server, quit: quit}
+	return
 }
 
 func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
@@ -38,5 +40,5 @@ func (factory *InterruptFactory) NewCommandToRunHTTPServer(contentRootPath strin
 		host,
 		port,
 		http.NewConnectionHandler(router))
-	return NewRunServerCommand(server)
+	return factory.RunCommand(server)
 }

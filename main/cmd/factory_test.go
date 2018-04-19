@@ -22,7 +22,7 @@ var _ = Describe("InterruptFactory", func() {
 		It("returns an ErrorCommand with the given error", func() {
 			err := fmt.Errorf("kaboom")
 			command = factory.ErrorCommand(err)
-			Expect(command).To(BeEquivalentTo(cmd.ErrorCommand{Error: err}))
+			Expect(command).To(BeEquivalentTo(&cmd.ErrorCommand{Error: err}))
 		})
 	})
 
@@ -30,7 +30,7 @@ var _ = Describe("InterruptFactory", func() {
 		It("returns HelpCommand", func() {
 			flagSet := flag.NewFlagSet("program", flag.ContinueOnError)
 			command = factory.HelpCommand(flagSet)
-			Expect(command).To(BeIdenticalTo(cmd.HelpCommand{FlagSet: flagSet}))
+			Expect(command).To(BeEquivalentTo(&cmd.HelpCommand{FlagSet: flagSet}))
 		})
 	})
 
