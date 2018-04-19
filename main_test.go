@@ -52,7 +52,7 @@ var _ = Describe("GoHTTP", func() {
 var _ = Describe("CliCommandParser", func() {
 	Describe("#Build", func() {
 		var (
-			parser     *CliCommandParser
+			parser     CommandParser
 			interrupts chan os.Signal
 
 			command CliCommand

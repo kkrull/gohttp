@@ -29,7 +29,7 @@ func main() {
 
 type GoHTTP struct {
 	CommandParser CommandParser
-	Stderr  io.Writer
+	Stderr        io.Writer
 }
 
 func (gohttp *GoHTTP) Run(args []string) (exitCode int, runErr error) {
@@ -43,23 +43,23 @@ func subscribeToSignals(sig os.Signal) <-chan os.Signal {
 	return interrupts
 }
 
-type Factory interface {
-	NewCliCommandParser() *CliCommandParser
-}
-
 type InterruptFactory struct {
 	Interrupts <-chan os.Signal
 }
 
-func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
+func (factory *InterruptFactory) NewCliCommandParser() CommandParser {
 	return &CliCommandParser{
 		Interrupts:                factory.Interrupts,
-		NewCommandToRunHTTPServer: NewCommandToRunHTTPServer,
+		NewCommandToRunHTTPServer: factory.NewCommandToRunHTTPServer,
 	}
 }
 
 type CommandParser interface {
 	Parse(args []string) CliCommand
+}
+
+type CliCommand interface {
+	Run(stderr io.Writer) (code int, err error)
 }
 
 /* Command parsing */
@@ -69,7 +69,7 @@ type CliCommandParser struct {
 	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
 }
 
-func NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
+func (factory *InterruptFactory) NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
 	router := &http.RequestLineRouter{}
 	router.AddRoute(fs.NewRoute(contentRootPath)) //TODO KDK: Add a route here for coffee pots
 	server := http.MakeTCPServerWithHandler(
@@ -113,8 +113,4 @@ func suppressUntimelyOutput(flagSet *flag.FlagSet) {
 func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
 	<-parser.Interrupts
 	quit <- true
-}
-
-type CliCommand interface {
-	Run(stderr io.Writer) (code int, err error)
 }
