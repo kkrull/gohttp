@@ -55,13 +55,13 @@ var _ = Describe("CliCommandParser", func() {
 			parser     CommandParser
 			interrupts chan os.Signal
 
-			command CliCommand
+			command cmd.CliCommand
 			stderr  *bytes.Buffer
 		)
 
 		BeforeEach(func() {
 			interrupts = make(chan os.Signal, 1)
-			factory := InterruptFactory{Interrupts: interrupts}
+			factory := cmd.InterruptFactory{Interrupts: interrupts}
 			parser = factory.NewCliCommandParser()
 			stderr = &bytes.Buffer{}
 		})
@@ -87,7 +87,7 @@ var _ = Describe("CliCommandParser", func() {
 
 		Context("given a complete configuration for the HTTP server", func() {
 			It("returns a RunServerCommand", func() {
-				factory := InterruptFactory{Interrupts: interrupts}
+				factory := cmd.InterruptFactory{Interrupts: interrupts}
 				parser = factory.NewCliCommandParser()
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				Expect(command).To(BeAssignableToTypeOf(cmd.RunServerCommand{}))
@@ -95,9 +95,9 @@ var _ = Describe("CliCommandParser", func() {
 
 			It("the command waits until a signal is sent to the interrupt signal channel", func() {
 				quitHttpServer := make(chan bool, 1)
-				parser = &CliCommandParser{
+				parser = &cmd.CliCommandParser{
 					Interrupts: interrupts,
-					NewCommandToRunHTTPServer: func(string, string, uint16) (CliCommand, chan bool) {
+					NewCommandToRunHTTPServer: func(string, string, uint16) (cmd.CliCommand, chan bool) {
 						return nil, quitHttpServer
 					}}
 

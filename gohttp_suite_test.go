@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/kkrull/gohttp"
+	"github.com/kkrull/gohttp/main/cmd"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -30,11 +30,11 @@ func (mock *CliCommandMock) RunShouldHaveReceived(stderr io.Writer) {
 }
 
 type CommandParserMock struct {
-	ParseReturns main.CliCommand
+	ParseReturns cmd.CliCommand
 	parseArgs    []string
 }
 
-func (mock *CommandParserMock) Parse(args []string) main.CliCommand {
+func (mock *CommandParserMock) Parse(args []string) cmd.CliCommand {
 	mock.parseArgs = make([]string, len(args))
 	copy(mock.parseArgs, args)
 	return mock.ParseReturns
