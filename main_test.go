@@ -15,36 +15,36 @@ import (
 var _ = Describe("GoHTTP", func() {
 	Describe("#Run", func() {
 		var (
-			gohttp *GoHTTP
-			parser *CommandParserMock
-			stderr *bytes.Buffer
+			gohttp  *GoHTTP
+			parser  *CommandParserMock
+			command *CliCommandMock
+			stderr  *bytes.Buffer
 		)
 
-		It("parses a command from the given arguments", func() {
-			command := &CliCommandMock{}
+		BeforeEach(func() {
+			command = &CliCommandMock{}
 			parser = &CommandParserMock{ParseReturns: command}
 			gohttp = &GoHTTP{CommandParser: parser, Stderr: stderr}
+		})
+
+		It("parses a command from the given arguments", func() {
 			gohttp.Run([]string{"save", "world"})
 			parser.ParseShouldHaveReceived([]string{"save", "world"})
 		})
 
 		It("runs the command", func() {
-			command := &CliCommandMock{}
-			parser = &CommandParserMock{ParseReturns: command}
-			gohttp = &GoHTTP{CommandParser: parser, Stderr: stderr}
-			gohttp.Run([]string{"save", "world"})
+			gohttp.Run(nil)
 			command.RunShouldHaveReceived(stderr)
 		})
 
 		It("returns the exit code and any error from running the command", func() {
-			commandErr := fmt.Errorf("bang")
-			command := &CliCommandMock{RunReturnsCode: 42, RunReturnsError: commandErr}
+			command := &CliCommandMock{RunReturnsCode: 42, RunReturnsError: fmt.Errorf("bang")}
 			parser = &CommandParserMock{ParseReturns: command}
 			gohttp = &GoHTTP{CommandParser: parser, Stderr: stderr}
 
-			exitCode, returnedRunErr := gohttp.Run([]string{"save", "world"})
+			exitCode, returnedRunErr := gohttp.Run(nil)
 			Expect(exitCode).To(Equal(42))
-			Expect(returnedRunErr).To(BeIdenticalTo(commandErr))
+			Expect(returnedRunErr).To(BeIdenticalTo(command.RunReturnsError))
 		})
 	})
 })
