@@ -12,7 +12,7 @@ import (
 func main() {
 	factory := &cmd.InterruptFactory{Interrupts: subscribeToSignals(os.Interrupt)}
 	gohttp := &GoHTTP{
-		CommandParser: factory.NewCliCommandParser(),
+		CommandParser: factory.CliCommandParser(),
 		Stderr:        os.Stderr}
 
 	code, err := gohttp.Run(os.Args)

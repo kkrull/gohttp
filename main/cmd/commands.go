@@ -24,12 +24,6 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 	return 0, nil
 }
 
-func NewRunServerCommand(server Server) (command RunServerCommand, quit chan bool) {
-	quit = make(chan bool, 1)
-	command = RunServerCommand{Server: server, quit: quit}
-	return
-}
-
 type RunServerCommand struct {
 	Server Server
 	quit   <-chan bool

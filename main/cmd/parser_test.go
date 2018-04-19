@@ -48,12 +48,22 @@ var _ = Describe("CliCommandParser", func() {
 		})
 
 		Context("given a complete configuration for the HTTP server", func() {
-			XIt("returns a RunServerCommand", func() {
-				runCommand := &CliCommandMock{}
-				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
-				parser = &cmd.CliCommandParser{Factory: factory}
+			var (
+				runCommand *CliCommandMock
+			)
 
+			BeforeEach(func() {
+				runCommand = &CliCommandMock{}
+				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
+
+				parser = &cmd.CliCommandParser{Factory: factory}
 				returned = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
+			})
+
+			It("creates a TCPServer bound to localhost, for the specified port and content directory", func() {
+				factory.TCPServerShouldHaveReceived("/tmp", "localhost", 4242)
+			})
+			It("returns a RunServerCommand", func() {
 				Expect(returned).To(BeIdenticalTo(runCommand))
 			})
 		})
@@ -108,13 +118,15 @@ var _ = Describe("CliCommandParser", func() {
 		})
 
 		Context("given a complete configuration for the HTTP server", func() {
-			It("the command waits until a signal is sent to the interrupt signal channel", func() {
+			XIt("the command waits until a signal is sent to the interrupt signal channel", func() {
 				quitHttpServer := make(chan bool, 1)
 				parser = &cmd.CliCommandParser{
+					Factory: factory,
 					Interrupts: interrupts,
-					NewCommandToRunHTTPServer: func(string, string, uint16) (cmd.CliCommand, chan bool) {
-						return nil, quitHttpServer
-					}}
+					//NewCommandToRunHTTPServer: func(string, string, uint16) (cmd.CliCommand, chan bool) {
+					//	return nil, quitHttpServer
+					//},
+				}
 
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				interrupts <- syscall.SIGINT

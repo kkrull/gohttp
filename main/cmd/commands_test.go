@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -53,16 +54,21 @@ var _ = Describe("CliCommands", func() {
 
 	Describe("RunServerCommand", func() {
 		var (
-			command cmd.RunServerCommand
+			command cmd.CliCommand
+			factory *cmd.InterruptFactory
 			server  ServerMock
 			quit    chan bool
 		)
+
+		BeforeEach(func() {
+			factory = &cmd.InterruptFactory{Interrupts: make(chan os.Signal, 1)}
+		})
 
 		Describe("#Run", func() {
 			Context("given a workable configuration", func() {
 				BeforeEach(func() {
 					server = ServerMock{}
-					command, quit = cmd.NewRunServerCommand(&server)
+					command, quit = factory.RunCommand(&server)
 				})
 
 				It("runs the server until the quit channel receives something", func(done Done) {
@@ -82,7 +88,7 @@ var _ = Describe("CliCommands", func() {
 			Context("when everything has run ok", func() {
 				BeforeEach(func() {
 					server = ServerMock{}
-					command, quit = cmd.NewRunServerCommand(&server)
+					command, quit = factory.RunCommand(&server)
 				})
 
 				It("returns 0 and no error", func() {
@@ -96,7 +102,7 @@ var _ = Describe("CliCommands", func() {
 			Context("when there is an error starting the server", func() {
 				It("returns the error and an exit code indicating failure", func() {
 					server = ServerMock{StartFails: "no listening ears"}
-					command, quit = cmd.NewRunServerCommand(&server)
+					command, quit = factory.RunCommand(&server)
 					code, err = command.Run(stderr)
 					Expect(code).To(Equal(2))
 					Expect(err).To(MatchError("no listening ears"))
@@ -106,7 +112,7 @@ var _ = Describe("CliCommands", func() {
 			Context("when there is an error shutting down", func() {
 				It("returns the error and an exit code indicating failure", func() {
 					server = ServerMock{ShutdownFails: "backfire"}
-					command, quit = cmd.NewRunServerCommand(&server)
+					command, quit = factory.RunCommand(&server)
 					go scheduleShutdown(quit)
 					code, err = command.Run(stderr)
 					Expect(code).To(Equal(3))

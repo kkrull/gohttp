@@ -12,6 +12,13 @@ type InterruptFactory struct {
 	Interrupts <-chan os.Signal
 }
 
+func (factory *InterruptFactory) CliCommandParser() *CliCommandParser {
+	return &CliCommandParser{
+		Factory:    factory,
+		Interrupts: factory.Interrupts,
+	}
+}
+
 func (factory *InterruptFactory) ErrorCommand(err error) CliCommand {
 	return &ErrorCommand{Error: err}
 }
@@ -33,16 +40,4 @@ func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, 
 		host,
 		port,
 		http.NewConnectionHandler(router))
-}
-
-func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
-	return &CliCommandParser{
-		Interrupts:                factory.Interrupts,
-		NewCommandToRunHTTPServer: factory.NewCommandToRunHTTPServer,
-	}
-}
-
-func (factory *InterruptFactory) NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
-	server := factory.TCPServer(contentRootPath, host, port)
-	return factory.RunCommand(server)
 }

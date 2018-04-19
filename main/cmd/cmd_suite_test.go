@@ -46,7 +46,11 @@ type CommandFactoryMock struct {
 	HelpCommandReturns  *CliCommandMock
 	helpCommandReceived *flag.FlagSet
 
-	RunCommandReturns   *CliCommandMock
+	RunCommandReturns *CliCommandMock
+
+	tcpServerReceivedPath string
+	tcpServerReceivedHost string
+	tcpServerReceivedPort uint16
 }
 
 func (mock *CommandFactoryMock) ErrorCommand(err error) cmd.CliCommand {
@@ -71,6 +75,23 @@ func (mock *CommandFactoryMock) HelpCommandShouldBeForProgram(name string) {
 func (mock *CommandFactoryMock) HelpCommandShouldHaveFlag(flagName string, usage string) {
 	ExpectWithOffset(1, mock.helpCommandReceived).NotTo(BeNil())
 	ExpectWithOffset(1, mock.helpCommandReceived.Lookup(flagName).Usage).To(Equal(usage))
+}
+
+func (mock *CommandFactoryMock) RunCommand(server cmd.Server) (command cmd.CliCommand, quit chan bool) {
+	return mock.RunCommandReturns, nil
+}
+
+func (mock *CommandFactoryMock) TCPServer(contentBasePath string, host string, port uint16) cmd.Server {
+	mock.tcpServerReceivedPath = contentBasePath
+	mock.tcpServerReceivedHost = host
+	mock.tcpServerReceivedPort = port
+	return nil
+}
+
+func (mock *CommandFactoryMock) TCPServerShouldHaveReceived(contentRootPath string, host string, port uint16) {
+	ExpectWithOffset(1, mock.tcpServerReceivedPath).To(Equal(contentRootPath))
+	ExpectWithOffset(1, mock.tcpServerReceivedHost).To(Equal(host))
+	ExpectWithOffset(1, mock.tcpServerReceivedPort).To(Equal(port))
 }
 
 /* ServerMock */

@@ -9,13 +9,9 @@ import (
 )
 
 type CliCommandParser struct {
-	Interrupts                <-chan os.Signal
-	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
-	Factory                   CommandFactory
+	Interrupts <-chan os.Signal
+	Factory    CommandFactory
 }
-
-type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (
-	command CliCommand, quit chan bool)
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -35,7 +31,8 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case *port == 0:
 		return parser.Factory.ErrorCommand(fmt.Errorf("missing port"))
 	default:
-		command, quit := parser.NewCommandToRunHTTPServer(*path, host, uint16(*port))
+		server := parser.Factory.TCPServer(*path, host, uint16(*port))
+		command, quit := parser.Factory.RunCommand(server)
 		go parser.sendTrueOnFirstInterruption(quit)
 		return command
 	}
@@ -53,6 +50,8 @@ func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
 type CommandFactory interface {
 	ErrorCommand(err error) CliCommand
 	HelpCommand(flagSet *flag.FlagSet) CliCommand
+	RunCommand(server Server) (command CliCommand, quit chan bool)
+	TCPServer(contentBasePath string, host string, port uint16) Server
 }
 
 type CliCommand interface {

@@ -70,8 +70,4 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
 		})
 	})
-
-	Describe("NewCommandToRunHTTPServer", func() {
-		XIt("configures a coffee route")
-	})
 })
