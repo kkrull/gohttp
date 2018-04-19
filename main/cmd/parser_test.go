@@ -2,6 +2,7 @@ package cmd_test
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"syscall"
 
@@ -45,6 +46,39 @@ var _ = Describe("CliCommandParser", func() {
 				factory.HelpCommandShouldHaveFlag("p", "The TCP port on which to listen")
 			})
 		})
+
+		Context("given unrecognized arguments", func() {
+			It("returns an ErrorCommand", func() {
+				errorCommand := &CliCommandMock{}
+				factory = &CommandFactoryMock{ErrorCommandReturns: errorCommand}
+				parser = &cmd.CliCommandParser{Factory: factory}
+
+				returned = parser.Parse([]string{"gohttp", "--bogus"})
+				Expect(returned).To(BeIdenticalTo(errorCommand))
+			})
+		})
+
+		Context("when the path is missing", func() {
+			It("returns an ErrorCommand stating that the path is missing", func() {
+				errorCommand := &CliCommandMock{}
+				factory = &CommandFactoryMock{ErrorCommandReturns: errorCommand}
+				parser = &cmd.CliCommandParser{Factory: factory}
+
+				returned = parser.Parse([]string{"gohttp", "-p", "4242"})
+				factory.ErrorCommandShouldHaveReceived(fmt.Errorf("missing path"))
+			})
+		})
+
+		Context("when the port is missing", func() {
+			It("returns ErrorCommand", func() {
+				errorCommand := &CliCommandMock{}
+				factory = &CommandFactoryMock{ErrorCommandReturns: errorCommand}
+				parser = &cmd.CliCommandParser{Factory: factory}
+
+				returned = parser.Parse([]string{"gohttp", "-d", "/tmp"})
+				factory.ErrorCommandShouldHaveReceived(fmt.Errorf("missing port"))
+			})
+		})
 	})
 
 	Describe("#Build", func() {
@@ -83,27 +117,6 @@ var _ = Describe("CliCommandParser", func() {
 				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				interrupts <- syscall.SIGINT
 				Eventually(quitHttpServer).Should(Receive())
-			})
-		})
-
-		Context("given unrecognized arguments", func() {
-			It("returns ErrorCommand", func() {
-				command = parser.Parse([]string{"gohttp", "--bogus"})
-				Expect(command).To(BeAssignableToTypeOf(cmd.ErrorCommand{}))
-			})
-		})
-
-		Context("when the path is missing", func() {
-			It("returns ErrorCommand", func() {
-				command = parser.Parse([]string{"gohttp", "-p", "4242"})
-				Expect(command).To(BeAssignableToTypeOf(cmd.ErrorCommand{}))
-			})
-		})
-
-		Context("when the port is missing", func() {
-			It("returns ErrorCommand", func() {
-				command = parser.Parse([]string{"gohttp", "-d", "/tmp"})
-				Expect(command).To(BeAssignableToTypeOf(cmd.ErrorCommand{}))
 			})
 		})
 	})

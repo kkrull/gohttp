@@ -29,11 +29,11 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	case err == flag.ErrHelp:
 		return parser.Factory.HelpCommand(flagSet)
 	case err != nil:
-		return ErrorCommand{Error: err}
+		return parser.Factory.ErrorCommand(err)
 	case *path == "":
-		return ErrorCommand{Error: fmt.Errorf("missing path")}
+		return parser.Factory.ErrorCommand(fmt.Errorf("missing path"))
 	case *port == 0:
-		return ErrorCommand{Error: fmt.Errorf("missing port")}
+		return parser.Factory.ErrorCommand(fmt.Errorf("missing port"))
 	default:
 		command, quit := parser.NewCommandToRunHTTPServer(*path, host, uint16(*port))
 		go parser.sendTrueOnFirstInterruption(quit)
@@ -51,6 +51,7 @@ func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
 }
 
 type CommandFactory interface {
+	ErrorCommand(err error) CliCommand
 	HelpCommand(flagSet *flag.FlagSet) CliCommand
 }
 

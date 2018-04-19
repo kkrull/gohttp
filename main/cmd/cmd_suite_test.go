@@ -40,8 +40,20 @@ func (mock *CliCommandMock) Run(stderr io.Writer) (code int, err error) {
 /* CommandFactoryMock */
 
 type CommandFactoryMock struct {
+	ErrorCommandReturns  *CliCommandMock
+	errorCommandReceived error
+
 	HelpCommandReturns  *CliCommandMock
 	helpCommandReceived *flag.FlagSet
+}
+
+func (mock *CommandFactoryMock) ErrorCommand(err error) cmd.CliCommand {
+	mock.errorCommandReceived = err
+	return mock.ErrorCommandReturns
+}
+
+func (mock *CommandFactoryMock) ErrorCommandShouldHaveReceived(err error) {
+	ExpectWithOffset(1, mock.errorCommandReceived).To(BeEquivalentTo(err))
 }
 
 func (mock *CommandFactoryMock) HelpCommand(flagSet *flag.FlagSet) cmd.CliCommand {

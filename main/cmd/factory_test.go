@@ -2,6 +2,7 @@ package cmd_test
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/kkrull/gohttp/main/cmd"
 	. "github.com/onsi/ginkgo"
@@ -14,6 +15,14 @@ var _ = Describe("InterruptFactory", func() {
 
 	BeforeEach(func() {
 		factory = &cmd.InterruptFactory{}
+	})
+
+	Describe("#ErrorCommand", func() {
+		It("returns an ErrorCommand with the given error", func() {
+			err := fmt.Errorf("kaboom")
+			command = factory.ErrorCommand(err)
+			Expect(command).To(BeEquivalentTo(cmd.ErrorCommand{Error: err}))
+		})
 	})
 
 	Describe("#HelpCommand", func() {

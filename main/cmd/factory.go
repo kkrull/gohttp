@@ -12,6 +12,10 @@ type InterruptFactory struct {
 	Interrupts <-chan os.Signal
 }
 
+func (factory *InterruptFactory) ErrorCommand(err error) CliCommand {
+	return ErrorCommand{Error: err}
+}
+
 func (factory *InterruptFactory) HelpCommand(flagSet *flag.FlagSet) CliCommand {
 	return HelpCommand{FlagSet: flagSet}
 }
