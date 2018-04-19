@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestGohttp(t *testing.T) {
+func TestMain(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "main suite")
+	RunSpecs(t, "main")
 }
 
 type CliCommandMock struct {

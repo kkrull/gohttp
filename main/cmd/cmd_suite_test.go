@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCmd(t *testing.T) {
+func TestMainCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "cmd Suite")
+	RunSpecs(t, "main/cmd")
 }
 
 /* Synchronization */
