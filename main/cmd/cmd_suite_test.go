@@ -45,6 +45,8 @@ type CommandFactoryMock struct {
 
 	HelpCommandReturns  *CliCommandMock
 	helpCommandReceived *flag.FlagSet
+
+	RunCommandReturns   *CliCommandMock
 }
 
 func (mock *CommandFactoryMock) ErrorCommand(err error) cmd.CliCommand {

@@ -47,6 +47,17 @@ var _ = Describe("CliCommandParser", func() {
 			})
 		})
 
+		Context("given a complete configuration for the HTTP server", func() {
+			XIt("returns a RunServerCommand", func() {
+				runCommand := &CliCommandMock{}
+				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
+				parser = &cmd.CliCommandParser{Factory: factory}
+
+				returned = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
+				Expect(returned).To(BeIdenticalTo(runCommand))
+			})
+		})
+
 		Describe("parsing failures", func() {
 			var errorCommand *CliCommandMock
 
@@ -97,13 +108,6 @@ var _ = Describe("CliCommandParser", func() {
 		})
 
 		Context("given a complete configuration for the HTTP server", func() {
-			It("returns a RunServerCommand", func() {
-				factory := cmd.InterruptFactory{Interrupts: interrupts}
-				parser = factory.NewCliCommandParser()
-				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
-				Expect(command).To(BeAssignableToTypeOf(cmd.RunServerCommand{}))
-			})
-
 			It("the command waits until a signal is sent to the interrupt signal channel", func() {
 				quitHttpServer := make(chan bool, 1)
 				parser = &cmd.CliCommandParser{
