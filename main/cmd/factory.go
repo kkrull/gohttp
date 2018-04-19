@@ -26,6 +26,15 @@ func (factory *InterruptFactory) RunCommand(server Server) (command CliCommand, 
 	return
 }
 
+func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, port uint16) Server {
+	router := &http.RequestLineRouter{}
+	router.AddRoute(fs.NewRoute(contentRootPath)) //TODO KDK: Add a route here for coffee pots
+	return http.MakeTCPServerWithHandler(
+		host,
+		port,
+		http.NewConnectionHandler(router))
+}
+
 func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
 	return &CliCommandParser{
 		Interrupts:                factory.Interrupts,
@@ -34,11 +43,6 @@ func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
 }
 
 func (factory *InterruptFactory) NewCommandToRunHTTPServer(contentRootPath string, host string, port uint16) (CliCommand, chan bool) {
-	router := &http.RequestLineRouter{}
-	router.AddRoute(fs.NewRoute(contentRootPath)) //TODO KDK: Add a route here for coffee pots
-	server := http.MakeTCPServerWithHandler(
-		host,
-		port,
-		http.NewConnectionHandler(router))
+	server := factory.TCPServer(contentRootPath, host, port)
 	return factory.RunCommand(server)
 }
