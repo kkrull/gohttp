@@ -46,7 +46,8 @@ type CommandFactoryMock struct {
 	HelpCommandReturns  *CliCommandMock
 	helpCommandReceived *flag.FlagSet
 
-	RunCommandReturns *CliCommandMock
+	RunCommandReturns        *CliCommandMock
+	RunCommandReturnsChannel chan bool
 
 	tcpServerReceivedPath string
 	tcpServerReceivedHost string
@@ -78,7 +79,7 @@ func (mock *CommandFactoryMock) HelpCommandShouldHaveFlag(flagName string, usage
 }
 
 func (mock *CommandFactoryMock) RunCommand(server cmd.Server) (command cmd.CliCommand, quit chan bool) {
-	return mock.RunCommandReturns, nil
+	return mock.RunCommandReturns, mock.RunCommandReturnsChannel
 }
 
 func (mock *CommandFactoryMock) TCPServer(contentBasePath string, host string, port uint16) cmd.Server {

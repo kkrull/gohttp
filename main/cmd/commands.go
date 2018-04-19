@@ -26,7 +26,7 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 
 type RunServerCommand struct {
 	Server Server
-	quit   <-chan bool
+	Quit   <-chan bool
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
@@ -43,7 +43,7 @@ func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
 }
 
 func (command RunServerCommand) waitForShutdownRequest() {
-	<-command.quit
+	<-command.Quit
 }
 
 type Server interface {

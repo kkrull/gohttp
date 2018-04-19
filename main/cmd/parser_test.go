@@ -48,23 +48,43 @@ var _ = Describe("CliCommandParser", func() {
 		})
 
 		Context("given a complete configuration for the HTTP server", func() {
-			var (
-				runCommand *CliCommandMock
-			)
-
-			BeforeEach(func() {
-				runCommand = &CliCommandMock{}
-				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
-
-				parser = &cmd.CliCommandParser{Factory: factory}
-				returned = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
-			})
+			var runCommand *CliCommandMock
 
 			It("creates a TCPServer bound to localhost, for the specified port and content directory", func() {
+				runCommand = &CliCommandMock{}
+				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
+				parser = &cmd.CliCommandParser{
+					Factory:    factory,
+					Interrupts: interrupts,
+				}
+
+				returned = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				factory.TCPServerShouldHaveReceived("/tmp", "localhost", 4242)
 			})
+
 			It("returns a RunServerCommand", func() {
+				runCommand = &CliCommandMock{}
+				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
+				parser = &cmd.CliCommandParser{
+					Factory:    factory,
+					Interrupts: interrupts,
+				}
+
+				returned = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
 				Expect(returned).To(BeIdenticalTo(runCommand))
+			})
+
+			It("wires interrupt signals on the .Interrupts channel to the channel used to terminate the command", func() {
+				quitCommand := make(chan bool, 1)
+				factory = &CommandFactoryMock{RunCommandReturnsChannel: quitCommand}
+				parser = &cmd.CliCommandParser{
+					Factory:    factory,
+					Interrupts: interrupts,
+				}
+
+				parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
+				interrupts <- syscall.SIGINT
+				Eventually(quitCommand).Should(Receive())
 			})
 		})
 
@@ -96,41 +116,6 @@ var _ = Describe("CliCommandParser", func() {
 					returned = parser.Parse([]string{"gohttp", "-d", "/tmp"})
 					factory.ErrorCommandShouldHaveReceived(fmt.Errorf("missing port"))
 				})
-			})
-		})
-	})
-
-	Describe("#Build", func() {
-		var (
-			parser     *cmd.CliCommandParser
-			factory    *cmd.InterruptFactory
-			interrupts chan os.Signal
-
-			command cmd.CliCommand
-			stderr  *bytes.Buffer
-		)
-
-		BeforeEach(func() {
-			interrupts = make(chan os.Signal, 1)
-			factory = &cmd.InterruptFactory{Interrupts: interrupts}
-			parser = &cmd.CliCommandParser{Factory: factory}
-			stderr = &bytes.Buffer{}
-		})
-
-		Context("given a complete configuration for the HTTP server", func() {
-			XIt("the command waits until a signal is sent to the interrupt signal channel", func() {
-				quitHttpServer := make(chan bool, 1)
-				parser = &cmd.CliCommandParser{
-					Factory: factory,
-					Interrupts: interrupts,
-					//NewCommandToRunHTTPServer: func(string, string, uint16) (cmd.CliCommand, chan bool) {
-					//	return nil, quitHttpServer
-					//},
-				}
-
-				command = parser.Parse([]string{"gohttp", "-p", "4242", "-d", "/tmp"})
-				interrupts <- syscall.SIGINT
-				Eventually(quitHttpServer).Should(Receive())
 			})
 		})
 	})

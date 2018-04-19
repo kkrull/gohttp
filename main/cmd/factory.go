@@ -29,7 +29,7 @@ func (factory *InterruptFactory) HelpCommand(flagSet *flag.FlagSet) CliCommand {
 
 func (factory *InterruptFactory) RunCommand(server Server) (command CliCommand, quit chan bool) {
 	quit = make(chan bool, 1)
-	command = RunServerCommand{Server: server, quit: quit}
+	command = RunServerCommand{Server: server, Quit: quit}
 	return
 }
 
