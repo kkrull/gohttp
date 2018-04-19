@@ -9,8 +9,8 @@ import (
 )
 
 type CliCommandParser struct {
+	Factory    AppFactory
 	Interrupts <-chan os.Signal
-	Factory    CommandFactory
 }
 
 func (parser *CliCommandParser) Parse(args []string) CliCommand {
@@ -47,7 +47,7 @@ func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
 	quit <- true
 }
 
-type CommandFactory interface {
+type AppFactory interface {
 	ErrorCommand(err error) CliCommand
 	HelpCommand(flagSet *flag.FlagSet) CliCommand
 	RunCommand(server Server) (command CliCommand, quit chan bool)

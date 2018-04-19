@@ -37,9 +37,9 @@ func (mock *CliCommandMock) Run(stderr io.Writer) (code int, err error) {
 	return -1, nil
 }
 
-/* CommandFactoryMock */
+/* AppFactoryMock */
 
-type CommandFactoryMock struct {
+type AppFactoryMock struct {
 	ErrorCommandReturns  *CliCommandMock
 	errorCommandReceived error
 
@@ -54,42 +54,42 @@ type CommandFactoryMock struct {
 	tcpServerReceivedPort uint16
 }
 
-func (mock *CommandFactoryMock) ErrorCommand(err error) cmd.CliCommand {
+func (mock *AppFactoryMock) ErrorCommand(err error) cmd.CliCommand {
 	mock.errorCommandReceived = err
 	return mock.ErrorCommandReturns
 }
 
-func (mock *CommandFactoryMock) ErrorCommandShouldHaveReceived(err error) {
+func (mock *AppFactoryMock) ErrorCommandShouldHaveReceived(err error) {
 	ExpectWithOffset(1, mock.errorCommandReceived).To(BeEquivalentTo(err))
 }
 
-func (mock *CommandFactoryMock) HelpCommand(flagSet *flag.FlagSet) cmd.CliCommand {
+func (mock *AppFactoryMock) HelpCommand(flagSet *flag.FlagSet) cmd.CliCommand {
 	mock.helpCommandReceived = flagSet
 	return mock.HelpCommandReturns
 }
 
-func (mock *CommandFactoryMock) HelpCommandShouldBeForProgram(name string) {
+func (mock *AppFactoryMock) HelpCommandShouldBeForProgram(name string) {
 	ExpectWithOffset(1, mock.helpCommandReceived).NotTo(BeNil())
 	ExpectWithOffset(1, mock.helpCommandReceived.Name()).To(Equal(name))
 }
 
-func (mock *CommandFactoryMock) HelpCommandShouldHaveFlag(flagName string, usage string) {
+func (mock *AppFactoryMock) HelpCommandShouldHaveFlag(flagName string, usage string) {
 	ExpectWithOffset(1, mock.helpCommandReceived).NotTo(BeNil())
 	ExpectWithOffset(1, mock.helpCommandReceived.Lookup(flagName).Usage).To(Equal(usage))
 }
 
-func (mock *CommandFactoryMock) RunCommand(server cmd.Server) (command cmd.CliCommand, quit chan bool) {
+func (mock *AppFactoryMock) RunCommand(server cmd.Server) (command cmd.CliCommand, quit chan bool) {
 	return mock.RunCommandReturns, mock.RunCommandReturnsChannel
 }
 
-func (mock *CommandFactoryMock) TCPServer(contentBasePath string, host string, port uint16) cmd.Server {
+func (mock *AppFactoryMock) TCPServer(contentBasePath string, host string, port uint16) cmd.Server {
 	mock.tcpServerReceivedPath = contentBasePath
 	mock.tcpServerReceivedHost = host
 	mock.tcpServerReceivedPort = port
 	return nil
 }
 
-func (mock *CommandFactoryMock) TCPServerShouldHaveReceived(contentRootPath string, host string, port uint16) {
+func (mock *AppFactoryMock) TCPServerShouldHaveReceived(contentRootPath string, host string, port uint16) {
 	ExpectWithOffset(1, mock.tcpServerReceivedPath).To(Equal(contentRootPath))
 	ExpectWithOffset(1, mock.tcpServerReceivedHost).To(Equal(host))
 	ExpectWithOffset(1, mock.tcpServerReceivedPort).To(Equal(port))

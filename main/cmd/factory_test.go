@@ -14,7 +14,7 @@ import (
 var _ = Describe("InterruptFactory", func() {
 	var factory *cmd.InterruptFactory
 
-	Describe("CommandFactory implementation", func() {
+	Describe("CliCommand methods", func() {
 		var command cmd.CliCommand
 
 		BeforeEach(func() {
@@ -40,7 +40,7 @@ var _ = Describe("InterruptFactory", func() {
 		Describe("#RunCommand", func() {
 			var (
 				server *ServerMock
-				quit chan bool
+				quit   chan bool
 			)
 
 			BeforeEach(func() {

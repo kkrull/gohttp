@@ -15,7 +15,7 @@ var _ = Describe("CliCommandParser", func() {
 	Describe("#Build", func() {
 		var (
 			parser     *cmd.CliCommandParser
-			factory    *CommandFactoryMock
+			factory    *AppFactoryMock
 			interrupts chan os.Signal
 
 			returned cmd.CliCommand
@@ -30,7 +30,7 @@ var _ = Describe("CliCommandParser", func() {
 		Context("given --help", func() {
 			BeforeEach(func() {
 				helpCommand := &CliCommandMock{}
-				factory = &CommandFactoryMock{HelpCommandReturns: helpCommand}
+				factory = &AppFactoryMock{HelpCommandReturns: helpCommand}
 				parser = &cmd.CliCommandParser{Factory: factory}
 
 				returned = parser.Parse([]string{"/path/to/gohttp", "--help"})
@@ -52,7 +52,7 @@ var _ = Describe("CliCommandParser", func() {
 
 			It("creates a TCPServer bound to localhost, for the specified port and content directory", func() {
 				runCommand = &CliCommandMock{}
-				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
+				factory = &AppFactoryMock{RunCommandReturns: runCommand}
 				parser = &cmd.CliCommandParser{
 					Factory:    factory,
 					Interrupts: interrupts,
@@ -64,7 +64,7 @@ var _ = Describe("CliCommandParser", func() {
 
 			It("returns a RunServerCommand", func() {
 				runCommand = &CliCommandMock{}
-				factory = &CommandFactoryMock{RunCommandReturns: runCommand}
+				factory = &AppFactoryMock{RunCommandReturns: runCommand}
 				parser = &cmd.CliCommandParser{
 					Factory:    factory,
 					Interrupts: interrupts,
@@ -76,7 +76,7 @@ var _ = Describe("CliCommandParser", func() {
 
 			It("wires interrupt signals on the .Interrupts channel to the channel used to terminate the command", func() {
 				quitCommand := make(chan bool, 1)
-				factory = &CommandFactoryMock{RunCommandReturnsChannel: quitCommand}
+				factory = &AppFactoryMock{RunCommandReturnsChannel: quitCommand}
 				parser = &cmd.CliCommandParser{
 					Factory:    factory,
 					Interrupts: interrupts,
@@ -93,7 +93,7 @@ var _ = Describe("CliCommandParser", func() {
 
 			BeforeEach(func() {
 				errorCommand = &CliCommandMock{}
-				factory = &CommandFactoryMock{ErrorCommandReturns: errorCommand}
+				factory = &AppFactoryMock{ErrorCommandReturns: errorCommand}
 				parser = &cmd.CliCommandParser{Factory: factory}
 			})
 
