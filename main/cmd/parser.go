@@ -8,13 +8,10 @@ import (
 	"os"
 )
 
-type CommandFactory interface {
-}
-
 type CliCommandParser struct {
 	Interrupts                <-chan os.Signal
 	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
-	Factory                   *InterruptFactory
+	Factory                   CommandFactory
 }
 
 type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (
@@ -30,7 +27,7 @@ func (parser *CliCommandParser) Parse(args []string) CliCommand {
 	err := flagSet.Parse(args[1:])
 	switch {
 	case err == flag.ErrHelp:
-		return HelpCommand{FlagSet: flagSet}
+		return parser.Factory.HelpCommand(flagSet)
 	case err != nil:
 		return ErrorCommand{Error: err}
 	case *path == "":
@@ -51,6 +48,10 @@ func suppressUntimelyOutput(flagSet *flag.FlagSet) {
 func (parser *CliCommandParser) sendTrueOnFirstInterruption(quit chan<- bool) {
 	<-parser.Interrupts
 	quit <- true
+}
+
+type CommandFactory interface {
+	HelpCommand(flagSet *flag.FlagSet) CliCommand
 }
 
 type CliCommand interface {

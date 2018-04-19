@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"flag"
 	"os"
 
 	"github.com/kkrull/gohttp/fs"
@@ -9,6 +10,10 @@ import (
 
 type InterruptFactory struct {
 	Interrupts <-chan os.Signal
+}
+
+func (factory *InterruptFactory) HelpCommand(flagSet *flag.FlagSet) CliCommand {
+	return HelpCommand{FlagSet: flagSet}
 }
 
 func (factory *InterruptFactory) NewCliCommandParser() *CliCommandParser {
