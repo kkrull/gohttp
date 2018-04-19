@@ -8,9 +8,13 @@ import (
 	"os"
 )
 
+type CommandFactory interface {
+}
+
 type CliCommandParser struct {
 	Interrupts                <-chan os.Signal
 	NewCommandToRunHTTPServer MakeCommandToRunHTTPServer
+	Factory                   *InterruptFactory
 }
 
 type MakeCommandToRunHTTPServer func(contentRootPath string, host string, port uint16) (

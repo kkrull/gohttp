@@ -6,8 +6,6 @@ import (
 	"net"
 )
 
-/* ErrorCommand */
-
 type ErrorCommand struct {
 	Error error
 }
@@ -15,8 +13,6 @@ type ErrorCommand struct {
 func (command ErrorCommand) Run(stderr io.Writer) (code int, err error) {
 	return 1, command.Error
 }
-
-/* HelpCommand */
 
 type HelpCommand struct {
 	FlagSet *flag.FlagSet
@@ -28,8 +24,6 @@ func (command HelpCommand) Run(stderr io.Writer) (code int, err error) {
 	return 0, nil
 }
 
-/* RunServerCommand */
-
 func NewRunServerCommand(server Server) (command RunServerCommand, quit chan bool) {
 	quit = make(chan bool, 1)
 	command = RunServerCommand{Server: server, quit: quit}
@@ -39,12 +33,6 @@ func NewRunServerCommand(server Server) (command RunServerCommand, quit chan boo
 type RunServerCommand struct {
 	Server Server
 	quit   <-chan bool
-}
-
-type Server interface {
-	Address() net.Addr
-	Start() error
-	Shutdown() error
 }
 
 func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
@@ -62,4 +50,10 @@ func (command RunServerCommand) Run(stderr io.Writer) (code int, err error) {
 
 func (command RunServerCommand) waitForShutdownRequest() {
 	<-command.quit
+}
+
+type Server interface {
+	Address() net.Addr
+	Start() error
+	Shutdown() error
 }

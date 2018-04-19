@@ -14,6 +14,7 @@ var _ = Describe("CliCommandParser", func() {
 	Describe("#Build", func() {
 		var (
 			parser     *cmd.CliCommandParser
+			factory    *cmd.InterruptFactory
 			interrupts chan os.Signal
 
 			command cmd.CliCommand
@@ -22,8 +23,8 @@ var _ = Describe("CliCommandParser", func() {
 
 		BeforeEach(func() {
 			interrupts = make(chan os.Signal, 1)
-			factory := cmd.InterruptFactory{Interrupts: interrupts}
-			parser = factory.NewCliCommandParser()
+			factory = &cmd.InterruptFactory{Interrupts: interrupts}
+			parser = &cmd.CliCommandParser{Factory: factory}
 			stderr = &bytes.Buffer{}
 		})
 
