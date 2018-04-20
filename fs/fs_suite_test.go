@@ -12,7 +12,7 @@ import (
 
 func TestFs(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "fs Suite")
+	RunSpecs(t, "fs")
 }
 
 /* HttpMessage */
