@@ -8,26 +8,97 @@ This is an HTTP server for Go.
 This is being developed on Go 1.10, 64-bit.
 
 
-## Running
+## Installation
+
+Install Go 1.10 with [their installer](https://golang.org/doc/install), or with `brew install go` if you use homebrew.
+
+
+### Set up Go environment
+
+Go recommends following a few conventions on setting up your environment
+
+* Set `GOPATH`.  You can set it to the value from `go env GOPATH`, if you're not sure of the conventional path
+  on your system.
+* Add Go binaries to your system path.  I recommend putting the following into your startup scripts (`.bash_profile` et al)
 
 ```bash
-go run /path/to/github.com/kkrull/gohttp/gohttp.go -p <port> -d <content root directory>
+go version >/dev/null 2>&1
+if (( $? == 0 ))
+then
+  export PATH="$PATH:$(go env GOPATH)/bin"
+fi
 ```
 
-Note: It may be necessary to run `go build` the `gohttp` executable separately, if a
-[graceful exit code from `SIGTERM`](https://stackoverflow.com/questions/11268943/is-it-possible-to-capture-a-ctrlc-signal-and-run-a-cleanup-function-in-a-defe)
-is desired.
+
+### Install support tools
+
+This installs [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports) for formatting and organizing imports
+and [ginkgo](http://onsi.github.io/ginkgo/) for spec-style testing.
+
+```bash
+$ go get github.com/onsi/ginkgo/ginkgo
+$ go get golang.org/x/tools/cmd/goimports
+```
+
+When you are done, `GOPATH/bin` should contain `ginkgo` and `goimports`.  
+`which ginkgo` and `which goimports` should then work if the binaries are installed and present in your `PATH`.
+
+
+### Clone this repository
+
+```bash
+$ cd $(go env GOPATH)
+$ mkdir src
+$ cd src
+$ git clone git@github.com:kkrull/gohttp.git
+```
+
+
+## Running
+
+From the path where you cloned this repository:
+
+```bash
+$ go get -t -u -v
+$ go build
+$ ./gohttp -p <port> -d <content root directory>
+```
+
+Note that if you build and run this with `go run`, it will not
+[handle `SIGTERM` from Ctrl+C](https://stackoverflow.com/questions/11268943/is-it-possible-to-capture-a-ctrlc-signal-and-run-a-cleanup-function-in-a-defe)
+correctly.
+
+When you want to exit the server, press `Ctrl+C`.
 
 
 ## Testing
 
 ```bash
 $ go get -t #Download dependencies, including those used by tests
-$ ginkgo watch #Watch source/test files for changes
+$ ginkgo -r #Run tests in all packages
 ```
 
+Continuous Integration happens on [Travis CI](https://travis-ci.org/kkrull/gohttp).
+See `.travis.yml` in this repository for details in the CI environment and how the tests are run.
 
-## TCP Traffic
+Additional testing is performed by a version of `cob_spec` that has been configured to start/stop this server.
+This version of `cob_spec` can be found [on GitHub](https://github.com/kkrull/cob_spec).
+
+
+## Support scripts
+
+A few steps of the development process are being automated, as the project takes shape.
+These are located in the `bin/` directory:
+
+* `bin/build-and-start.sh`: Re-builds the local binary `gohttp` and runs it.  Pass it the same options you would if you
+  were running `gohttp` directly.
+* `bin/update-dependencies.sh`: Updates all Go libraries in your `GOPATH` and runs tests to make sure everything still
+  works.  *Note that this repository's current branch must have an upstream branch, for this to work.*
+
+
+## Developer notes
+
+### TCP Traffic
 
 When the server just listens, accepts, and closes a connection.
 
