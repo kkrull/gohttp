@@ -3,7 +3,9 @@ package cmd_test
 import (
 	"flag"
 	"fmt"
+	"os"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
 	. "github.com/onsi/ginkgo"
@@ -12,7 +14,10 @@ import (
 )
 
 var _ = Describe("InterruptFactory", func() {
-	var factory *cmd.InterruptFactory
+	var (
+		factory    *cmd.InterruptFactory
+		interrupts chan os.Signal
+	)
 
 	Describe("CliCommand methods", func() {
 		var command cmd.CliCommand
@@ -69,7 +74,17 @@ var _ = Describe("InterruptFactory", func() {
 			server = factory.TCPServer("/public", "localhost", 8421)
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
 		})
+
 		XIt("sets the coffee route first")
-		XIt("sets the fs route last")
+
+		It("sets the fs route", func() {
+			interrupts = make(chan os.Signal, 1)
+			factory = &cmd.InterruptFactory{Interrupts: interrupts}
+			server = factory.TCPServer("/public", "localhost", 8421)
+
+			typedServer, _ := server.(*http.TCPServer)
+			firstRoute := typedServer.Routes()[0]
+			Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("a")))
+		})
 	})
 })

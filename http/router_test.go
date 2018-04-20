@@ -83,8 +83,8 @@ var _ = Describe("RequestLineRouter", func() {
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
-				router = &http.RequestLineRouter{
-					Routes: []http.Route{matchAllRoute}}
+				router = &http.RequestLineRouter{}
+				router.AddRoute(matchAllRoute)
 				request, err = router.ParseRequest(reader)
 			})
 
@@ -112,8 +112,9 @@ var _ = Describe("RequestLineRouter", func() {
 			)
 
 			BeforeEach(func() {
-				router = &http.RequestLineRouter{
-					Routes: []http.Route{unrelatedRoute, matchingRoute}}
+				router = &http.RequestLineRouter{}
+				router.AddRoute(unrelatedRoute)
+				router.AddRoute(matchingRoute)
 				request, err = router.ParseRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
 			})
 

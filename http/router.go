@@ -9,11 +9,17 @@ import (
 )
 
 type RequestLineRouter struct {
-	Routes []Route
+	routes []Route
 }
 
 func (router *RequestLineRouter) AddRoute(route Route) {
-	router.Routes = append(router.Routes, route)
+	router.routes = append(router.routes, route)
+}
+
+func (router *RequestLineRouter) Routes() []Route {
+	routes := make([]Route, len(router.routes))
+	copy(routes, router.routes)
+	return routes
 }
 
 func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, routeError Response) {
@@ -91,7 +97,7 @@ func parseRequestLine(text string) (*RequestLine, Response) {
 }
 
 func (router RequestLineRouter) routeRequest(requested *RequestLine) Request {
-	for _, route := range router.Routes {
+	for _, route := range router.routes {
 		request := route.Route(requested)
 		if request != nil {
 			return request

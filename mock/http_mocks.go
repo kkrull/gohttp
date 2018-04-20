@@ -24,11 +24,19 @@ func (mock *Handler) ShouldHandleConnection() {
 	Expect(mock.handleResponseWriter).NotTo(BeNil())
 }
 
+func (mock *Handler) Routes() []http.Route {
+	return nil
+}
+
 type Router struct {
 	ReturnsRequest http.Request
 	ReturnsError   http.Response
 	receivedReader *bufio.Reader
 	parsed         []byte
+}
+
+func (mock *Router) Routes() []http.Route {
+	return nil
 }
 
 func (mock *Router) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
