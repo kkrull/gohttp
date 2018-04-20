@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/kkrull/gohttp/coffee"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 )
@@ -35,7 +36,8 @@ func (factory *InterruptFactory) RunCommand(server Server) (command CliCommand, 
 
 func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, port uint16) Server {
 	router := &http.RequestLineRouter{}
-	router.AddRoute(fs.NewRoute(contentRootPath)) //TODO KDK: Add a route here for coffee pots
+	router.AddRoute(coffee.NewRoute())
+	router.AddRoute(fs.NewRoute(contentRootPath))
 	return http.MakeTCPServerWithHandler(
 		host,
 		port,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kkrull/gohttp/coffee"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
@@ -67,24 +68,31 @@ var _ = Describe("InterruptFactory", func() {
 	})
 
 	Describe("TCPServer", func() {
-		var server cmd.Server
+		var (
+			server      cmd.Server
+			typedServer *http.TCPServer
+		)
 
-		It("returns http.TCPServer", func() {
-			factory = &cmd.InterruptFactory{}
+		BeforeEach(func() {
+			interrupts = make(chan os.Signal, 1)
+			factory = &cmd.InterruptFactory{Interrupts: interrupts}
+
 			server = factory.TCPServer("/public", "localhost", 8421)
+			typedServer, _ = server.(*http.TCPServer)
+		})
+
+		It("returns an http.TCPServer", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
 		})
 
-		XIt("sets the coffee route first")
-
-		It("sets the fs route", func() {
-			interrupts = make(chan os.Signal, 1)
-			factory = &cmd.InterruptFactory{Interrupts: interrupts}
-			server = factory.TCPServer("/public", "localhost", 8421)
-
-			typedServer, _ := server.(*http.TCPServer)
+		It("the coffee route is first", func() {
 			firstRoute := typedServer.Routes()[0]
-			Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("a")))
+			Expect(firstRoute).To(BeAssignableToTypeOf(coffee.NewRoute()))
+		})
+
+		It("the fs route is last", func() {
+			firstRoute := typedServer.Routes()[len(typedServer.Routes()) - 1]
+			Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("/tmp")))
 		})
 	})
 })

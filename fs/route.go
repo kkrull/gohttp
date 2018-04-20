@@ -3,18 +3,18 @@ package fs
 import "github.com/kkrull/gohttp/http"
 
 func NewRoute(contentRootPath string) http.Route {
-	return &route{
+	return &fsRoute{
 		ContentRootPath: contentRootPath,
 		Controller:      &Controller{BaseDirectory: contentRootPath},
 	}
 }
 
-type route struct {
+type fsRoute struct {
 	ContentRootPath string
 	Controller      *Controller
 }
 
-func (route route) Route(requested *http.RequestLine) http.Request {
+func (route fsRoute) Route(requested *http.RequestLine) http.Request {
 	switch requested.Method {
 	case "GET":
 		return &GetRequest{
