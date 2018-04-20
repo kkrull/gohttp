@@ -91,7 +91,7 @@ var _ = Describe("InterruptFactory", func() {
 		})
 
 		It("the fs route is last", func() {
-			firstRoute := typedServer.Routes()[len(typedServer.Routes()) - 1]
+			firstRoute := typedServer.Routes()[len(typedServer.Routes())-1]
 			Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("/tmp")))
 		})
 	})

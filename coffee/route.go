@@ -7,7 +7,6 @@ func NewRoute() http.Route {
 }
 
 type coffeeRoute struct {
-
 }
 
 func (route *coffeeRoute) Route(requested *http.RequestLine) http.Request {
