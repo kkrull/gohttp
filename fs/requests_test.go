@@ -17,7 +17,7 @@ var _ = Describe("Controller", func() {
 		controller *fs.Controller
 		basePath   string
 
-		response       *httptest.HttpMessage
+		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
 
@@ -31,7 +31,7 @@ var _ = Describe("Controller", func() {
 		Context("when the resolved target does not exist", func() {
 			BeforeEach(func() {
 				controller.Get(responseBuffer, "/missing.txt")
-				response = &httptest.HttpMessage{Text: responseBuffer.String()}
+				response = httptest.ParseResponse(responseBuffer)
 			})
 
 			It("Responds with 404 Not Found", func() {
@@ -53,7 +53,7 @@ var _ = Describe("Controller", func() {
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
 				controller.Get(responseBuffer, "/readable.txt")
-				response = &httptest.HttpMessage{Text: responseBuffer.String()}
+				response = httptest.ParseResponse(responseBuffer)
 			})
 
 			It("responds with 200 OK", func() {
@@ -78,7 +78,7 @@ var _ = Describe("Controller", func() {
 
 			It("sets Content-Type to the MIME type registered for that extension", func() {
 				controller.Get(responseBuffer, "/image.jpeg")
-				response = &httptest.HttpMessage{Text: responseBuffer.String()}
+				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("image/jpeg"))
 			})
 		})
@@ -91,7 +91,7 @@ var _ = Describe("Controller", func() {
 
 			It("sets Content-Type to text/plain", func() {
 				controller.Get(responseBuffer, "/assumed-text")
-				response = &httptest.HttpMessage{Text: responseBuffer.String()}
+				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("text/plain"))
 			})
 		})
@@ -104,7 +104,7 @@ var _ = Describe("Controller", func() {
 
 			It("responds with 200 OK", func() {
 				controller.Get(responseBuffer, "/")
-				response = &httptest.HttpMessage{Text: responseBuffer.String()}
+				response = httptest.ParseResponse(responseBuffer)
 				response.StatusShouldBe(200, "OK")
 			})
 		})
@@ -113,15 +113,15 @@ var _ = Describe("Controller", func() {
 	Describe("#Head", func() {
 		var (
 			getResponseBuffer = &bytes.Buffer{}
-			getResponse       *httptest.HttpMessage
+			getResponse       *httptest.ResponseMessage
 		)
 
 		BeforeEach(func() {
 			controller.Get(getResponseBuffer, "/missing.txt")
-			getResponse = &httptest.HttpMessage{Text: getResponseBuffer.String()}
+			getResponse = httptest.ParseResponse(getResponseBuffer)
 
 			controller.Head(responseBuffer, "/missing.txt")
-			response = &httptest.HttpMessage{Text: responseBuffer.String()}
+			response = httptest.ParseResponse(responseBuffer)
 		})
 
 		It("responds with the same status as #Get would have", func() {

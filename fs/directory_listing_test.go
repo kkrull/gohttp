@@ -14,7 +14,7 @@ var _ = Describe("DirectoryListing", func() {
 	Describe("#WriteTo", func() {
 		var (
 			listing http.Response
-			message *httptest.HttpMessage
+			message *httptest.ResponseMessage
 			err     error
 		)
 
@@ -23,7 +23,7 @@ var _ = Describe("DirectoryListing", func() {
 				output := &bytes.Buffer{}
 				listing = &fs.DirectoryListing{Files: []string{}}
 				listing.WriteTo(output)
-				message = &httptest.HttpMessage{Text: output.String()}
+				message = httptest.ParseResponse(output)
 			})
 
 			It("returns no error", func() {
@@ -47,7 +47,7 @@ var _ = Describe("DirectoryListing", func() {
 				output := &bytes.Buffer{}
 				listing = &fs.DirectoryListing{Files: []string{}}
 				listing.WriteTo(output)
-				message = &httptest.HttpMessage{Text: output.String()}
+				message = httptest.ParseResponse(output)
 			})
 
 			It("has an empty list of file names", func() {
@@ -62,7 +62,7 @@ var _ = Describe("DirectoryListing", func() {
 					Files:      []string{"one", "two"},
 					HrefPrefix: "/files"}
 				listing.WriteTo(output)
-				message = &httptest.HttpMessage{Text: output.String()}
+				message = httptest.ParseResponse(output)
 			})
 
 			It("lists links to the files, using absolute paths with the given prefix", func() {

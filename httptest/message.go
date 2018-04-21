@@ -2,6 +2,7 @@
 package httptest
 
 import (
+	"bytes"
 	"strconv"
 	"strings"
 
@@ -9,30 +10,34 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-type HttpMessage struct {
+func ParseResponse(text *bytes.Buffer) *ResponseMessage {
+	return &ResponseMessage{Text: text.String()}
+}
+
+type ResponseMessage struct {
 	Text string
 }
 
-func (message *HttpMessage) StatusShouldBe(status int, reason string) {
+func (message *ResponseMessage) StatusShouldBe(status int, reason string) {
 	Expect(message.Text).To(HavePrefix("HTTP/1.1 %d %s\r\n", status, reason))
 }
 
-func (message *HttpMessage) BodyShould(matcher types.GomegaMatcher) {
+func (message *ResponseMessage) BodyShould(matcher types.GomegaMatcher) {
 	_, body := message.splitMessageHeaderAndBody()
 	Expect(body).To(matcher)
 }
 
-func (message HttpMessage) HeaderAsInt(name string) (int, error) {
+func (message ResponseMessage) HeaderAsInt(name string) (int, error) {
 	headers := message.headerFields()
 	return strconv.Atoi(headers[name])
 }
 
-func (message *HttpMessage) HeaderShould(name string, match types.GomegaMatcher) {
+func (message *ResponseMessage) HeaderShould(name string, match types.GomegaMatcher) {
 	value := message.headerFields()[name]
 	Expect(value).To(match)
 }
 
-func (message HttpMessage) headerFields() map[string]string {
+func (message ResponseMessage) headerFields() map[string]string {
 	const indexAfterStartLine = 1
 	messageHeader, _ := message.splitMessageHeaderAndBody()
 	headerLines := strings.Split(messageHeader, "\r\n")[indexAfterStartLine:]
@@ -45,7 +50,7 @@ func (message HttpMessage) headerFields() map[string]string {
 	return headers
 }
 
-func (message HttpMessage) splitMessageHeaderAndBody() (messageHeader, messageBody string) {
+func (message ResponseMessage) splitMessageHeaderAndBody() (messageHeader, messageBody string) {
 	const headerBodySeparator = "\r\n\r\n"
 	split := strings.Split(message.Text, headerBodySeparator)
 	return split[0], split[1]
