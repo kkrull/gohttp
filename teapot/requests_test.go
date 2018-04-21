@@ -4,10 +4,11 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-var _ = Describe("GetCoffeeRequest", func() {
-	Describe("#Handle", func() {
-		It("responds 418 I'm a teapot", func() {
-
+var _ = Describe("Controller", func() {
+	Describe("#Get", func() {
+		Context("given /coffee", func() {
+			XIt("responds 418 I'm a teapot", func() {
+			})
 		})
 	})
 })

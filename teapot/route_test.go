@@ -1,29 +1,40 @@
 package teapot_test
 
 import (
-	"github.com/kkrull/gohttp/teapot"
+	"bufio"
+
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/teapot"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("teapotRoute", func() {
 	var (
-		router        = teapot.NewRoute()
+		router        http.Route
+		controller    *ControllerMock
 		requested     *http.RequestLine
 		routedRequest http.Request
 	)
 
+	BeforeEach(func() {
+		controller = &ControllerMock{}
+		router = &teapot.Route{Controller: controller}
+	})
+
 	Describe("#Route", func() {
 		Context("given GET /coffee", func() {
-			It("routes to GetCoffeeRequest", func() {
+			It("returns a GetRequest", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
 				routedRequest = router.Route(requested)
-				Expect(routedRequest).To(BeAssignableToTypeOf(&teapot.GetCoffeeRequest{}))
+				Expect(routedRequest).To(BeAssignableToTypeOf(&teapot.GetRequest{}))
 			})
 
-			XIt("calls Controller#GetCoffee", func() {
-
+			It("routes to Controller#Get", func() {
+				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
+				routedRequest = router.Route(requested)
+				routedRequest.Handle(&bufio.Writer{})
+				controller.GetShouldHaveReceivedTarget("/coffee")
 			})
 		})
 
