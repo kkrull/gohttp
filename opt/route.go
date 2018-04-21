@@ -6,32 +6,36 @@ import (
 	"github.com/kkrull/gohttp/http"
 )
 
-func NewRoute() *Route {
-	controller := &StaticCapabilityController{}
-	return &Route{Controller: controller}
+func NewRoute() *ServerCapabilityRoute {
+	controller := &StaticCapabilityController{
+		AvailableMethods: []string{"GET", "HEAD"},
+	}
+
+	return &ServerCapabilityRoute{Controller: controller}
 }
 
-type Route struct {
+type ServerCapabilityRoute struct {
 	Controller ServerCapabilityController
 }
 
-func (route *Route) Route(requested *http.RequestLine) http.Request {
+func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Method == "OPTIONS" && requested.Target == "*" {
-		return &OptionsRequest{Controller: route.Controller}
+		return &optionsRequest{Controller: route.Controller}
 	}
 
 	return nil
 }
 
-type OptionsRequest struct {
+type optionsRequest struct {
 	Controller ServerCapabilityController
 }
 
-func (request *OptionsRequest) Handle(client io.Writer) error {
+func (request *optionsRequest) Handle(client io.Writer) error {
 	request.Controller.Options(client)
 	return nil
 }
 
+// Reports the global, generic capabilities of this server, without regard to resource or state
 type ServerCapabilityController interface {
 	Options(writer io.Writer)
 }
