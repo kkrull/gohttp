@@ -18,7 +18,9 @@ func (request *GetRequest) Handle(client io.Writer) error {
 }
 
 // Responds as a teapot that is aware of its own identity
-type IdentityController struct{}
+type IdentityController struct {
+	body string
+}
 
 func (controller *IdentityController) Get(client io.Writer, target string) {
 	msg.WriteStatusLine(client, 418, "I'm a teapot")

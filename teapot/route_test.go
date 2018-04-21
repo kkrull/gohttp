@@ -38,6 +38,21 @@ var _ = Describe("teapotRoute", func() {
 			})
 		})
 
+		Context("given GET /tea", func() {
+			It("routes to Controller#Get", func() {
+				requested = &http.RequestLine{Method: "GET", Target: "/tea"}
+				routedRequest = router.Route(requested)
+				routedRequest.Handle(&bufio.Writer{})
+				controller.GetShouldHaveReceivedTarget("/tea")
+			})
+		})
+
+		It("passes on any other method", func() {
+			requested = &http.RequestLine{Method: "OPTIONS", Target: "/tea"}
+			routedRequest = router.Route(requested)
+			Expect(routedRequest).To(BeNil())
+		})
+
 		It("passes on any other target", func() {
 			requested = &http.RequestLine{Method: "GET", Target: "/file.txt"}
 			routedRequest = router.Route(requested)
