@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
@@ -85,9 +86,12 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
 		})
 
-		It("the teapot route is first", func() {
-			firstRoute := typedServer.Routes()[0]
-			Expect(firstRoute).To(BeAssignableToTypeOf(teapot.NewRoute()))
+		It("has a capabilities route", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute())))
+		})
+
+		It("has a teapot route", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
 		})
 
 		It("the fs route is last", func() {

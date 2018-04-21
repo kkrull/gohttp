@@ -53,6 +53,14 @@ $ cd src
 $ git clone git@github.com:kkrull/gohttp.git
 ```
 
+### Set up `pre-push` hook
+
+Set up a Git hook to double check that code is formatted and imports are sorted/curated before pushing.
+
+```bash
+$ cp bin/pre-push .git/hooks/pre-push
+```
+
 
 ## Running
 

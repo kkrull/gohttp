@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/teapot"
@@ -35,11 +36,17 @@ func (factory *InterruptFactory) RunCommand(server Server) (command CliCommand, 
 }
 
 func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, port uint16) Server {
-	router := &http.RequestLineRouter{}
-	router.AddRoute(teapot.NewRoute())
-	router.AddRoute(fs.NewRoute(contentRootPath))
+	router := factory.routerWithAllRoutes(contentRootPath)
 	return http.MakeTCPServerWithHandler(
 		host,
 		port,
 		http.NewConnectionHandler(router))
+}
+
+func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) http.Router {
+	router := &http.RequestLineRouter{}
+	router.AddRoute(capability.NewRoute())
+	router.AddRoute(teapot.NewRoute())
+	router.AddRoute(fs.NewRoute(contentRootPath))
+	return router
 }

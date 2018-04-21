@@ -40,7 +40,6 @@ var _ = Describe("IdentityController", func() {
 		It("writes I'm a teapot to the body", func() {
 			response.BodyShould(Equal("I'm a teapot"))
 		})
-
 	})
 
 	Describe("#GetTea", func() {
