@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCoffee(t *testing.T) {
+func TestTeapot(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "teapot")
 }
