@@ -19,16 +19,16 @@ type ResponseMessage struct {
 }
 
 func (message *ResponseMessage) ShouldBeWellFormed() {
-	Expect(message.Text).To(ContainSubstring("\r\n\r\n"))
+	ExpectWithOffset(1, message.Text).To(ContainSubstring("\r\n\r\n"))
 }
 
 func (message *ResponseMessage) StatusShouldBe(status int, reason string) {
-	Expect(message.Text).To(HavePrefix("HTTP/1.1 %d %s\r\n", status, reason))
+	ExpectWithOffset(1, message.Text).To(HavePrefix("HTTP/1.1 %d %s\r\n", status, reason))
 }
 
 func (message *ResponseMessage) BodyShould(matcher types.GomegaMatcher) {
 	_, body := message.splitMessageHeaderAndBody()
-	Expect(body).To(matcher)
+	ExpectWithOffset(1, body).To(matcher)
 }
 
 func (message ResponseMessage) HeaderAsInt(name string) (int, error) {
@@ -38,7 +38,7 @@ func (message ResponseMessage) HeaderAsInt(name string) (int, error) {
 
 func (message *ResponseMessage) HeaderShould(name string, match types.GomegaMatcher) {
 	value := message.headerFields()[name]
-	Expect(value).To(match)
+	ExpectWithOffset(1, value).To(match)
 }
 
 func (message ResponseMessage) headerFields() map[string]string {
