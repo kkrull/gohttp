@@ -3,7 +3,8 @@ package teapot
 import "github.com/kkrull/gohttp/http"
 
 func NewRoute() http.Route {
-	return &Route{}
+	controller := &IdentityController{}
+	return &Route{Controller: controller}
 }
 
 type Route struct {
