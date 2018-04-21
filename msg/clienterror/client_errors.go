@@ -4,7 +4,6 @@ package clienterror
 import (
 	"fmt"
 	"io"
-	"strconv"
 
 	"github.com/kkrull/gohttp/msg"
 )
@@ -36,10 +35,10 @@ func (notFound *NotFound) WriteTo(client io.Writer) error {
 
 func (notFound *NotFound) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 404, "Not Found")
-	msg.WriteHeader(client, "Content-Type", "text/plain")
+	msg.WriteContentTypeHeader(client, "text/plain")
 
 	notFound.body = fmt.Sprintf("Not found: %s", notFound.Target)
-	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(notFound.body)))
+	msg.WriteContentLengthHeader(client, len(notFound.body))
 	msg.WriteEndOfMessageHeader(client)
 	return nil
 }

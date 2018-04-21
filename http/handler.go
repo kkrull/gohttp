@@ -30,8 +30,13 @@ func (handler *blockingConnectionHandler) Handle(requestReader *bufio.Reader, re
 	}
 }
 
+func (handler *blockingConnectionHandler) Routes() []Route {
+	return handler.Router.Routes()
+}
+
 type Router interface {
 	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
+	Routes() []Route
 }
 
 type Request interface {

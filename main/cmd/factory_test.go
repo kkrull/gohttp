@@ -3,16 +3,22 @@ package cmd_test
 import (
 	"flag"
 	"fmt"
+	"os"
 
+	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
+	"github.com/kkrull/gohttp/teapot"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 )
 
 var _ = Describe("InterruptFactory", func() {
-	var factory *cmd.InterruptFactory
+	var (
+		factory    *cmd.InterruptFactory
+		interrupts chan os.Signal
+	)
 
 	Describe("CliCommand methods", func() {
 		var command cmd.CliCommand
@@ -62,12 +68,31 @@ var _ = Describe("InterruptFactory", func() {
 	})
 
 	Describe("TCPServer", func() {
-		var server cmd.Server
+		var (
+			server      cmd.Server
+			typedServer *http.TCPServer
+		)
 
-		It("returns http.TCPServer", func() {
-			factory = &cmd.InterruptFactory{}
+		BeforeEach(func() {
+			interrupts = make(chan os.Signal, 1)
+			factory = &cmd.InterruptFactory{Interrupts: interrupts}
+
 			server = factory.TCPServer("/public", "localhost", 8421)
+			typedServer, _ = server.(*http.TCPServer)
+		})
+
+		It("returns an http.TCPServer", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
+		})
+
+		It("the teapot route is first", func() {
+			firstRoute := typedServer.Routes()[0]
+			Expect(firstRoute).To(BeAssignableToTypeOf(teapot.NewRoute()))
+		})
+
+		It("the fs route is last", func() {
+			firstRoute := typedServer.Routes()[len(typedServer.Routes())-1]
+			Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("/tmp")))
 		})
 	})
 })

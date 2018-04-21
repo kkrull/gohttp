@@ -46,6 +46,10 @@ func (server *TCPServer) Address() net.Addr {
 	return server.listener.Addr()
 }
 
+func (server *TCPServer) Routes() []Route {
+	return server.Handler.Routes()
+}
+
 func (server *TCPServer) Start() error {
 	if err := server.startListening(); err != nil {
 		return err
@@ -103,4 +107,5 @@ func (server *TCPServer) Shutdown() error {
 
 type ConnectionHandler interface {
 	Handle(request *bufio.Reader, response io.Writer)
+	Routes() []Route
 }

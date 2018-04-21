@@ -1,15 +1,25 @@
 # Developer backlog
 
+## Content-type missing on empty file
 
-## Response message construction
+It should probably be text/plain, but it's worth double-checking to see if there's a specification for this.
 
-It might be nice for `fs.DirectoryListing#WriteTo` to accept `msg.ResponseBuilder`
-
-* `#WithStatus(status, reason)`
-* `#WithHeader(name, value)`
-* `#WithContentLength(int)`
-* `#WriteToBody(string|[]byte)`
-* `#Send(io.Writer)`
+```shell
+$ curl -4 -v 'http://localhost:1234/cat-form/.gitkeep' ; echo ''
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 1234 (#0)
+> GET /cat-form/.gitkeep HTTP/1.1
+> Host: localhost:1234
+> User-Agent: curl/7.54.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Content-Type: 
+< Content-Length: 0
+< 
+* Connection #0 to host localhost left intact
+```
 
 
 ## Handling requests
@@ -34,12 +44,3 @@ HTTP version
 * Given HTTP/1.2+ -- should it respond with 501 Not Implemented?
   RFC 7231 seems to suggest that it's only meant for an unsupported _method_.
 * Given HTTP/2+ -- it could respond 505 HTTP Version Not Supported
-
-
-## Tests
-
-Some types have been extracted after tests have been written on an outer layer.  If there is going to be a lot more
-development on these tests, it may make sense to refactor some of these tests to
-
-* test the delegation to the recently-extracted type
-* move / refactor the existing tests that apply to the recently-extracted type, down to that level

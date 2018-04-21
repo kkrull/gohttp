@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"path"
-	"strconv"
 
 	"github.com/kkrull/gohttp/msg"
 )
@@ -24,10 +23,10 @@ func (listing *DirectoryListing) WriteTo(client io.Writer) error {
 
 func (listing *DirectoryListing) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 200, "OK")
-	msg.WriteHeader(client, "Content-Type", "text/html")
+	msg.WriteContentTypeHeader(client, "text/html")
 
 	listing.body = listing.messageListingFiles()
-	msg.WriteHeader(client, "Content-Length", strconv.Itoa(listing.body.Len()))
+	msg.WriteContentLengthHeader(client, listing.body.Len())
 	msg.WriteEndOfMessageHeader(client)
 	return nil
 }
