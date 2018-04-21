@@ -18,7 +18,6 @@ type IdentityController struct {
 }
 
 func (controller *IdentityController) Get(client io.Writer, target string) {
-	panic("implement me")
 }
 
 type Controller interface {
