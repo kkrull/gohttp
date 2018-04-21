@@ -8,6 +8,7 @@ import (
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
+	"github.com/kkrull/gohttp/opt"
 	"github.com/kkrull/gohttp/teapot"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -85,9 +86,12 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
 		})
 
-		It("the teapot route is first", func() {
-			firstRoute := typedServer.Routes()[0]
-			Expect(firstRoute).To(BeAssignableToTypeOf(teapot.NewRoute()))
+		It("has an options route", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(opt.NewRoute())))
+		})
+
+		It("has a teapot route", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
 		})
 
 		It("the fs route is last", func() {
