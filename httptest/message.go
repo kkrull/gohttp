@@ -19,7 +19,10 @@ type ResponseMessage struct {
 }
 
 func (message *ResponseMessage) ShouldBeWellFormed() {
-	ExpectWithOffset(1, message.Text).To(ContainSubstring("\r\n\r\n"))
+	ExpectWithOffset(1, message.Text).To(HavePrefix("HTTP/1.1"), "missing status-line")
+	ExpectWithOffset(1, message.Text).To(
+		ContainSubstring("\r\n\r\n"),
+		"missing CRLF{2} to mark the end of the message header")
 }
 
 func (message *ResponseMessage) StatusShouldBe(status int, reason string) {
@@ -37,8 +40,9 @@ func (message ResponseMessage) HeaderAsInt(name string) (int, error) {
 }
 
 func (message *ResponseMessage) HeaderShould(name string, match types.GomegaMatcher) {
-	value := message.headerFields()[name]
-	ExpectWithOffset(1, value).To(match)
+	value, ok := message.headerFields()[name]
+	ExpectWithOffset(1, ok).To(BeTrue(), "%s does not exist", name)
+	ExpectWithOffset(1, value).To(match, name)
 }
 
 func (message ResponseMessage) headerFields() map[string]string {
