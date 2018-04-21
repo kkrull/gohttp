@@ -4,9 +4,9 @@ import (
 	"flag"
 	"os"
 
-	"github.com/kkrull/gohttp/teapot"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/teapot"
 )
 
 type InterruptFactory struct {

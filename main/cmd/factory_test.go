@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kkrull/gohttp/teapot"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
+	"github.com/kkrull/gohttp/teapot"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
