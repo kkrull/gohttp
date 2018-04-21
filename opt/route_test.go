@@ -20,34 +20,36 @@ var _ = Describe("::NewRoute", func() {
 })
 
 var _ = Describe("Route", func() {
-	var (
-		router        http.Route
-		controller    *ServerCapabilityControllerMock
-		requested     *http.RequestLine
-		routedRequest http.Request
-	)
+	Describe("#Route", func() {
+		var (
+			router        http.Route
+			controller    *ServerCapabilityControllerMock
+			requested     *http.RequestLine
+			routedRequest http.Request
+		)
 
-	BeforeEach(func() {
-		controller = &ServerCapabilityControllerMock{}
-		router = &opt.Route{Controller: controller}
-	})
+		BeforeEach(func() {
+			controller = &ServerCapabilityControllerMock{}
+			router = &opt.Route{Controller: controller}
+		})
 
-	It("routes OPTIONS * to ServerCapabilityController#Options", func() {
-		requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
-		routedRequest = router.Route(requested)
-		routedRequest.Handle(&bufio.Writer{})
-		controller.OptionsShouldHaveBeenCalled()
-	})
+		It("routes OPTIONS * to ServerCapabilityController#Options", func() {
+			requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.OptionsShouldHaveBeenCalled()
+		})
 
-	It("returns nil to pass on any other method", func() {
-		requested = &http.RequestLine{Method: "GET", Target: "*"}
-		routedRequest = router.Route(requested)
-		Expect(routedRequest).To(BeNil())
-	})
+		It("returns nil to pass on any other method", func() {
+			requested = &http.RequestLine{Method: "GET", Target: "*"}
+			routedRequest = router.Route(requested)
+			Expect(routedRequest).To(BeNil())
+		})
 
-	It("returns nil to pass on any other target", func() {
-		requested = &http.RequestLine{Method: "OPTIONS", Target: "/"}
-		routedRequest = router.Route(requested)
-		Expect(routedRequest).To(BeNil())
+		It("returns nil to pass on any other target", func() {
+			requested = &http.RequestLine{Method: "OPTIONS", Target: "/"}
+			routedRequest = router.Route(requested)
+			Expect(routedRequest).To(BeNil())
+		})
 	})
 })
