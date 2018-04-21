@@ -26,18 +26,19 @@ func (request *GetTeaRequest) Handle(client io.Writer) error {
 }
 
 // Responds as a teapot that is aware of its own identity
-type IdentityController struct {
-	body string
-}
+type IdentityController struct{}
 
 func (controller *IdentityController) GetCoffee(client io.Writer) {
+	body := "I'm a teapot"
+	writeHeaders(client, body)
+	msg.WriteBody(client, body)
+}
+
+func writeHeaders(client io.Writer, body string) {
 	msg.WriteStatusLine(client, 418, "I'm a teapot")
 	msg.WriteHeader(client, "Content-Type", "text/plain")
-	body := "I'm a teapot"
 	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(body)))
 	msg.WriteEndOfMessageHeader(client)
-
-	msg.WriteBody(client, body)
 }
 
 func (controller *IdentityController) GetTea(client io.Writer) {
