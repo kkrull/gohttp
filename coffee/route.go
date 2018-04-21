@@ -10,5 +10,9 @@ type coffeeRoute struct {
 }
 
 func (route *coffeeRoute) Route(requested *http.RequestLine) http.Request {
+	if requested.Target == "/coffee" {
+		return &GetCoffeeRequest{}
+	}
+
 	return nil
 }

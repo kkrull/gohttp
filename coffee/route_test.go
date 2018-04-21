@@ -15,10 +15,16 @@ var _ = Describe("coffeeRoute", func() {
 	)
 
 	Describe("#Route", func() {
-		It("routes GET /coffee to GetCoffeeRequest", func() {
-			requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
-			routedRequest = router.Route(requested)
-			Expect(routedRequest).To(BeAssignableToTypeOf(&coffee.GetCoffeeRequest{}))
+		Context("given GET /coffee", func() {
+			It("routes to GetCoffeeRequest", func() {
+				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
+				routedRequest = router.Route(requested)
+				Expect(routedRequest).To(BeAssignableToTypeOf(&coffee.GetCoffeeRequest{}))
+			})
+
+			XIt("calls Controller#GetCoffee", func() {
+
+			})
 		})
 
 		It("passes on any other target", func() {
