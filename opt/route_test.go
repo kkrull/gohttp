@@ -13,26 +13,26 @@ var _ = Describe("::NewRoute", func() {
 	//Panics due to incomplete wiring are easy to cause due to Go's permissive struct declaration
 	//and hard to root cause when the server goes down and starts refusing connections behind a FitNesse suite
 	//that swallows console output from the server
-	It("configures the route with StaticCapabilitiesController", func() {
+	It("configures the route with StaticCapabilityController", func() {
 		route := opt.NewRoute()
-		Expect(route.Controller).To(BeAssignableToTypeOf(&opt.StaticCapabilitiesController{}))
+		Expect(route.Controller).To(BeAssignableToTypeOf(&opt.StaticCapabilityController{}))
 	})
 })
 
 var _ = Describe("Route", func() {
 	var (
 		router        http.Route
-		controller    *ControllerMock
+		controller    *ServerCapabilityControllerMock
 		requested     *http.RequestLine
 		routedRequest http.Request
 	)
 
 	BeforeEach(func() {
-		controller = &ControllerMock{}
+		controller = &ServerCapabilityControllerMock{}
 		router = &opt.Route{Controller: controller}
 	})
 
-	It("routes OPTIONS * to Controller#Options", func() {
+	It("routes OPTIONS * to ServerCapabilityController#Options", func() {
 		requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
 		routedRequest = router.Route(requested)
 		routedRequest.Handle(&bufio.Writer{})

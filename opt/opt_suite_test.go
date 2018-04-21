@@ -13,14 +13,14 @@ func TestOpt(t *testing.T) {
 	RunSpecs(t, "opt")
 }
 
-type ControllerMock struct {
+type ServerCapabilityControllerMock struct {
 	optionsCalled bool
 }
 
-func (mock *ControllerMock) Options(writer io.Writer) {
+func (mock *ServerCapabilityControllerMock) Options(writer io.Writer) {
 	mock.optionsCalled = true
 }
 
-func (mock *ControllerMock) OptionsShouldHaveBeenCalled() {
+func (mock *ServerCapabilityControllerMock) OptionsShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.optionsCalled).To(BeTrue())
 }

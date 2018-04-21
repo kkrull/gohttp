@@ -1,14 +1,18 @@
 package opt
 
-import "github.com/kkrull/gohttp/http"
+import (
+	"io"
+
+	"github.com/kkrull/gohttp/http"
+)
 
 func NewRoute() *Route {
-	controller := &StaticCapabilitiesController{}
+	controller := &StaticCapabilityController{}
 	return &Route{Controller: controller}
 }
 
 type Route struct {
-	Controller Controller
+	Controller ServerCapabilityController
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
@@ -17,4 +21,17 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 	}
 
 	return nil
+}
+
+type OptionsRequest struct {
+	Controller ServerCapabilityController
+}
+
+func (request *OptionsRequest) Handle(client io.Writer) error {
+	request.Controller.Options(client)
+	return nil
+}
+
+type ServerCapabilityController interface {
+	Options(writer io.Writer)
 }
