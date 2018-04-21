@@ -1,6 +1,10 @@
 package teapot
 
-import "github.com/kkrull/gohttp/http"
+import (
+	"io"
+
+	"github.com/kkrull/gohttp/http"
+)
 
 func NewRoute() http.Route {
 	controller := &IdentityController{}
@@ -17,12 +21,20 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 	}
 
 	switch requested.Target {
-	case "/coffee", "/tea":
-		return &GetRequest{
+	case "/coffee":
+		return &GetCoffeeRequest{
 			Controller: route.Controller,
-			Target:     requested.Target,
+		}
+	case "/tea":
+		return &GetTeaRequest{
+			Controller: route.Controller,
 		}
 	default:
 		return nil
 	}
+}
+
+type Controller interface {
+	GetCoffee(client io.Writer)
+	GetTea(client io.Writer)
 }

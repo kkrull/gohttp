@@ -23,28 +23,18 @@ var _ = Describe("teapotRoute", func() {
 	})
 
 	Describe("#Route", func() {
-		Context("given GET /coffee", func() {
-			It("returns a GetRequest", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
-				routedRequest = router.Route(requested)
-				Expect(routedRequest).To(BeAssignableToTypeOf(&teapot.GetRequest{}))
-			})
-
-			It("routes to Controller#Get", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
-				routedRequest = router.Route(requested)
-				routedRequest.Handle(&bufio.Writer{})
-				controller.GetShouldHaveReceivedTarget("/coffee")
-			})
+		It("routes GET /coffee to Controller#GetCoffee", func() {
+			requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.GetCoffeeShouldHaveBeenCalled()
 		})
 
-		Context("given GET /tea", func() {
-			It("routes to Controller#Get", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "/tea"}
-				routedRequest = router.Route(requested)
-				routedRequest.Handle(&bufio.Writer{})
-				controller.GetShouldHaveReceivedTarget("/tea")
-			})
+		It("routes GET /tea to Controller#GetCoffee", func() {
+			requested = &http.RequestLine{Method: "GET", Target: "/tea"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.GetTeaShouldHaveBeenCalled()
 		})
 
 		It("passes on any other method", func() {

@@ -7,13 +7,21 @@ import (
 	"github.com/kkrull/gohttp/msg"
 )
 
-type GetRequest struct {
+type GetCoffeeRequest struct {
 	Controller Controller
-	Target     string
 }
 
-func (request *GetRequest) Handle(client io.Writer) error {
-	request.Controller.Get(client, request.Target)
+func (request *GetCoffeeRequest) Handle(client io.Writer) error {
+	request.Controller.GetCoffee(client)
+	return nil
+}
+
+type GetTeaRequest struct {
+	Controller Controller
+}
+
+func (request *GetTeaRequest) Handle(client io.Writer) error {
+	request.Controller.GetTea(client)
 	return nil
 }
 
@@ -22,7 +30,7 @@ type IdentityController struct {
 	body string
 }
 
-func (controller *IdentityController) Get(client io.Writer, target string) {
+func (controller *IdentityController) GetCoffee(client io.Writer) {
 	msg.WriteStatusLine(client, 418, "I'm a teapot")
 	msg.WriteHeader(client, "Content-Type", "text/plain")
 	body := "I'm a teapot"
@@ -32,6 +40,8 @@ func (controller *IdentityController) Get(client io.Writer, target string) {
 	msg.WriteBody(client, body)
 }
 
-type Controller interface {
-	Get(client io.Writer, target string)
+func (controller *IdentityController) GetTea(client io.Writer) {
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteHeader(client, "Content-Length", "0")
+	msg.WriteEndOfMessageHeader(client)
 }
