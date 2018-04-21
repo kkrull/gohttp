@@ -1,4 +1,4 @@
-package coffee
+package teapot
 
 import "io"
 

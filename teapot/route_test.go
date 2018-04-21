@@ -1,15 +1,15 @@
-package coffee_test
+package teapot_test
 
 import (
-	"github.com/kkrull/gohttp/coffee"
+	"github.com/kkrull/gohttp/teapot"
 	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("coffeeRoute", func() {
+var _ = Describe("teapotRoute", func() {
 	var (
-		router        = coffee.NewRoute()
+		router        = teapot.NewRoute()
 		requested     *http.RequestLine
 		routedRequest http.Request
 	)
@@ -19,7 +19,7 @@ var _ = Describe("coffeeRoute", func() {
 			It("routes to GetCoffeeRequest", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
 				routedRequest = router.Route(requested)
-				Expect(routedRequest).To(BeAssignableToTypeOf(&coffee.GetCoffeeRequest{}))
+				Expect(routedRequest).To(BeAssignableToTypeOf(&teapot.GetCoffeeRequest{}))
 			})
 
 			XIt("calls Controller#GetCoffee", func() {

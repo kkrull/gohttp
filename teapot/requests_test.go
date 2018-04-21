@@ -1,4 +1,4 @@
-package coffee_test
+package teapot_test
 
 import (
 	. "github.com/onsi/ginkgo"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kkrull/gohttp/coffee"
+	"github.com/kkrull/gohttp/teapot"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/main/cmd"
@@ -85,9 +85,9 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
 		})
 
-		It("the coffee route is first", func() {
+		It("the teapot route is first", func() {
 			firstRoute := typedServer.Routes()[0]
-			Expect(firstRoute).To(BeAssignableToTypeOf(coffee.NewRoute()))
+			Expect(firstRoute).To(BeAssignableToTypeOf(teapot.NewRoute()))
 		})
 
 		It("the fs route is last", func() {

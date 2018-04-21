@@ -1,4 +1,4 @@
-package coffee_test
+package teapot_test
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 
 func TestCoffee(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "coffee")
+	RunSpecs(t, "teapot")
 }
 
 type ControllerMock struct {

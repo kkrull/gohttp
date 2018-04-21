@@ -1,15 +1,15 @@
-package coffee
+package teapot
 
 import "github.com/kkrull/gohttp/http"
 
 func NewRoute() http.Route {
-	return &coffeeRoute{}
+	return &teapotRoute{}
 }
 
-type coffeeRoute struct {
+type teapotRoute struct {
 }
 
-func (route *coffeeRoute) Route(requested *http.RequestLine) http.Request {
+func (route *teapotRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target == "/coffee" {
 		return &GetCoffeeRequest{}
 	}
