@@ -9,6 +9,16 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+var _ = Describe("::NewRoute", func() {
+	//Panics due to incomplete wiring are easy to cause due to Go's permissive struct declaration
+	//and hard to root cause when the server goes down and starts refusing connections behind a FitNesse suite
+	//that swallows console output from the server
+	It("configures the route with StaticCapabilitiesController", func() {
+		route := opt.NewRoute()
+		Expect(route.Controller).To(BeAssignableToTypeOf(&opt.StaticCapabilitiesController{}))
+	})
+})
+
 var _ = Describe("Route", func() {
 	var (
 		router        http.Route

@@ -2,8 +2,9 @@ package opt
 
 import "github.com/kkrull/gohttp/http"
 
-func NewRoute() http.Route {
-	return &Route{}
+func NewRoute() *Route {
+	controller := &StaticCapabilitiesController{}
+	return &Route{Controller: controller}
 }
 
 type Route struct {

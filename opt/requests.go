@@ -2,6 +2,13 @@ package opt
 
 import "io"
 
+type StaticCapabilitiesController struct {
+}
+
+func (controller *StaticCapabilitiesController) Options(writer io.Writer) {
+	panic("implement me")
+}
+
 type OptionsRequest struct {
 	Controller Controller
 }
