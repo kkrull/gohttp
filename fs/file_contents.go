@@ -28,7 +28,7 @@ func (contents *FileContents) WriteHeader(client io.Writer) error {
 }
 
 func (contents FileContents) writeHeadersDescribingFile(client io.Writer) {
-	msg.WriteHeader(client, "Content-Type", contentTypeFromFileExtension(contents.Filename))
+	msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(contents.Filename))
 	info, _ := os.Stat(contents.Filename)
 	msg.WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }

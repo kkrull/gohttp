@@ -3,10 +3,19 @@ package msg
 import (
 	"fmt"
 	"io"
+	"strconv"
 )
 
 func WriteStatusLine(client io.Writer, status int, reason string) {
 	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status, reason)
+}
+
+func WriteContentLengthHeader(client io.Writer, numBytes int) {
+	WriteHeader(client, "Content-Length", strconv.Itoa(numBytes))
+}
+
+func WriteContentTypeHeader(client io.Writer, value string) {
+	WriteHeader(client, "Content-Type", value)
 }
 
 func WriteHeader(client io.Writer, name string, value string) {

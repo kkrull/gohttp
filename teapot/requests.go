@@ -2,7 +2,6 @@ package teapot
 
 import (
 	"io"
-	"strconv"
 
 	"github.com/kkrull/gohttp/msg"
 )
@@ -36,13 +35,13 @@ func (controller *IdentityController) GetCoffee(client io.Writer) {
 
 func writeHeaders(client io.Writer, body string) {
 	msg.WriteStatusLine(client, 418, "I'm a teapot")
-	msg.WriteHeader(client, "Content-Type", "text/plain")
-	msg.WriteHeader(client, "Content-Length", strconv.Itoa(len(body)))
+	msg.WriteContentTypeHeader(client, "text/plain")
+	msg.WriteContentLengthHeader(client, len(body))
 	msg.WriteEndOfMessageHeader(client)
 }
 
 func (controller *IdentityController) GetTea(client io.Writer) {
 	msg.WriteStatusLine(client, 200, "OK")
-	msg.WriteHeader(client, "Content-Length", "0")
+	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteEndOfMessageHeader(client)
 }
