@@ -1,10 +1,14 @@
 package teapot
 
-import "io"
+import (
+	"io"
+
+	"github.com/kkrull/gohttp/msg"
+)
 
 type GetRequest struct {
 	Controller Controller
-	Target string
+	Target     string
 }
 
 func (request *GetRequest) Handle(client io.Writer) error {
@@ -13,11 +17,11 @@ func (request *GetRequest) Handle(client io.Writer) error {
 }
 
 // Responds as a teapot that is aware of its own identity
-type IdentityController struct {
-
-}
+type IdentityController struct{}
 
 func (controller *IdentityController) Get(client io.Writer, target string) {
+	msg.WriteStatusLine(client, 418, "I'm a teapot")
+	msg.WriteEndOfMessageHeader(client)
 }
 
 type Controller interface {

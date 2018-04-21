@@ -18,6 +18,10 @@ type ResponseMessage struct {
 	Text string
 }
 
+func (message *ResponseMessage) ShouldBeWellFormed() {
+	Expect(message.Text).To(ContainSubstring("\r\n\r\n"))
+}
+
 func (message *ResponseMessage) StatusShouldBe(status int, reason string) {
 	Expect(message.Text).To(HavePrefix("HTTP/1.1 %d %s\r\n", status, reason))
 }
