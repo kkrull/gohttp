@@ -1,17 +1,17 @@
-package opt_test
+package capability_test
 
 import (
 	"bytes"
 
+	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/httptest"
-	"github.com/kkrull/gohttp/opt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("StaticCapabilityController", func() {
 	var (
-		controller     opt.ServerCapabilityController
+		controller     capability.ServerCapabilityController
 		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
@@ -19,7 +19,7 @@ var _ = Describe("StaticCapabilityController", func() {
 	Describe("#Options", func() {
 		BeforeEach(func() {
 			responseBuffer = &bytes.Buffer{}
-			controller = &opt.StaticCapabilityController{
+			controller = &capability.StaticCapabilityController{
 				AvailableMethods: []string{"CONNECT", "TRACE"},
 			}
 			controller.Options(responseBuffer)
@@ -39,7 +39,7 @@ var _ = Describe("StaticCapabilityController", func() {
 		Context("given 1 available method", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &opt.StaticCapabilityController{
+				controller = &capability.StaticCapabilityController{
 					AvailableMethods: []string{"OPTIONS"},
 				}
 				controller.Options(responseBuffer)
@@ -54,7 +54,7 @@ var _ = Describe("StaticCapabilityController", func() {
 		Context("given 2 or more available methods", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &opt.StaticCapabilityController{
+				controller = &capability.StaticCapabilityController{
 					AvailableMethods: []string{"CONNECT", "TRACE"},
 				}
 				controller.Options(responseBuffer)

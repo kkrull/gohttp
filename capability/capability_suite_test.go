@@ -1,4 +1,4 @@
-package opt_test
+package capability_test
 
 import (
 	"io"
@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestOpt(t *testing.T) {
+func TestCapability(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "opt")
+	RunSpecs(t, "capability")
 }
 
 type ServerCapabilityControllerMock struct {

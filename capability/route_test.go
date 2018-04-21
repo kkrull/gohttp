@@ -1,10 +1,10 @@
-package opt_test
+package capability_test
 
 import (
 	"bufio"
 
+	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/opt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -14,14 +14,14 @@ import (
 //that swallows console output from the server
 var _ = Describe("::NewRoute", func() {
 	It("configures the route with StaticCapabilityController", func() {
-		route := opt.NewRoute()
-		Expect(route.Controller).To(BeAssignableToTypeOf(&opt.StaticCapabilityController{}))
+		route := capability.NewRoute()
+		Expect(route.Controller).To(BeAssignableToTypeOf(&capability.StaticCapabilityController{}))
 	})
 
 	It("configures available methods to the server as GET and HEAD", func() {
-		route := opt.NewRoute()
+		route := capability.NewRoute()
 		Expect(route.Controller).To(BeEquivalentTo(
-			&opt.StaticCapabilityController{
+			&capability.StaticCapabilityController{
 				AvailableMethods: []string{"GET", "HEAD"},
 			},
 		))
@@ -39,7 +39,7 @@ var _ = Describe("ServerCapabilityRoute", func() {
 
 		BeforeEach(func() {
 			controller = &ServerCapabilityControllerMock{}
-			router = &opt.ServerCapabilityRoute{Controller: controller}
+			router = &capability.ServerCapabilityRoute{Controller: controller}
 		})
 
 		It("routes OPTIONS * to ServerCapabilityController#Options", func() {
