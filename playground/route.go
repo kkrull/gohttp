@@ -8,12 +8,12 @@ import (
 
 func NewRoute() *Route {
 	return &Route{
-		Controller: &WritableNopController{},
+		WriteController: &WritableNopController{},
 	}
 }
 
 type Route struct {
-	Controller Controller
+	WriteController Controller
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
@@ -41,27 +41,27 @@ func (route *Route) makeRequest(requested *http.RequestLine) http.Request {
 	switch requested.Method {
 	case "GET":
 		return &getRequest{
-			Controller: route.Controller,
+			Controller: route.WriteController,
 			Target:     requested.Target,
 		}
 	case "HEAD":
 		return &headRequest{
-			Controller: route.Controller,
+			Controller: route.WriteController,
 			Target:     requested.Target,
 		}
 	case "OPTIONS":
 		return &optionsRequest{
-			Controller: route.Controller,
+			Controller: route.WriteController,
 			Target:     requested.Target,
 		}
 	case "POST":
 		return &postRequest{
-			Controller: route.Controller,
+			Controller: route.WriteController,
 			Target:     requested.Target,
 		}
 	case "PUT":
 		return &putRequest{
-			Controller: route.Controller,
+			Controller: route.WriteController,
 			Target:     requested.Target,
 		}
 	default:

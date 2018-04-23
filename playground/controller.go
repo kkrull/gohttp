@@ -7,6 +7,7 @@ import (
 	"github.com/kkrull/gohttp/msg"
 )
 
+// Handles various read/write requests, but doesn't actually do anything
 type WritableNopController struct{}
 
 func (controller *WritableNopController) Get(client io.Writer, target string) {

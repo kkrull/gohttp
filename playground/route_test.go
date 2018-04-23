@@ -13,7 +13,7 @@ var _ = Describe("::NewRoute", func() {
 	It("returns a Route configured for this package", func() {
 		route := playground.NewRoute()
 		Expect(route).NotTo(BeNil())
-		Expect(route.Controller).To(BeAssignableToTypeOf(&playground.WritableNopController{}))
+		Expect(route.WriteController).To(BeAssignableToTypeOf(&playground.WritableNopController{}))
 	})
 })
 
@@ -26,48 +26,48 @@ var _ = Describe("Route", func() {
 
 		BeforeEach(func() {
 			controller = &ControllerMock{}
-			router = &playground.Route{Controller: controller}
+			router = &playground.Route{WriteController: controller}
 		})
 
 		Context("when the target is /method_options", func() {
-			It("routes GET to Controller#Get", func() {
+			It("routes GET to WriteController#Get", func() {
 				handleRequest(router, "GET", "/method_options")
 				controller.GetShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes HEAD to Controller#Head", func() {
+			It("routes HEAD to WriteController#Head", func() {
 				handleRequest(router, "HEAD", "/method_options")
 				controller.HeadShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes OPTIONS to Controller#Options", func() {
+			It("routes OPTIONS to WriteController#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options")
 				controller.OptionsShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes POST to Controller#Post", func() {
+			It("routes POST to WriteController#Post", func() {
 				handleRequest(router, "POST", "/method_options")
 				controller.PostShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes PUT to Controller#Put", func() {
+			It("routes PUT to WriteController#Put", func() {
 				handleRequest(router, "PUT", "/method_options")
 				controller.PutShouldHaveBeenReceived("/method_options")
 			})
 		})
 
 		Context("when the target is /method_options2", func() {
-			It("routes GET to Controller#Get", func() {
+			It("routes GET to WriteController#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
 				controller.GetShouldHaveBeenReceived("/method_options2")
 			})
 
-			It("routes HEAD to Controller#Options", func() {
+			It("routes HEAD to WriteController#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
 				controller.HeadShouldHaveBeenReceived("/method_options2")
 			})
 
-			It("routes OPTIONS to Controller#Options", func() {
+			It("routes OPTIONS to WriteController#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options2")
 				controller.OptionsShouldHaveBeenReceived("/method_options2")
 			})
