@@ -31,6 +31,11 @@ Missing ways to cause I/O errors with
 * `os.File`
 
 
+Other items:
+
+* Is `Target` needed in each controller?  Is it just used to route to the right controller?
+
+
 ## Request parsing
 
 Denial of Service: Should allow a request line of at least 8,000 octets.  On the flip side, prevent a
