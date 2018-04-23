@@ -17,6 +17,17 @@ var _ = Describe("AllowedMethodsController", func() {
 		responseBuffer *bytes.Buffer
 	)
 
+	Describe("#Get", func() {
+		It("responds 200 OK with no body", func() {
+			responseBuffer = &bytes.Buffer{}
+			controller = &playground.AllowedMethodsController{}
+
+			controller.Get(responseBuffer, "/method_options")
+			response = httptest.ParseResponse(responseBuffer)
+			response.ShouldHaveNoBody(200, "OK")
+		})
+	})
+
 	Describe("#Options", func() {
 		Context("given a request for /method_options", func() {
 			BeforeEach(func() {
