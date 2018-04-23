@@ -18,13 +18,6 @@ type ResponseMessage struct {
 	Text string
 }
 
-func (message *ResponseMessage) ShouldHaveNoBody(status int, reason string) {
-	message.ShouldBeWellFormed()
-	message.StatusShouldBe(status, reason)
-	message.HeaderShould("Content-Length", Equal("0"))
-	message.BodyShould(BeEmpty())
-}
-
 func (message *ResponseMessage) ShouldBeWellFormed() {
 	ExpectWithOffset(1, message.Text).To(HavePrefix("HTTP/1.1"), "missing status-line")
 	ExpectWithOffset(1, message.Text).To(
