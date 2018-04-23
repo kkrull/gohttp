@@ -38,6 +38,13 @@ var _ = Describe("Route", func() {
 			controller.OptionsShouldHaveBeenReceived("/method_options")
 		})
 
+		It("routes OPTIONS /method_options2", func() {
+			requested = &http.RequestLine{Method: "OPTIONS", Target: "/method_options2"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.OptionsShouldHaveBeenReceived("/method_options2")
+		})
+
 		It("returns nil on any other request", func() {
 			requested = &http.RequestLine{Method: "GET", Target: "/"}
 			routedRequest = router.Route(requested)
