@@ -18,7 +18,7 @@ type Route struct {
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
 	switch requested.Target {
-	case "/method_options", "/method_options2":
+	case "/method_options":
 		switch requested.Method {
 		case "GET":
 			return &getRequest{
@@ -48,15 +48,29 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 		default:
 			return nil
 		}
+	case "/method_options2":
+		switch requested.Method {
+		case "GET":
+			return &getRequest{
+				Controller: route.Controller,
+				Target:     requested.Target,
+			}
+		case "HEAD":
+			return &headRequest{
+				Controller: route.Controller,
+				Target:     requested.Target,
+			}
+		case "OPTIONS":
+			return &optionsRequest{
+				Controller: route.Controller,
+				Target:     requested.Target,
+			}
+		default:
+			return nil
+		}
 	default:
 		return nil
 	}
-}
-
-type nopRequest struct{}
-
-func (request *nopRequest) Handle(client io.Writer) error {
-	return nil
 }
 
 type getRequest struct {
