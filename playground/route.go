@@ -20,53 +20,49 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 	switch requested.Target {
 	case "/method_options":
 		switch requested.Method {
-		case "GET":
-			return &getRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
-		case "HEAD":
-			return &headRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
-		case "OPTIONS":
-			return &optionsRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
-		case "POST":
-			return &postRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
-		case "PUT":
-			return &putRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
+		case "GET", "HEAD", "OPTIONS", "POST", "PUT":
+			return route.makeRequest(requested)
 		default:
 			return nil
 		}
 	case "/method_options2":
 		switch requested.Method {
-		case "GET":
-			return &getRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
-		case "HEAD":
-			return &headRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
-		case "OPTIONS":
-			return &optionsRequest{
-				Controller: route.Controller,
-				Target:     requested.Target,
-			}
+		case "GET", "HEAD", "OPTIONS":
+			return route.makeRequest(requested)
 		default:
 			return nil
+		}
+	default:
+		return nil
+	}
+}
+
+func (route *Route) makeRequest(requested *http.RequestLine) http.Request {
+	switch requested.Method {
+	case "GET":
+		return &getRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
+		}
+	case "HEAD":
+		return &headRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
+		}
+	case "OPTIONS":
+		return &optionsRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
+		}
+	case "POST":
+		return &postRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
+		}
+	case "PUT":
+		return &putRequest{
+			Controller: route.Controller,
+			Target:     requested.Target,
 		}
 	default:
 		return nil
