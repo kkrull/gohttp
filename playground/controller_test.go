@@ -10,9 +10,9 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var _ = Describe("StatelessOptions", func() {
+var _ = Describe("AllowedMethodsController", func() {
 	var (
-		controller     *playground.StatelessOptionController
+		controller     *playground.AllowedMethodsController
 		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
@@ -21,7 +21,7 @@ var _ = Describe("StatelessOptions", func() {
 		Context("given a request for /method_options", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &playground.StatelessOptionController{}
+				controller = &playground.AllowedMethodsController{}
 
 				controller.Options(responseBuffer, "/method_options")
 				response = httptest.ParseResponse(responseBuffer)
@@ -53,7 +53,7 @@ var _ = Describe("StatelessOptions", func() {
 		Context("given a request for /method_options2", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &playground.StatelessOptionController{}
+				controller = &playground.AllowedMethodsController{}
 
 				controller.Options(responseBuffer, "/method_options2")
 				response = httptest.ParseResponse(responseBuffer)

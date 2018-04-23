@@ -8,12 +8,12 @@ import (
 
 func NewRoute() *Route {
 	return &Route{
-		Controller: &StatelessOptionController{},
+		Controller: &AllowedMethodsController{},
 	}
 }
 
 type Route struct {
-	Controller OptionController
+	Controller Controller
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
@@ -29,7 +29,7 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 }
 
 type optionsRequest struct {
-	Controller OptionController
+	Controller Controller
 	Target     string
 }
 
@@ -38,6 +38,6 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 	return nil
 }
 
-type OptionController interface {
+type Controller interface {
 	Options(client io.Writer, target string)
 }

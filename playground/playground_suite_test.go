@@ -13,14 +13,16 @@ func TestPlayground(t *testing.T) {
 	RunSpecs(t, "playground")
 }
 
-type OptionControllerMock struct {
+type ControllerMock struct {
 	optionsReceivedTarget string
 }
 
-func (mock *OptionControllerMock) Options(client io.Writer, target string) {
-	mock.optionsReceivedTarget = target
+func (mock *ControllerMock) GetShouldHaveBeenReceived(target string) {
 }
 
-func (mock *OptionControllerMock) OptionsShouldHaveBeenReceived(target string) {
+func (mock *ControllerMock) Options(client io.Writer, target string) {
+	mock.optionsReceivedTarget = target
+}
+func (mock *ControllerMock) OptionsShouldHaveBeenReceived(target string) {
 	ExpectWithOffset(1, mock.optionsReceivedTarget).To(Equal(target))
 }

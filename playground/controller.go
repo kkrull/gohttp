@@ -7,9 +7,9 @@ import (
 	"github.com/kkrull/gohttp/msg"
 )
 
-type StatelessOptionController struct{}
+type AllowedMethodsController struct{}
 
-func (controller *StatelessOptionController) Options(client io.Writer, target string) {
+func (controller *AllowedMethodsController) Options(client io.Writer, target string) {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 
@@ -18,7 +18,7 @@ func (controller *StatelessOptionController) Options(client io.Writer, target st
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (controller *StatelessOptionController) methodsAllowedFor(target string) []string {
+func (controller *AllowedMethodsController) methodsAllowedFor(target string) []string {
 	switch target {
 	case "/method_options":
 		return []string{"GET", "HEAD", "POST", "OPTIONS", "PUT"}

@@ -13,7 +13,7 @@ var _ = Describe("::NewRoute", func() {
 	It("returns a Route configured for this package", func() {
 		route := playground.NewRoute()
 		Expect(route).NotTo(BeNil())
-		Expect(route.Controller).To(BeAssignableToTypeOf(&playground.StatelessOptionController{}))
+		Expect(route.Controller).To(BeAssignableToTypeOf(&playground.AllowedMethodsController{}))
 	})
 })
 
@@ -21,14 +21,21 @@ var _ = Describe("Route", func() {
 	Describe("#Route", func() {
 		var (
 			router        http.Route
-			controller    *OptionControllerMock
+			controller    *ControllerMock
 			requested     *http.RequestLine
 			routedRequest http.Request
 		)
 
 		BeforeEach(func() {
-			controller = &OptionControllerMock{}
+			controller = &ControllerMock{}
 			router = &playground.Route{Controller: controller}
+		})
+
+		XIt("routes other methods to /method_options", func() {
+			requested = &http.RequestLine{Method: "GET", Target: "/method_options"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.GetShouldHaveBeenReceived("/method_options")
 		})
 
 		It("routes OPTIONS /method_options", func() {
