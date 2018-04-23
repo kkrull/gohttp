@@ -10,23 +10,14 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var response *bytes.Buffer
-
-var ShouldHaveNoBody = func(status int, reason string) func() {
-	return func() {
-		responseMessage := httptest.ParseResponse(response)
-		responseMessage.ShouldBeWellFormed()
-		responseMessage.StatusShouldBe(status, reason)
-		responseMessage.HeaderShould("Content-Length", Equal("0"))
-		responseMessage.BodyShould(BeEmpty())
-	}
-}
-
 var _ = Describe("WritableNopController", func() {
-	var controller *playground.WritableNopController
+	var (
+		controller *playground.WritableNopController
+		response   = &bytes.Buffer{}
+	)
 
 	BeforeEach(func() {
-		response = &bytes.Buffer{}
+		response.Reset()
 		controller = &playground.WritableNopController{}
 	})
 
@@ -35,7 +26,7 @@ var _ = Describe("WritableNopController", func() {
 			controller.Get(response, "/method_options")
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Head", func() {
@@ -43,7 +34,7 @@ var _ = Describe("WritableNopController", func() {
 			controller.Head(response, "/method_options")
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Options", func() {
@@ -52,7 +43,7 @@ var _ = Describe("WritableNopController", func() {
 				controller.Options(response, "/method_options")
 			})
 
-			It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+			It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 			It("sets Allow to the methods that SimpleOption expects for this route", func() {
 				responseMessage := httptest.ParseResponse(response)
 				responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
@@ -70,7 +61,7 @@ var _ = Describe("WritableNopController", func() {
 				controller.Options(response, "/method_options2")
 			})
 
-			It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+			It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 			It("sets Allow to the methods that SimpleOption expects for this route", func() {
 				responseMessage := httptest.ParseResponse(response)
 				responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
@@ -87,7 +78,7 @@ var _ = Describe("WritableNopController", func() {
 			controller.Post(response, "/method_options")
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Put", func() {
@@ -95,9 +86,19 @@ var _ = Describe("WritableNopController", func() {
 			controller.Put(response, "/method_options")
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 	})
 })
+
+func ShouldHaveNoBody(response *bytes.Buffer, status int, reason string) func() {
+	return func() {
+		responseMessage := httptest.ParseResponse(response)
+		responseMessage.ShouldBeWellFormed()
+		responseMessage.StatusShouldBe(status, reason)
+		responseMessage.HeaderShould("Content-Length", Equal("0"))
+		responseMessage.BodyShould(BeEmpty())
+	}
+}
 
 func ContainSubstrings(values []string) types.GomegaMatcher {
 	valueMatchers := make([]types.GomegaMatcher, len(values))
