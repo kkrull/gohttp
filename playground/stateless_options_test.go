@@ -7,6 +7,7 @@ import (
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("StatelessOptions", func() {
@@ -36,7 +37,13 @@ var _ = Describe("StatelessOptions", func() {
 				response.HeaderShould("Content-Length", Equal("0"))
 			})
 			It("sets Allow to the methods that SimpleOption expects for this route", func() {
-				response.HeaderShould("Allow", Equal("GET,HEAD,POST,OPTIONS,PUT"))
+				response.HeaderShould("Allow", ContainSubstrings([]string{
+					"GET",
+					"HEAD",
+					"OPTIONS",
+					"POST",
+					"PUT",
+				}))
 			})
 			It("has no body", func() {
 				response.BodyShould(BeEmpty())
@@ -62,7 +69,11 @@ var _ = Describe("StatelessOptions", func() {
 				response.HeaderShould("Content-Length", Equal("0"))
 			})
 			It("sets Allow to the methods that SimpleOption expects for this route", func() {
-				response.HeaderShould("Allow", Equal("GET,OPTIONS,HEAD"))
+				response.HeaderShould("Allow", ContainSubstrings([]string{
+					"GET",
+					"HEAD",
+					"OPTIONS",
+				}))
 			})
 			It("has no body", func() {
 				response.BodyShould(BeEmpty())
@@ -70,3 +81,12 @@ var _ = Describe("StatelessOptions", func() {
 		})
 	})
 })
+
+func ContainSubstrings(values []string) types.GomegaMatcher {
+	valueMatchers := make([]types.GomegaMatcher, len(values))
+	for i, value := range values {
+		valueMatchers[i] = ContainSubstring(value)
+	}
+
+	return SatisfyAll(valueMatchers...)
+}

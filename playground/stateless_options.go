@@ -2,6 +2,7 @@ package playground
 
 import (
 	"io"
+	"strings"
 
 	"github.com/kkrull/gohttp/msg"
 )
@@ -12,11 +13,18 @@ func (controller *StatelessOptionController) Options(client io.Writer, target st
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 
-	if target == "/method_options" {
-		msg.WriteHeader(client, "Allow", "GET,HEAD,POST,OPTIONS,PUT")
-	} else if target == "/method_options2" {
-		msg.WriteHeader(client, "Allow", "GET,OPTIONS,HEAD")
-	}
-
+	allowedMethods := controller.methodsAllowedFor(target)
+	msg.WriteHeader(client, "Allow", strings.Join(allowedMethods, ","))
 	msg.WriteEndOfMessageHeader(client)
+}
+
+func (controller *StatelessOptionController) methodsAllowedFor(target string) []string {
+	switch target {
+	case "/method_options":
+		return []string{"GET", "HEAD", "POST", "OPTIONS", "PUT"}
+	case "/method_options2":
+		return []string{"GET", "HEAD", "OPTIONS"}
+	default:
+		return nil
+	}
 }
