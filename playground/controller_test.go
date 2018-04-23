@@ -40,6 +40,15 @@ var _ = Describe("AllowedMethodsController", func() {
 		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
 	})
 
+	Describe("#Head", func() {
+		BeforeEach(func() {
+			controller.Head(responseBuffer, "/method_options")
+			response = httptest.ParseResponse(responseBuffer)
+		})
+
+		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+	})
+
 	Describe("#Options", func() {
 		Context("given a request for /method_options", func() {
 			BeforeEach(func() {
@@ -74,6 +83,24 @@ var _ = Describe("AllowedMethodsController", func() {
 				}))
 			})
 		})
+	})
+
+	Describe("#Post", func() {
+		BeforeEach(func() {
+			controller.Post(responseBuffer, "/method_options")
+			response = httptest.ParseResponse(responseBuffer)
+		})
+
+		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
+	})
+
+	Describe("#Put", func() {
+		BeforeEach(func() {
+			controller.Put(responseBuffer, "/method_options")
+			response = httptest.ParseResponse(responseBuffer)
+		})
+
+		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
 	})
 })
 

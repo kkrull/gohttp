@@ -16,7 +16,9 @@ func (controller *AllowedMethodsController) Get(client io.Writer, target string)
 }
 
 func (controller *AllowedMethodsController) Head(client io.Writer, target string) {
-	panic("implement me")
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteContentLengthHeader(client, 0)
+	msg.WriteEndOfMessageHeader(client)
 }
 
 func (controller *AllowedMethodsController) Options(client io.Writer, target string) {
@@ -40,9 +42,13 @@ func (controller *AllowedMethodsController) methodsAllowedFor(target string) []s
 }
 
 func (controller *AllowedMethodsController) Post(client io.Writer, target string) {
-	panic("implement me")
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteContentLengthHeader(client, 0)
+	msg.WriteEndOfMessageHeader(client)
 }
 
 func (controller *AllowedMethodsController) Put(client io.Writer, target string) {
-	panic("implement me")
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteContentLengthHeader(client, 0)
+	msg.WriteEndOfMessageHeader(client)
 }
