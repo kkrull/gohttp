@@ -31,11 +31,18 @@ var _ = Describe("Route", func() {
 			router = &playground.Route{Controller: controller}
 		})
 
-		XIt("routes other methods to /method_options", func() {
+		It("routes GET /method_options to Controller#Get", func() {
 			requested = &http.RequestLine{Method: "GET", Target: "/method_options"}
 			routedRequest = router.Route(requested)
 			routedRequest.Handle(&bufio.Writer{})
 			controller.GetShouldHaveBeenReceived("/method_options")
+		})
+
+		It("routes HEAD /method_options to Controller#Head", func() {
+			requested = &http.RequestLine{Method: "HEAD", Target: "/method_options"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.HeadShouldHaveBeenReceived("/method_options")
 		})
 
 		It("routes OPTIONS /method_options", func() {
@@ -43,6 +50,20 @@ var _ = Describe("Route", func() {
 			routedRequest = router.Route(requested)
 			routedRequest.Handle(&bufio.Writer{})
 			controller.OptionsShouldHaveBeenReceived("/method_options")
+		})
+
+		It("routes POST /method_options", func() {
+			requested = &http.RequestLine{Method: "POST", Target: "/method_options"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.PostShouldHaveBeenReceived("/method_options")
+		})
+
+		It("routes PUT /method_options", func() {
+			requested = &http.RequestLine{Method: "PUT", Target: "/method_options"}
+			routedRequest = router.Route(requested)
+			routedRequest.Handle(&bufio.Writer{})
+			controller.PutShouldHaveBeenReceived("/method_options")
 		})
 
 		It("routes OPTIONS /method_options2", func() {
