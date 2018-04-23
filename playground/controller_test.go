@@ -10,31 +10,29 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var _ = Describe("AllowedMethodsController", func() {
-	var (
-		controller     *playground.AllowedMethodsController
-		response       *httptest.ResponseMessage
-		responseBuffer *bytes.Buffer
-	)
+var response *bytes.Buffer
 
-	ShouldHaveNoBody := func(status int, reason string) func() {
-		return func() {
-			response.ShouldBeWellFormed()
-			response.StatusShouldBe(status, reason)
-			response.HeaderShould("Content-Length", Equal("0"))
-			response.BodyShould(BeEmpty())
-		}
+var ShouldHaveNoBody = func(status int, reason string) func() {
+	return func() {
+		responseMessage := httptest.ParseResponse(response)
+		responseMessage.ShouldBeWellFormed()
+		responseMessage.StatusShouldBe(status, reason)
+		responseMessage.HeaderShould("Content-Length", Equal("0"))
+		responseMessage.BodyShould(BeEmpty())
 	}
+}
+
+var _ = Describe("WritableNopController", func() {
+	var controller *playground.WritableNopController
 
 	BeforeEach(func() {
-		responseBuffer = &bytes.Buffer{}
-		controller = &playground.AllowedMethodsController{}
+		response = &bytes.Buffer{}
+		controller = &playground.WritableNopController{}
 	})
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(responseBuffer, "/method_options")
-			response = httptest.ParseResponse(responseBuffer)
+			controller.Get(response, "/method_options")
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
@@ -42,8 +40,7 @@ var _ = Describe("AllowedMethodsController", func() {
 
 	Describe("#Head", func() {
 		BeforeEach(func() {
-			controller.Head(responseBuffer, "/method_options")
-			response = httptest.ParseResponse(responseBuffer)
+			controller.Head(response, "/method_options")
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
@@ -52,13 +49,13 @@ var _ = Describe("AllowedMethodsController", func() {
 	Describe("#Options", func() {
 		Context("given a request for /method_options", func() {
 			BeforeEach(func() {
-				controller.Options(responseBuffer, "/method_options")
-				response = httptest.ParseResponse(responseBuffer)
+				controller.Options(response, "/method_options")
 			})
 
 			It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
 			It("sets Allow to the methods that SimpleOption expects for this route", func() {
-				response.HeaderShould("Allow", ContainSubstrings([]string{
+				responseMessage := httptest.ParseResponse(response)
+				responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
 					"GET",
 					"HEAD",
 					"OPTIONS",
@@ -70,13 +67,13 @@ var _ = Describe("AllowedMethodsController", func() {
 
 		Context("given a request for /method_options2", func() {
 			BeforeEach(func() {
-				controller.Options(responseBuffer, "/method_options2")
-				response = httptest.ParseResponse(responseBuffer)
+				controller.Options(response, "/method_options2")
 			})
 
 			It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
 			It("sets Allow to the methods that SimpleOption expects for this route", func() {
-				response.HeaderShould("Allow", ContainSubstrings([]string{
+				responseMessage := httptest.ParseResponse(response)
+				responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
 					"GET",
 					"HEAD",
 					"OPTIONS",
@@ -87,8 +84,7 @@ var _ = Describe("AllowedMethodsController", func() {
 
 	Describe("#Post", func() {
 		BeforeEach(func() {
-			controller.Post(responseBuffer, "/method_options")
-			response = httptest.ParseResponse(responseBuffer)
+			controller.Post(response, "/method_options")
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))
@@ -96,8 +92,7 @@ var _ = Describe("AllowedMethodsController", func() {
 
 	Describe("#Put", func() {
 		BeforeEach(func() {
-			controller.Put(responseBuffer, "/method_options")
-			response = httptest.ParseResponse(responseBuffer)
+			controller.Put(response, "/method_options")
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(200, "OK"))

@@ -7,21 +7,21 @@ import (
 	"github.com/kkrull/gohttp/msg"
 )
 
-type AllowedMethodsController struct{}
+type WritableNopController struct{}
 
-func (controller *AllowedMethodsController) Get(client io.Writer, target string) {
+func (controller *WritableNopController) Get(client io.Writer, target string) {
 	controller.Head(client, target)
 }
 
-func (controller *AllowedMethodsController) Head(client io.Writer, target string) {
+func (controller *WritableNopController) Head(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 
-func (controller *AllowedMethodsController) Post(client io.Writer, target string) {
+func (controller *WritableNopController) Post(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 
-func (controller *AllowedMethodsController) Put(client io.Writer, target string) {
+func (controller *WritableNopController) Put(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 
@@ -31,7 +31,7 @@ func writeOKWithNoBody(client io.Writer) {
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (controller *AllowedMethodsController) Options(client io.Writer, target string) {
+func (controller *WritableNopController) Options(client io.Writer, target string) {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 
@@ -40,7 +40,7 @@ func (controller *AllowedMethodsController) Options(client io.Writer, target str
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (controller *AllowedMethodsController) methodsAllowedFor(target string) []string {
+func (controller *WritableNopController) methodsAllowedFor(target string) []string {
 	switch target {
 	case "/method_options":
 		return []string{"GET", "HEAD", "POST", "OPTIONS", "PUT"}

@@ -13,7 +13,7 @@ var _ = Describe("::NewRoute", func() {
 	It("returns a Route configured for this package", func() {
 		route := playground.NewRoute()
 		Expect(route).NotTo(BeNil())
-		Expect(route.Controller).To(BeAssignableToTypeOf(&playground.AllowedMethodsController{}))
+		Expect(route.Controller).To(BeAssignableToTypeOf(&playground.WritableNopController{}))
 	})
 })
 

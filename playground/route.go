@@ -8,7 +8,7 @@ import (
 
 func NewRoute() *Route {
 	return &Route{
-		Controller: &AllowedMethodsController{},
+		Controller: &WritableNopController{},
 	}
 }
 
