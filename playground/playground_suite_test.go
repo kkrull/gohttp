@@ -13,7 +13,7 @@ func TestPlayground(t *testing.T) {
 	RunSpecs(t, "playground")
 }
 
-type ControllerMock struct {
+type ReadableControllerMock struct {
 	getTarget     string
 	headTarget    string
 	optionsTarget string
@@ -21,42 +21,74 @@ type ControllerMock struct {
 	putTarget     string
 }
 
-func (mock *ControllerMock) Get(client io.Writer, target string) {
+func (mock *ReadableControllerMock) Get(client io.Writer, target string) {
 	mock.getTarget = target
 }
 
-func (mock *ControllerMock) GetShouldHaveBeenReceived(target string) {
+func (mock *ReadableControllerMock) GetShouldHaveBeenReceived(target string) {
 	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
 }
 
-func (mock *ControllerMock) Head(client io.Writer, target string) {
+func (mock *ReadableControllerMock) Head(client io.Writer, target string) {
 	mock.headTarget = target
 }
 
-func (mock *ControllerMock) HeadShouldHaveBeenReceived(target string) {
+func (mock *ReadableControllerMock) HeadShouldHaveBeenReceived(target string) {
 	ExpectWithOffset(1, mock.headTarget).To(Equal(target))
 }
 
-func (mock *ControllerMock) Options(client io.Writer, target string) {
+func (mock *ReadableControllerMock) Options(client io.Writer, target string) {
 	mock.optionsTarget = target
 }
 
-func (mock *ControllerMock) OptionsShouldHaveBeenReceived(target string) {
+func (mock *ReadableControllerMock) OptionsShouldHaveBeenReceived(target string) {
 	ExpectWithOffset(1, mock.optionsTarget).To(Equal(target))
 }
 
-func (mock *ControllerMock) Post(client io.Writer, target string) {
+type WritableControllerMock struct {
+	getTarget     string
+	headTarget    string
+	optionsTarget string
+	postTarget    string
+	putTarget     string
+}
+
+func (mock *WritableControllerMock) Get(client io.Writer, target string) {
+	mock.getTarget = target
+}
+
+func (mock *WritableControllerMock) GetShouldHaveBeenReceived(target string) {
+	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
+}
+
+func (mock *WritableControllerMock) Head(client io.Writer, target string) {
+	mock.headTarget = target
+}
+
+func (mock *WritableControllerMock) HeadShouldHaveBeenReceived(target string) {
+	ExpectWithOffset(1, mock.headTarget).To(Equal(target))
+}
+
+func (mock *WritableControllerMock) Options(client io.Writer, target string) {
+	mock.optionsTarget = target
+}
+
+func (mock *WritableControllerMock) OptionsShouldHaveBeenReceived(target string) {
+	ExpectWithOffset(1, mock.optionsTarget).To(Equal(target))
+}
+
+func (mock *WritableControllerMock) Post(client io.Writer, target string) {
 	mock.postTarget = target
 }
 
-func (mock *ControllerMock) PostShouldHaveBeenReceived(target string) {
+func (mock *WritableControllerMock) PostShouldHaveBeenReceived(target string) {
 	ExpectWithOffset(1, mock.postTarget).To(Equal(target))
 }
 
-func (mock *ControllerMock) Put(client io.Writer, target string) {
+func (mock *WritableControllerMock) Put(client io.Writer, target string) {
 	mock.putTarget = target
 }
 
-func (mock *ControllerMock) PutShouldHaveBeenReceived(target string) {
+func (mock *WritableControllerMock) PutShouldHaveBeenReceived(target string) {
 	ExpectWithOffset(1, mock.putTarget).To(Equal(target))
 }

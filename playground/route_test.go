@@ -20,56 +20,61 @@ var _ = Describe("::NewRoute", func() {
 var _ = Describe("Route", func() {
 	Describe("#Route", func() {
 		var (
-			router     http.Route
-			controller *ControllerMock
+			router          http.Route
+			readController  *ReadableControllerMock
+			writeController *WritableControllerMock
 		)
 
 		BeforeEach(func() {
-			controller = &ControllerMock{}
-			router = &playground.Route{WriteController: controller}
+			readController = &ReadableControllerMock{}
+			writeController = &WritableControllerMock{}
+			router = &playground.Route{
+				ReadController:  readController,
+				WriteController: writeController,
+			}
 		})
 
 		Context("when the target is /method_options", func() {
 			It("routes GET to WriteController#Get", func() {
 				handleRequest(router, "GET", "/method_options")
-				controller.GetShouldHaveBeenReceived("/method_options")
+				writeController.GetShouldHaveBeenReceived("/method_options")
 			})
 
 			It("routes HEAD to WriteController#Head", func() {
 				handleRequest(router, "HEAD", "/method_options")
-				controller.HeadShouldHaveBeenReceived("/method_options")
+				writeController.HeadShouldHaveBeenReceived("/method_options")
 			})
 
 			It("routes OPTIONS to WriteController#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options")
-				controller.OptionsShouldHaveBeenReceived("/method_options")
+				writeController.OptionsShouldHaveBeenReceived("/method_options")
 			})
 
 			It("routes POST to WriteController#Post", func() {
 				handleRequest(router, "POST", "/method_options")
-				controller.PostShouldHaveBeenReceived("/method_options")
+				writeController.PostShouldHaveBeenReceived("/method_options")
 			})
 
 			It("routes PUT to WriteController#Put", func() {
 				handleRequest(router, "PUT", "/method_options")
-				controller.PutShouldHaveBeenReceived("/method_options")
+				writeController.PutShouldHaveBeenReceived("/method_options")
 			})
 		})
 
 		Context("when the target is /method_options2", func() {
 			It("routes GET to WriteController#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
-				controller.GetShouldHaveBeenReceived("/method_options2")
+				readController.GetShouldHaveBeenReceived("/method_options2")
 			})
 
 			It("routes HEAD to WriteController#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
-				controller.HeadShouldHaveBeenReceived("/method_options2")
+				readController.HeadShouldHaveBeenReceived("/method_options2")
 			})
 
 			It("routes OPTIONS to WriteController#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options2")
-				controller.OptionsShouldHaveBeenReceived("/method_options2")
+				readController.OptionsShouldHaveBeenReceived("/method_options2")
 			})
 
 			It("returns nil for any other method", func() {

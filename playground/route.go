@@ -8,12 +8,14 @@ import (
 
 func NewRoute() *Route {
 	return &Route{
+		ReadController:  &ReadableNopController{},
 		WriteController: &WritableNopController{},
 	}
 }
 
 type Route struct {
-	WriteController Controller
+	ReadController  ReadableController
+	WriteController ReadWriteController
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
@@ -21,14 +23,14 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 	case "/method_options":
 		switch requested.Method {
 		case "GET", "HEAD", "OPTIONS", "POST", "PUT":
-			return route.makeRequest(requested)
+			return route.makeRequest(requested, route.WriteController)
 		default:
 			return nil
 		}
 	case "/method_options2":
 		switch requested.Method {
 		case "GET", "HEAD", "OPTIONS":
-			return route.makeRequest(requested)
+			return route.makeRequest(requested, route.ReadController)
 		default:
 			return nil
 		}
@@ -37,31 +39,37 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 	}
 }
 
-func (route *Route) makeRequest(requested *http.RequestLine) http.Request {
+func (route *Route) makeRequest(requested *http.RequestLine, controller interface{}) http.Request {
+	//TODO KDK: Boil this down to a typecast for the desired controller/method
 	switch requested.Method {
 	case "GET":
+		readController, _ := controller.(ReadableController)
 		return &getRequest{
-			Controller: route.WriteController,
+			Controller: readController,
 			Target:     requested.Target,
 		}
 	case "HEAD":
+		readController, _ := controller.(ReadableController)
 		return &headRequest{
-			Controller: route.WriteController,
+			Controller: readController,
 			Target:     requested.Target,
 		}
 	case "OPTIONS":
+		readController, _ := controller.(ReadableController)
 		return &optionsRequest{
-			Controller: route.WriteController,
+			Controller: readController,
 			Target:     requested.Target,
 		}
 	case "POST":
+		writeController, _ := controller.(ReadWriteController)
 		return &postRequest{
-			Controller: route.WriteController,
+			Controller: writeController,
 			Target:     requested.Target,
 		}
 	case "PUT":
+		writeController, _ := controller.(ReadWriteController)
 		return &putRequest{
-			Controller: route.WriteController,
+			Controller: writeController,
 			Target:     requested.Target,
 		}
 	default:
@@ -70,7 +78,7 @@ func (route *Route) makeRequest(requested *http.RequestLine) http.Request {
 }
 
 type getRequest struct {
-	Controller Controller
+	Controller ReadableController
 	Target     string
 }
 
@@ -80,7 +88,7 @@ func (request *getRequest) Handle(client io.Writer) error {
 }
 
 type headRequest struct {
-	Controller Controller
+	Controller ReadableController
 	Target     string
 }
 
@@ -90,7 +98,7 @@ func (request *headRequest) Handle(client io.Writer) error {
 }
 
 type optionsRequest struct {
-	Controller Controller
+	Controller ReadableController
 	Target     string
 }
 
@@ -100,7 +108,7 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 }
 
 type postRequest struct {
-	Controller Controller
+	Controller ReadWriteController
 	Target     string
 }
 
@@ -110,7 +118,7 @@ func (request *postRequest) Handle(client io.Writer) error {
 }
 
 type putRequest struct {
-	Controller Controller
+	Controller ReadWriteController
 	Target     string
 }
 
@@ -119,7 +127,13 @@ func (request *putRequest) Handle(client io.Writer) error {
 	return nil
 }
 
-type Controller interface {
+type ReadableController interface {
+	Get(client io.Writer, target string)
+	Head(client io.Writer, target string)
+	Options(client io.Writer, target string)
+}
+
+type ReadWriteController interface {
 	Get(client io.Writer, target string)
 	Head(client io.Writer, target string)
 	Options(client io.Writer, target string)
