@@ -20,10 +20,8 @@ var _ = Describe("::NewRoute", func() {
 var _ = Describe("Route", func() {
 	Describe("#Route", func() {
 		var (
-			router        http.Route
-			controller    *ControllerMock
-			requested     *http.RequestLine
-			routedRequest http.Request
+			router     http.Route
+			controller *ControllerMock
 		)
 
 		BeforeEach(func() {
@@ -32,51 +30,46 @@ var _ = Describe("Route", func() {
 		})
 
 		It("routes GET /method_options to Controller#Get", func() {
-			requested = &http.RequestLine{Method: "GET", Target: "/method_options"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
+			handleRequest(router, "GET", "/method_options")
 			controller.GetShouldHaveBeenReceived("/method_options")
 		})
 
 		It("routes HEAD /method_options to Controller#Head", func() {
-			requested = &http.RequestLine{Method: "HEAD", Target: "/method_options"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
+			handleRequest(router, "HEAD", "/method_options")
 			controller.HeadShouldHaveBeenReceived("/method_options")
 		})
 
-		It("routes OPTIONS /method_options", func() {
-			requested = &http.RequestLine{Method: "OPTIONS", Target: "/method_options"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
+		It("routes OPTIONS /method_options to Controller#Options", func() {
+			handleRequest(router, "OPTIONS", "/method_options")
 			controller.OptionsShouldHaveBeenReceived("/method_options")
 		})
 
-		It("routes POST /method_options", func() {
-			requested = &http.RequestLine{Method: "POST", Target: "/method_options"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
+		It("routes POST /method_options to Controller#Post", func() {
+			handleRequest(router, "POST", "/method_options")
 			controller.PostShouldHaveBeenReceived("/method_options")
 		})
 
-		It("routes PUT /method_options", func() {
-			requested = &http.RequestLine{Method: "PUT", Target: "/method_options"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
+		It("routes PUT /method_options to Controller#Put", func() {
+			handleRequest(router, "PUT", "/method_options")
 			controller.PutShouldHaveBeenReceived("/method_options")
 		})
 
-		It("routes OPTIONS /method_options2", func() {
-			requested = &http.RequestLine{Method: "OPTIONS", Target: "/method_options2"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
+		It("routes OPTIONS /method_options2 to Controller#Options", func() {
+			handleRequest(router, "OPTIONS", "/method_options2")
 			controller.OptionsShouldHaveBeenReceived("/method_options2")
 		})
 
 		It("returns nil on any other request", func() {
-			requested = &http.RequestLine{Method: "GET", Target: "/"}
-			routedRequest = router.Route(requested)
+			requested := &http.RequestLine{Method: "GET", Target: "/"}
+			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})
 	})
 })
+
+func handleRequest(router http.Route, method, target string) {
+	requested := &http.RequestLine{Method: method, Target: target}
+	routedRequest := router.Route(requested)
+	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+	routedRequest.Handle(&bufio.Writer{})
+}

@@ -46,7 +46,7 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 				Target:     requested.Target,
 			}
 		default:
-			return &nopRequest{}
+			return nil
 		}
 	default:
 		return nil
