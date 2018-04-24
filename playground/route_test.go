@@ -37,44 +37,44 @@ var _ = Describe("Route", func() {
 		Context("when the target is /method_options", func() {
 			It("routes GET to Writable#Get", func() {
 				handleRequest(router, "GET", "/method_options")
-				readWriteResource.GetShouldHaveBeenReceived("/method_options")
+				readWriteResource.GetShouldHaveBeenCalled()
 			})
 
 			It("routes HEAD to Writable#Head", func() {
 				handleRequest(router, "HEAD", "/method_options")
-				readWriteResource.HeadShouldHaveBeenReceived("/method_options")
+				readWriteResource.HeadShouldHaveBeenCalled()
 			})
 
 			It("routes OPTIONS to Writable#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options")
-				readWriteResource.OptionsShouldHaveBeenReceived("/method_options")
+				readWriteResource.OptionsShouldHaveBeenCalled()
 			})
 
 			It("routes POST to Writable#Post", func() {
 				handleRequest(router, "POST", "/method_options")
-				readWriteResource.PostShouldHaveBeenReceived("/method_options")
+				readWriteResource.PostShouldHaveBeenCalled()
 			})
 
 			It("routes PUT to Writable#Put", func() {
 				handleRequest(router, "PUT", "/method_options")
-				readWriteResource.PutShouldHaveBeenReceived("/method_options")
+				readWriteResource.PutShouldHaveBeenCalled()
 			})
 		})
 
 		Context("when the target is /method_options2", func() {
 			It("routes GET to Writable#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
-				readOnlyResource.GetShouldHaveBeenReceived("/method_options2")
+				readOnlyResource.GetShouldHaveBeenCalled()
 			})
 
 			It("routes HEAD to Writable#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
-				readOnlyResource.HeadShouldHaveBeenReceived("/method_options2")
+				readOnlyResource.HeadShouldHaveBeenCalled()
 			})
 
 			It("routes OPTIONS to Writable#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options2")
-				readOnlyResource.OptionsShouldHaveBeenReceived("/method_options2")
+				readOnlyResource.OptionsShouldHaveBeenCalled()
 			})
 
 			It("returns nil for any other method", func() {

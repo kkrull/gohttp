@@ -14,81 +14,79 @@ func TestPlayground(t *testing.T) {
 }
 
 type ReadOnlyResourceMock struct {
-	getTarget     string
-	headTarget    string
-	optionsTarget string
-	postTarget    string
-	putTarget     string
+	getCalled     bool
+	headCalled    bool
+	optionsCalled bool
 }
 
-func (mock *ReadOnlyResourceMock) Get(client io.Writer, target string) {
-	mock.getTarget = target
+func (mock *ReadOnlyResourceMock) Get(client io.Writer) {
+	mock.getCalled = true
 }
 
-func (mock *ReadOnlyResourceMock) GetShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
+func (mock *ReadOnlyResourceMock) GetShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadOnlyResourceMock) Head(client io.Writer, target string) {
-	mock.headTarget = target
+func (mock *ReadOnlyResourceMock) Head(client io.Writer) {
+	mock.headCalled = true
 }
 
-func (mock *ReadOnlyResourceMock) HeadShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.headTarget).To(Equal(target))
+func (mock *ReadOnlyResourceMock) HeadShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.headCalled).To(BeTrue())
 }
 
-func (mock *ReadOnlyResourceMock) Options(client io.Writer, target string) {
-	mock.optionsTarget = target
+func (mock *ReadOnlyResourceMock) Options(client io.Writer) {
+	mock.optionsCalled = true
 }
 
-func (mock *ReadOnlyResourceMock) OptionsShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.optionsTarget).To(Equal(target))
+func (mock *ReadOnlyResourceMock) OptionsShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.optionsCalled).To(BeTrue())
 }
 
 type ReadWriteResourceMock struct {
-	getTarget     string
-	headTarget    string
-	optionsTarget string
-	postTarget    string
-	putTarget     string
+	getCalled     bool
+	headCalled    bool
+	optionsCalled bool
+	postCalled    bool
+	putCalled     bool
 }
 
-func (mock *ReadWriteResourceMock) Get(client io.Writer, target string) {
-	mock.getTarget = target
+func (mock *ReadWriteResourceMock) Get(client io.Writer) {
+	mock.getCalled = true
 }
 
-func (mock *ReadWriteResourceMock) GetShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
+func (mock *ReadWriteResourceMock) GetShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Head(client io.Writer, target string) {
-	mock.headTarget = target
+func (mock *ReadWriteResourceMock) Head(client io.Writer) {
+	mock.headCalled = true
 }
 
-func (mock *ReadWriteResourceMock) HeadShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.headTarget).To(Equal(target))
+func (mock *ReadWriteResourceMock) HeadShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.headCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Options(client io.Writer, target string) {
-	mock.optionsTarget = target
+func (mock *ReadWriteResourceMock) Options(client io.Writer) {
+	mock.optionsCalled = true
 }
 
-func (mock *ReadWriteResourceMock) OptionsShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.optionsTarget).To(Equal(target))
+func (mock *ReadWriteResourceMock) OptionsShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.optionsCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Post(client io.Writer, target string) {
-	mock.postTarget = target
+func (mock *ReadWriteResourceMock) Post(client io.Writer) {
+	mock.postCalled = true
 }
 
-func (mock *ReadWriteResourceMock) PostShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.postTarget).To(Equal(target))
+func (mock *ReadWriteResourceMock) PostShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.postCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Put(client io.Writer, target string) {
-	mock.putTarget = target
+func (mock *ReadWriteResourceMock) Put(client io.Writer) {
+	mock.putCalled = true
 }
 
-func (mock *ReadWriteResourceMock) PutShouldHaveBeenReceived(target string) {
-	ExpectWithOffset(1, mock.putTarget).To(Equal(target))
+func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
+	ExpectWithOffset(1, mock.putCalled).To(BeTrue())
 }

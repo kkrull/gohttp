@@ -23,7 +23,7 @@ var _ = Describe("ReadableNopResource", func() {
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(response, "/method_options2")
+			controller.Get(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -31,7 +31,7 @@ var _ = Describe("ReadableNopResource", func() {
 
 	Describe("#Head", func() {
 		BeforeEach(func() {
-			controller.Head(response, "/method_options2")
+			controller.Head(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -39,7 +39,7 @@ var _ = Describe("ReadableNopResource", func() {
 
 	Describe("#Options", func() {
 		BeforeEach(func() {
-			controller.Options(response, "/method_options2")
+			controller.Options(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -67,7 +67,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(response, "/method_options")
+			controller.Get(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -75,7 +75,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Head", func() {
 		BeforeEach(func() {
-			controller.Head(response, "/method_options")
+			controller.Head(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -83,7 +83,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Options", func() {
 		BeforeEach(func() {
-			controller.Options(response, "/method_options")
+			controller.Options(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -101,7 +101,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Post", func() {
 		BeforeEach(func() {
-			controller.Post(response, "/method_options")
+			controller.Post(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
@@ -109,7 +109,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Put", func() {
 		BeforeEach(func() {
-			controller.Put(response, "/method_options")
+			controller.Put(response)
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
