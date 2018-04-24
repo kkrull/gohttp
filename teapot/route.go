@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
 func NewRoute() http.Route {
@@ -17,7 +18,7 @@ type Route struct {
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
 	if requested.Method != "GET" {
-		return nil
+		return clienterror.MethodNotAllowed("GET")
 	}
 
 	switch requested.Target {
