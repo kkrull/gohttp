@@ -8,18 +8,18 @@ import (
 )
 
 func NewRoute() http.Route {
-	controller := &IdentityController{}
-	return &Route{Controller: controller}
+	controller := &IdentityTeapot{}
+	return &Route{Resource: controller}
 }
 
 type Route struct {
-	Controller Controller
+	Resource Teapot
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
 	var resources = map[string]http.Request{
-		"/coffee": &GetCoffeeRequest{Controller: route.Controller},
-		"/tea":    &GetTeaRequest{Controller: route.Controller},
+		"/coffee": &GetCoffeeRequest{Controller: route.Resource},
+		"/tea":    &GetTeaRequest{Controller: route.Resource},
 	}
 
 	request, ownResource := resources[requested.Target]
@@ -32,7 +32,9 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 	return request
 }
 
-type Controller interface {
+type Teapot interface {
+	Name() string
+	Get(client io.Writer, target string)
 	GetCoffee(client io.Writer)
 	GetTea(client io.Writer)
 }

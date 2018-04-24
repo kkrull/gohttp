@@ -13,19 +13,19 @@ import (
 var _ = Describe("teapotRoute", func() {
 	var (
 		router        http.Route
-		controller    *ControllerMock
+		controller    *TeapotMock
 		requested     *http.RequestLine
 		routedRequest http.Request
 	)
 
 	BeforeEach(func() {
-		controller = &ControllerMock{}
-		router = &teapot.Route{Controller: controller}
+		controller = &TeapotMock{}
+		router = &teapot.Route{Resource: controller}
 	})
 
 	Describe("#Route", func() {
 		Context("when the target is /coffee", func() {
-			It("routes GET /coffee to Controller#GetCoffee", func() {
+			It("routes GET /coffee to Resource#GetCoffee", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
@@ -40,7 +40,7 @@ var _ = Describe("teapotRoute", func() {
 		})
 
 		Context("when the target is /tea", func() {
-			It("routes GET /tea to Controller#GetCoffee", func() {
+			It("routes GET /tea to Resource#GetCoffee", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/tea"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})

@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("IdentityController", func() {
+var _ = Describe("IdentityTeapot", func() {
 	var (
-		controller     teapot.Controller
+		controller     teapot.Teapot
 		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
@@ -19,7 +19,7 @@ var _ = Describe("IdentityController", func() {
 	Describe("#GetCoffee", func() {
 		BeforeEach(func() {
 			responseBuffer = &bytes.Buffer{}
-			controller = &teapot.IdentityController{}
+			controller = &teapot.IdentityTeapot{}
 
 			controller.GetCoffee(responseBuffer)
 			response = httptest.ParseResponse(responseBuffer)
@@ -45,7 +45,7 @@ var _ = Describe("IdentityController", func() {
 	Describe("#GetTea", func() {
 		BeforeEach(func() {
 			responseBuffer = &bytes.Buffer{}
-			controller = &teapot.IdentityController{}
+			controller = &teapot.IdentityTeapot{}
 
 			controller.GetTea(responseBuffer)
 			response = httptest.ParseResponse(responseBuffer)

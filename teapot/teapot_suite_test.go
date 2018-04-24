@@ -13,23 +13,31 @@ func TestTeapot(t *testing.T) {
 	RunSpecs(t, "teapot")
 }
 
-type ControllerMock struct {
+type TeapotMock struct {
 	getCoffeeCalled bool
 	getTeaCalled    bool
 }
 
-func (mock *ControllerMock) GetCoffee(client io.Writer) {
+func (mock *TeapotMock) Name() string {
+	return "teapot mock"
+}
+
+func (mock *TeapotMock) Get(client io.Writer, target string) {
+	panic("implement me")
+}
+
+func (mock *TeapotMock) GetCoffee(client io.Writer) {
 	mock.getCoffeeCalled = true
 }
 
-func (mock *ControllerMock) GetCoffeeShouldHaveBeenCalled() {
+func (mock *TeapotMock) GetCoffeeShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCoffeeCalled).To(BeTrue())
 }
 
-func (mock *ControllerMock) GetTea(client io.Writer) {
+func (mock *TeapotMock) GetTea(client io.Writer) {
 	mock.getTeaCalled = true
 }
 
-func (mock *ControllerMock) GetTeaShouldHaveBeenCalled() {
+func (mock *TeapotMock) GetTeaShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getTeaCalled).To(BeTrue())
 }
