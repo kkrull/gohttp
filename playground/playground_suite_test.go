@@ -1,40 +1,16 @@
 package playground_test
 
 import (
-	"bytes"
 	"io"
 	"testing"
 
-	"github.com/kkrull/gohttp/httptest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/types"
 )
 
 func TestPlayground(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "playground")
-}
-
-/* Matchers */
-
-func ShouldHaveNoBody(response *bytes.Buffer, status int, reason string) func() {
-	return func() {
-		responseMessage := httptest.ParseResponse(response)
-		responseMessage.ShouldBeWellFormed()
-		responseMessage.StatusShouldBe(status, reason)
-		responseMessage.HeaderShould("Content-Length", Equal("0"))
-		responseMessage.BodyShould(BeEmpty())
-	}
-}
-
-func ContainSubstrings(values []string) types.GomegaMatcher {
-	valueMatchers := make([]types.GomegaMatcher, len(values))
-	for i, value := range values {
-		valueMatchers[i] = ContainSubstring(value)
-	}
-
-	return SatisfyAll(valueMatchers...)
 }
 
 /* ReadOnlyResourceMock */
