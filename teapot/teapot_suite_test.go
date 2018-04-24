@@ -14,6 +14,7 @@ func TestTeapot(t *testing.T) {
 }
 
 type TeapotMock struct {
+	getTarget string
 	getCoffeeCalled bool
 	getTeaCalled    bool
 }
@@ -23,21 +24,9 @@ func (mock *TeapotMock) Name() string {
 }
 
 func (mock *TeapotMock) Get(client io.Writer, target string) {
-	panic("implement me")
+	mock.getTarget = target
 }
 
-func (mock *TeapotMock) GetCoffee(client io.Writer) {
-	mock.getCoffeeCalled = true
-}
-
-func (mock *TeapotMock) GetCoffeeShouldHaveBeenCalled() {
-	ExpectWithOffset(1, mock.getCoffeeCalled).To(BeTrue())
-}
-
-func (mock *TeapotMock) GetTea(client io.Writer) {
-	mock.getTeaCalled = true
-}
-
-func (mock *TeapotMock) GetTeaShouldHaveBeenCalled() {
-	ExpectWithOffset(1, mock.getTeaCalled).To(BeTrue())
+func (mock *TeapotMock) GetShouldHaveReceived(target string) {
+	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
 }

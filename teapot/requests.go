@@ -6,24 +6,6 @@ import (
 	"github.com/kkrull/gohttp/msg"
 )
 
-type GetCoffeeRequest struct {
-	Controller Teapot
-}
-
-func (request *GetCoffeeRequest) Handle(client io.Writer) error {
-	request.Controller.GetCoffee(client)
-	return nil
-}
-
-type GetTeaRequest struct {
-	Controller Teapot
-}
-
-func (request *GetTeaRequest) Handle(client io.Writer) error {
-	request.Controller.GetTea(client)
-	return nil
-}
-
 // Responds as a teapot that is aware of its own identity
 type IdentityTeapot struct{}
 

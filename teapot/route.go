@@ -4,12 +4,11 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
 func NewRoute() http.Route {
-	controller := &IdentityTeapot{}
-	return &Route{Resource: controller}
+	teapot := &IdentityTeapot{}
+	return &Route{Resource: teapot}
 }
 
 type Route struct {
@@ -17,24 +16,20 @@ type Route struct {
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
-	var resources = map[string]http.Request{
-		"/coffee": &GetCoffeeRequest{Controller: route.Resource},
-		"/tea":    &GetTeaRequest{Controller: route.Resource},
+	var resources = map[string]bool{
+		"/coffee": true,
+		"/tea":    true,
 	}
 
-	request, ownResource := resources[requested.Target]
+	_, ownResource := resources[requested.Target]
 	if !ownResource {
 		return nil
-	} else if requested.Method != "GET" {
-		return clienterror.MethodNotAllowed("GET")
 	}
 
-	return request
+	return http.MakeResourceRequest(requested, route.Resource)
 }
 
 type Teapot interface {
 	Name() string
 	Get(client io.Writer, target string)
-	GetCoffee(client io.Writer)
-	GetTea(client io.Writer)
 }

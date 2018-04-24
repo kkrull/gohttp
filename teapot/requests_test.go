@@ -21,7 +21,7 @@ var _ = Describe("IdentityTeapot", func() {
 			responseBuffer = &bytes.Buffer{}
 			controller = &teapot.IdentityTeapot{}
 
-			controller.GetCoffee(responseBuffer)
+			controller.Get(responseBuffer, "/coffee")
 			response = httptest.ParseResponse(responseBuffer)
 		})
 
@@ -47,7 +47,7 @@ var _ = Describe("IdentityTeapot", func() {
 			responseBuffer = &bytes.Buffer{}
 			controller = &teapot.IdentityTeapot{}
 
-			controller.GetTea(responseBuffer)
+			controller.Get(responseBuffer, "/tea")
 			response = httptest.ParseResponse(responseBuffer)
 		})
 
