@@ -53,15 +53,9 @@ var _ = Describe("ReadOnlyRoute", func() {
 					routedRequest.Handle(response)
 				})
 
-				It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
-				It("sets Allow to the methods implemented by this type", func() {
-					responseMessage := httptest.ParseResponse(response)
-					responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
-						"GET",
-						"HEAD",
-						"OPTIONS",
-					}))
-				})
+				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
+				It("sets Allow to the methods implemented by this type",
+					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS"))
 			})
 
 			It("returns nil for any other method", func() {
@@ -122,17 +116,9 @@ var _ = Describe("ReadWriteRoute", func() {
 					routedRequest.Handle(response)
 				})
 
-				It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
-				It("sets Allow to the methods implemented by this type", func() {
-					responseMessage := httptest.ParseResponse(response)
-					responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
-						"GET",
-						"HEAD",
-						"OPTIONS",
-						"POST",
-						"PUT",
-					}))
-				})
+				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
+				It("sets Allow to the methods implemented by this type",
+					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS", "POST", "PUT"))
 			})
 
 			It("routes POST to Resource#Post", func() {

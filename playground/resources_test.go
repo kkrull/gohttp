@@ -3,6 +3,7 @@ package playground_test
 import (
 	"bytes"
 
+	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 )
@@ -23,7 +24,7 @@ var _ = Describe("ReadableNopResource", func() {
 			controller.Get(response)
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Head", func() {
@@ -31,7 +32,7 @@ var _ = Describe("ReadableNopResource", func() {
 			controller.Head(response)
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 	})
 })
 
@@ -51,7 +52,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 			controller.Get(response)
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Head", func() {
@@ -59,7 +60,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 			controller.Head(response)
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Post", func() {
@@ -67,7 +68,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 			controller.Post(response)
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 	})
 
 	Describe("#Put", func() {
@@ -75,6 +76,6 @@ var _ = Describe("ReadWriteNopResource", func() {
 			controller.Put(response)
 		})
 
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 	})
 })
