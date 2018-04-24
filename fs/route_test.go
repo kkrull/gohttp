@@ -5,7 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/httptest"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -51,15 +51,13 @@ var _ = Describe("FileSystemRoute", func() {
 			resource.HeadShouldHaveReceived("/foo")
 		})
 
-		Context("given any other method", func() {
-			BeforeEach(func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/"}
-				routedRequest := route.Route(requested)
-				routedRequest.Handle(response)
-			})
-
-			It("responds 405 Method Not Allowed", httptest.ShouldHaveNoBody(response, 405, "Method Not Allowed"))
-			It("sets Allow to GET and HEAD", httptest.ShouldAllowMethods(response, "GET", "HEAD"))
+		It("routes any other method to MethodNotAllowed", func() {
+			requested := &http.RequestLine{Method: "TRACE", Target: "/"}
+			routedRequest := route.Route(requested)
+			Expect(routedRequest).To(BeEquivalentTo(
+				&clienterror.MethodNotAllowed{
+					SupportedMethods: []string{"GET", "HEAD"},
+				}))
 		})
 	})
 })
