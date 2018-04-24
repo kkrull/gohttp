@@ -21,7 +21,7 @@ var _ = Describe("ReadableNopResource", func() {
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(response)
+			controller.Get(response, "/")
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
@@ -29,7 +29,7 @@ var _ = Describe("ReadableNopResource", func() {
 
 	Describe("#Head", func() {
 		BeforeEach(func() {
-			controller.Head(response)
+			controller.Head(response, "/")
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
@@ -49,7 +49,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(response)
+			controller.Get(response, "/")
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
@@ -57,7 +57,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Head", func() {
 		BeforeEach(func() {
-			controller.Head(response)
+			controller.Head(response, "/")
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
@@ -65,7 +65,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Post", func() {
 		BeforeEach(func() {
-			controller.Post(response)
+			controller.Post(response, "/")
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
@@ -73,7 +73,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Put", func() {
 		BeforeEach(func() {
-			controller.Put(response)
+			controller.Put(response, "/")
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
