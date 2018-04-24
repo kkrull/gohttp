@@ -2,8 +2,10 @@ package fs
 
 import (
 	"io"
+	"strings"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
 )
 
 func NewRoute(contentRootPath string) http.Route {
@@ -31,7 +33,7 @@ func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
 			Target:     requested.Target,
 		}
 	default:
-		return nil
+		return &MethodNotAllowedRequest{SupportedMethods: []string{"GET", "HEAD"}}
 	}
 }
 
@@ -57,5 +59,17 @@ type HeadRequest struct {
 
 func (request *HeadRequest) Handle(client io.Writer) error {
 	request.Controller.Head(client, request.Target)
+	return nil
+}
+
+type MethodNotAllowedRequest struct {
+	SupportedMethods []string
+}
+
+func (notAllowed *MethodNotAllowedRequest) Handle(client io.Writer) error {
+	msg.WriteStatusLine(client, 405, "Method Not Allowed")
+	msg.WriteContentLengthHeader(client, 0)
+	msg.WriteHeader(client, "Allow", strings.Join(notAllowed.SupportedMethods, ","))
+	msg.WriteEndOfMessageHeader(client)
 	return nil
 }

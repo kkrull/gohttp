@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/httptest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -50,12 +51,15 @@ var _ = Describe("FileSystemRoute", func() {
 			resource.HeadShouldHaveReceived("/foo")
 		})
 
-		XIt("responds 405 Method Not Allowed for any other method")
+		Context("given any other method", func() {
+			BeforeEach(func() {
+				requested := &http.RequestLine{Method: "TRACE", Target: "/"}
+				routedRequest := route.Route(requested)
+				routedRequest.Handle(response)
+			})
 
-		It("passes on any other method by returning nil", func() {
-			requested := &http.RequestLine{Method: "TRACE", Target: "/foo"}
-			routedRequest := route.Route(requested)
-			Expect(routedRequest).To(BeNil())
+			It("responds 405 Method Not Allowed", httptest.ShouldHaveNoBody(response, 405, "Method Not Allowed"))
+			It("sets Allow to GET and HEAD", httptest.ShouldAllowMethods(response, "GET", "HEAD"))
 		})
 	})
 })

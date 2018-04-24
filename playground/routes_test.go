@@ -4,8 +4,8 @@ import (
 	"bytes"
 
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/playground"
 	"github.com/kkrull/gohttp/httptest"
+	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
