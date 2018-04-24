@@ -17,22 +17,19 @@ type Route struct {
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
-	if requested.Method != "GET" {
+	var resources = map[string]http.Request{
+		"/coffee": &GetCoffeeRequest{Controller: route.Controller},
+		"/tea":    &GetTeaRequest{Controller: route.Controller},
+	}
+
+	request, ownResource := resources[requested.Target]
+	if !ownResource {
+		return nil
+	} else if requested.Method != "GET" {
 		return clienterror.MethodNotAllowed("GET")
 	}
 
-	switch requested.Target {
-	case "/coffee":
-		return &GetCoffeeRequest{
-			Controller: route.Controller,
-		}
-	case "/tea":
-		return &GetTeaRequest{
-			Controller: route.Controller,
-		}
-	default:
-		return nil
-	}
+	return request
 }
 
 type Controller interface {

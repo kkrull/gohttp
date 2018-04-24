@@ -25,7 +25,7 @@ func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Requ
 	} else if requested.Method != "OPTIONS" {
 		return clienterror.MethodNotAllowed("OPTIONS")
 	}
-	
+
 	return &optionsRequest{Controller: route.Controller}
 }
 
