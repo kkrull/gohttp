@@ -19,13 +19,9 @@ type ReadOnlyRoute struct {
 func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target != "/method_options2" {
 		return nil
-	} else if requested.Method == "OPTIONS" {
-		return &knownOptionsRequest{
-			SupportedMethods: supportedMethods(requested.Target, route.Resource),
-		}
 	}
 
-	return resourceRequest(requested, route.Resource)
+	return lookupRequest(requested, route.Resource)
 }
 
 type ReadOnlyResource interface {
@@ -46,13 +42,9 @@ type ReadWriteRoute struct {
 func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target != "/method_options" {
 		return nil
-	} else if requested.Method == "OPTIONS" {
-		return &knownOptionsRequest{
-			SupportedMethods: supportedMethods(requested.Target, route.Resource),
-		}
 	}
 
-	return resourceRequest(requested, route.Resource)
+	return lookupRequest(requested, route.Resource)
 }
 
 type ReadWriteResource interface {
@@ -62,18 +54,32 @@ type ReadWriteResource interface {
 	Put(client io.Writer)
 }
 
-func resourceRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func lookupRequest(requested *http.RequestLine, resource interface{}) http.Request {
+	if requested.Method == "OPTIONS" {
+		return &knownOptionsRequest{
+			SupportedMethods: supportedMethods(requested.Target, resource),
+		}
+	}
+
 	method := knownMethods[requested.Method]
 	if method == nil {
-		return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
+		return unknownHttpMethod(requested, resource)
 	}
 
 	request := method.MakeRequest(requested, resource)
 	if request == nil {
-		return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
+		return unsupportedMethod(requested, resource)
 	}
 
 	return request
+}
+
+func unknownHttpMethod(requested *http.RequestLine, resource interface{}) http.Request {
+	return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
+}
+
+func unsupportedMethod(requested *http.RequestLine, resource interface{}) http.Request {
+	return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
 }
 
 func supportedMethods(target string, resource interface{}) []string {
