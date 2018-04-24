@@ -6,69 +6,6 @@ import (
 	"github.com/kkrull/gohttp/http"
 )
 
-func NewRoute() *Route {
-	return &Route{
-		Readable: &ReadableNopResource{},
-		Writable: &ReadWriteNopResource{},
-	}
-}
-
-type Route struct {
-	Readable ReadOnlyResource
-	Writable ReadWriteResource
-}
-
-func (route *Route) Route(requested *http.RequestLine) http.Request {
-	switch requested.Target {
-	case "/method_options":
-		return route.routeToMethod(requested, route.Writable)
-	case "/method_options2":
-		return route.routeToMethod(requested, route.Readable)
-	default:
-		return nil
-	}
-}
-
-type ReadOnlyResource interface {
-	Get(client io.Writer)
-	Head(client io.Writer)
-	Options(client io.Writer)
-}
-
-type ReadWriteResource interface {
-	Get(client io.Writer)
-	Head(client io.Writer)
-	Options(client io.Writer)
-	Post(client io.Writer)
-	Put(client io.Writer)
-}
-
-func (route *Route) routeToMethod(requested *http.RequestLine, resource interface{}) http.Request {
-	methods := map[string]Method{
-		"GET":     &getMethod{},
-		"HEAD":    &headMethod{},
-		"OPTIONS": &optionsMethod{},
-		"POST":    &postMethod{},
-		"PUT":     &putMethod{},
-	}
-
-	method := methods[requested.Method]
-	if method == nil {
-		return nil
-	}
-
-	request := method.MakeRequest(requested, resource)
-	if request != nil {
-		return request
-	}
-
-	return nil
-}
-
-type Method interface {
-	MakeRequest(requested *http.RequestLine, resource interface{}) http.Request
-}
-
 /* GET */
 
 type getMethod struct{}
