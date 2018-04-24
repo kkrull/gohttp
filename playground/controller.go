@@ -8,17 +8,17 @@ import (
 )
 
 // Handles various read requests, but doesn't actually do anything
-type ReadableNopController struct{}
+type ReadableNopResource struct{}
 
-func (controller *ReadableNopController) Get(client io.Writer, target string) {
+func (controller *ReadableNopResource) Get(client io.Writer, target string) {
 	controller.Head(client, target)
 }
 
-func (controller *ReadableNopController) Head(client io.Writer, target string) {
+func (controller *ReadableNopResource) Head(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 
-func (controller *ReadableNopController) Options(client io.Writer, target string) {
+func (controller *ReadableNopResource) Options(client io.Writer, target string) {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 
@@ -29,17 +29,17 @@ func (controller *ReadableNopController) Options(client io.Writer, target string
 
 
 // Handles various read/write requests, but doesn't actually do anything
-type WritableNopController struct{}
+type ReadWriteNopResource struct{}
 
-func (controller *WritableNopController) Get(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Get(client io.Writer, target string) {
 	controller.Head(client, target)
 }
 
-func (controller *WritableNopController) Head(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Head(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 
-func (controller *WritableNopController) Options(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Options(client io.Writer, target string) {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 
@@ -48,11 +48,11 @@ func (controller *WritableNopController) Options(client io.Writer, target string
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (controller *WritableNopController) Post(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Post(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 
-func (controller *WritableNopController) Put(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Put(client io.Writer, target string) {
 	writeOKWithNoBody(client)
 }
 

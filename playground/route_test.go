@@ -13,68 +13,68 @@ var _ = Describe("::NewRoute", func() {
 	It("returns a Route configured for this package", func() {
 		route := playground.NewRoute()
 		Expect(route).NotTo(BeNil())
-		Expect(route.WriteController).To(BeAssignableToTypeOf(&playground.WritableNopController{}))
+		Expect(route.Writable).To(BeAssignableToTypeOf(&playground.ReadWriteNopResource{}))
 	})
 })
 
 var _ = Describe("Route", func() {
 	Describe("#Route", func() {
 		var (
-			router          http.Route
-			readController  *ReadableControllerMock
-			writeController *WritableControllerMock
+			router            http.Route
+			readOnlyResource  *ReadOnlyResourceMock
+			readWriteResource *ReadWriteResourceMock
 		)
 
 		BeforeEach(func() {
-			readController = &ReadableControllerMock{}
-			writeController = &WritableControllerMock{}
+			readOnlyResource = &ReadOnlyResourceMock{}
+			readWriteResource = &ReadWriteResourceMock{}
 			router = &playground.Route{
-				ReadController:  readController,
-				WriteController: writeController,
+				Readable: readOnlyResource,
+				Writable: readWriteResource,
 			}
 		})
 
 		Context("when the target is /method_options", func() {
-			It("routes GET to WriteController#Get", func() {
+			It("routes GET to Writable#Get", func() {
 				handleRequest(router, "GET", "/method_options")
-				writeController.GetShouldHaveBeenReceived("/method_options")
+				readWriteResource.GetShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes HEAD to WriteController#Head", func() {
+			It("routes HEAD to Writable#Head", func() {
 				handleRequest(router, "HEAD", "/method_options")
-				writeController.HeadShouldHaveBeenReceived("/method_options")
+				readWriteResource.HeadShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes OPTIONS to WriteController#Options", func() {
+			It("routes OPTIONS to Writable#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options")
-				writeController.OptionsShouldHaveBeenReceived("/method_options")
+				readWriteResource.OptionsShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes POST to WriteController#Post", func() {
+			It("routes POST to Writable#Post", func() {
 				handleRequest(router, "POST", "/method_options")
-				writeController.PostShouldHaveBeenReceived("/method_options")
+				readWriteResource.PostShouldHaveBeenReceived("/method_options")
 			})
 
-			It("routes PUT to WriteController#Put", func() {
+			It("routes PUT to Writable#Put", func() {
 				handleRequest(router, "PUT", "/method_options")
-				writeController.PutShouldHaveBeenReceived("/method_options")
+				readWriteResource.PutShouldHaveBeenReceived("/method_options")
 			})
 		})
 
 		Context("when the target is /method_options2", func() {
-			It("routes GET to WriteController#Get", func() {
+			It("routes GET to Writable#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
-				readController.GetShouldHaveBeenReceived("/method_options2")
+				readOnlyResource.GetShouldHaveBeenReceived("/method_options2")
 			})
 
-			It("routes HEAD to WriteController#Options", func() {
+			It("routes HEAD to Writable#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
-				readController.HeadShouldHaveBeenReceived("/method_options2")
+				readOnlyResource.HeadShouldHaveBeenReceived("/method_options2")
 			})
 
-			It("routes OPTIONS to WriteController#Options", func() {
+			It("routes OPTIONS to Writable#Options", func() {
 				handleRequest(router, "OPTIONS", "/method_options2")
-				readController.OptionsShouldHaveBeenReceived("/method_options2")
+				readOnlyResource.OptionsShouldHaveBeenReceived("/method_options2")
 			})
 
 			It("returns nil for any other method", func() {

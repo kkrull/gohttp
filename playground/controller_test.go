@@ -10,15 +10,15 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var _ = Describe("ReadableNopController", func() {
+var _ = Describe("ReadableNopResource", func() {
 	var (
-		controller *playground.ReadableNopController
+		controller *playground.ReadableNopResource
 		response   = &bytes.Buffer{}
 	)
 
 	BeforeEach(func() {
 		response.Reset()
-		controller = &playground.ReadableNopController{}
+		controller = &playground.ReadableNopResource{}
 	})
 
 	Describe("#Get", func() {
@@ -54,15 +54,15 @@ var _ = Describe("ReadableNopController", func() {
 	})
 })
 
-var _ = Describe("WritableNopController", func() {
+var _ = Describe("ReadWriteNopResource", func() {
 	var (
-		controller *playground.WritableNopController
+		controller *playground.ReadWriteNopResource
 		response   = &bytes.Buffer{}
 	)
 
 	BeforeEach(func() {
 		response.Reset()
-		controller = &playground.WritableNopController{}
+		controller = &playground.ReadWriteNopResource{}
 	})
 
 	Describe("#Get", func() {
