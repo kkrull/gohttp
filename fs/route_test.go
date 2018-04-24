@@ -16,7 +16,7 @@ var _ = Describe("::NewRoute", func() {
 		Expect(route).To(BeEquivalentTo(
 			&fs.FileSystemRoute{
 				ContentRootPath: "/public",
-				Resource:        &fs.ReadOnlyFilesystem{BaseDirectory: "/public"},
+				Resource:        &fs.ReadOnlyFileSystem{BaseDirectory: "/public"},
 			}))
 	})
 })

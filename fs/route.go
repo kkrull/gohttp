@@ -11,7 +11,7 @@ import (
 func NewRoute(contentRootPath string) http.Route {
 	return &FileSystemRoute{
 		ContentRootPath: contentRootPath,
-		Resource:        &ReadOnlyFilesystem{BaseDirectory: contentRootPath},
+		Resource:        &ReadOnlyFileSystem{BaseDirectory: contentRootPath},
 	}
 }
 
@@ -37,6 +37,7 @@ func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
 	}
 }
 
+// Represents files and directories on the file system
 type FileSystemResource interface {
 	Get(client io.Writer, target string)
 	Head(client io.Writer, target string)

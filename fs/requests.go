@@ -10,21 +10,21 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
-type ReadOnlyFilesystem struct {
+type ReadOnlyFileSystem struct {
 	BaseDirectory string
 }
 
-func (controller *ReadOnlyFilesystem) Get(client io.Writer, target string) {
+func (controller *ReadOnlyFileSystem) Get(client io.Writer, target string) {
 	response := controller.determineResponse(target)
 	response.WriteTo(client)
 }
 
-func (controller *ReadOnlyFilesystem) Head(client io.Writer, target string) {
+func (controller *ReadOnlyFileSystem) Head(client io.Writer, target string) {
 	response := controller.determineResponse(target)
 	response.WriteHeader(client)
 }
 
-func (controller *ReadOnlyFilesystem) determineResponse(requestedTarget string) http.Response {
+func (controller *ReadOnlyFileSystem) determineResponse(requestedTarget string) http.Response {
 	resolvedTarget := path.Join(controller.BaseDirectory, requestedTarget)
 	info, err := os.Stat(resolvedTarget)
 	if err != nil {

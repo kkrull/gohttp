@@ -21,24 +21,24 @@ var _ = Describe("::NewReadOnlyRoute", func() {
 var _ = Describe("ReadOnlyRoute", func() {
 	Describe("#Route", func() {
 		var (
-			router           http.Route
-			readOnlyResource *ReadOnlyResourceMock
+			router   http.Route
+			resource *ReadOnlyResourceMock
 		)
 
 		BeforeEach(func() {
-			readOnlyResource = &ReadOnlyResourceMock{}
-			router = &playground.ReadOnlyRoute{Resource: readOnlyResource}
+			resource = &ReadOnlyResourceMock{}
+			router = &playground.ReadOnlyRoute{Resource: resource}
 		})
 
 		Context("when the target is /method_options2", func() {
 			It("routes GET to Resource#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
-				readOnlyResource.GetShouldHaveBeenCalled()
+				resource.GetShouldHaveBeenCalled()
 			})
 
 			It("routes HEAD to Resource#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
-				readOnlyResource.HeadShouldHaveBeenCalled()
+				resource.HeadShouldHaveBeenCalled()
 			})
 
 			Context("when the method is OPTIONS", func() {
@@ -47,7 +47,7 @@ var _ = Describe("ReadOnlyRoute", func() {
 				BeforeEach(func() {
 					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options2"}
 					routedRequest := router.Route(requested)
-					ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+					Expect(routedRequest).NotTo(BeNil())
 
 					response.Reset()
 					routedRequest.Handle(response)
@@ -110,7 +110,7 @@ var _ = Describe("ReadWriteRoute", func() {
 				BeforeEach(func() {
 					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options"}
 					routedRequest := router.Route(requested)
-					ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+					Expect(routedRequest).NotTo(BeNil())
 
 					response.Reset()
 					routedRequest.Handle(response)
