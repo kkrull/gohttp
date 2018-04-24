@@ -27,23 +27,13 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 		}
 
 		switch requested.Method {
-		case "OPTIONS", "POST", "PUT":
+		case "POST", "PUT":
 			return route.makeRequest(requested, route.Writable)
 		default:
 			return nil
 		}
 	case "/method_options2":
-		routedRequest := route.routeToMethod(requested, route.Readable)
-		if routedRequest != nil {
-			return routedRequest
-		}
-
-		switch requested.Method {
-		case "OPTIONS":
-			return route.makeRequest(requested, route.Readable)
-		default:
-			return nil
-		}
+		return route.routeToMethod(requested, route.Readable)
 	default:
 		return nil
 	}
@@ -67,6 +57,7 @@ func (route *Route) routeToMethod(requested *http.RequestLine, resource interfac
 	methods := map[string]Method {
 		"GET": &getMethod{},
 		"HEAD": &headMethod{},
+		"OPTIONS": &optionsMethod{},
 	}
 
 	method := methods[requested.Method]
@@ -142,12 +133,27 @@ func (request *headRequest) Handle(client io.Writer) error {
 
 /* OPTIONS */
 
+type optionsMethod struct {}
+
+func (*optionsMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+	supportedResource, ok := resource.(OptionsResource)
+	if ok {
+		return &optionsRequest{Resource: supportedResource}
+	}
+
+	return nil
+}
+
+type OptionsResource interface {
+	Options(client io.Writer)
+}
+
 type optionsRequest struct {
-	Controller ReadOnlyResource
+	Resource OptionsResource
 }
 
 func (request *optionsRequest) Handle(client io.Writer) error {
-	request.Controller.Options(client)
+	request.Resource.Options(client)
 	return nil
 }
 
@@ -184,9 +190,6 @@ func (request *putRequest) Handle(client io.Writer) error {
 func (route *Route) makeRequest(requested *http.RequestLine, controller interface{}) http.Request {
 	//TODO KDK: Boil this down to a typecast for the desired controller/method
 	switch requested.Method {
-	case "OPTIONS":
-		readController, _ := controller.(ReadOnlyResource)
-		return &optionsRequest{Controller: readController}
 	case "POST":
 		writeController, _ := controller.(ReadWriteResource)
 		return &postRequest{Controller: writeController}
