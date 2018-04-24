@@ -31,6 +31,18 @@ Missing ways to cause I/O errors with
 * `os.File`
 
 
+Other items:
+
+* Is `Target` needed in each controller?  Is it just used to route to the right controller?
+
+
+## Naming
+
+- `Controller` might be better referred to as a `Resource` that supports (HTTP) methods.
+- `package.Route` might be better called `MethodRoute` and be dedicated to de-muxing HTTP method **only**
+- `Router.Route` might be better called `ResourceRoute` and be dedicated to de-muxing over Target/Resource **only**
+
+
 ## Request parsing
 
 Denial of Service: Should allow a request line of at least 8,000 octets.  On the flip side, prevent a

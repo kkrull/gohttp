@@ -106,6 +106,21 @@ These are located in the `bin/` directory:
 
 ## Developer notes
 
+### `cob_spec` Nuances
+
+If `gohttp` goes down, `cob_spec` will:
+
+- take about 30 seconds to time out
+- fail all tests after the process went down (this may not be exactly after the failed test, due to potential timing,
+  concurrency, and synchronization issues)
+- swallow any output that was given to the console
+
+**If `cob_spec` fails in strange ways where it looked like it was working before...**:
+
+- Try the request in cURL
+- Make sure there are no `panics`
+
+
 ### TCP Traffic
 
 When the server just listens, accepts, and closes a connection.
