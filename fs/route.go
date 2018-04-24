@@ -20,7 +20,7 @@ type FileSystemRoute struct {
 }
 
 func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
-	switch requested.Method {
+	switch requested.Method { //TODO KDK: Call MakeResourceRequest
 	case "GET":
 		return &GetRequest{
 			Controller: route.Resource,

@@ -23,6 +23,7 @@ func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
 }
 
 type ReadOnlyResource interface {
+	Name() string
 	Get(client io.Writer)
 	Head(client io.Writer)
 }
@@ -46,6 +47,7 @@ func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
 }
 
 type ReadWriteResource interface {
+	Name() string
 	Get(client io.Writer)
 	Head(client io.Writer)
 	Post(client io.Writer)

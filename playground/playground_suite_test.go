@@ -20,6 +20,10 @@ type ReadOnlyResourceMock struct {
 	headCalled bool
 }
 
+func (mock *ReadOnlyResourceMock) Name() string {
+	return "Readonly Mock"
+}
+
 func (mock *ReadOnlyResourceMock) Get(client io.Writer) {
 	mock.getCalled = true
 }
@@ -43,6 +47,10 @@ type ReadWriteResourceMock struct {
 	headCalled bool
 	postCalled bool
 	putCalled  bool
+}
+
+func (mock *ReadWriteResourceMock) Name() string {
+	return "Read/Write Mock"
 }
 
 func (mock *ReadWriteResourceMock) Get(client io.Writer) {

@@ -9,6 +9,10 @@ import (
 // Handles various read requests, but doesn't actually do anything
 type ReadableNopResource struct{}
 
+func (controller *ReadableNopResource) Name() string {
+	return "Readonly NOP"
+}
+
 func (controller *ReadableNopResource) Get(client io.Writer) {
 	controller.Head(client)
 }
@@ -19,6 +23,10 @@ func (controller *ReadableNopResource) Head(client io.Writer) {
 
 // Handles various read/write requests, but doesn't actually do anything
 type ReadWriteNopResource struct{}
+
+func (controller *ReadWriteNopResource) Name() string {
+	return "Read/Write NOP"
+}
 
 func (controller *ReadWriteNopResource) Get(client io.Writer) {
 	controller.Head(client)

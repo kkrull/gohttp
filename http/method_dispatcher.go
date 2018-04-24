@@ -6,9 +6,9 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
-func MakeResourceRequest(requested *RequestLine, resource interface{}) Request {
+func MakeResourceRequest(requested *RequestLine, resource Resource) Request {
 	if requested.Method == "OPTIONS" {
-		return &knownOptionsRequest{
+		return &optionsRequest{
 			SupportedMethods: supportedMethods(requested.Target, resource),
 		}
 	}
@@ -26,15 +26,15 @@ func MakeResourceRequest(requested *RequestLine, resource interface{}) Request {
 	return request
 }
 
-func unknownHttpMethod(requested *RequestLine, resource interface{}) Request {
+func unknownHttpMethod(requested *RequestLine, resource Resource) Request {
 	return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
 }
 
-func unsupportedMethod(requested *RequestLine, resource interface{}) Request {
+func unsupportedMethod(requested *RequestLine, resource Resource) Request {
 	return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
 }
 
-func supportedMethods(target string, resource interface{}) []string {
+func supportedMethods(target string, resource Resource) []string {
 	supported := []string{"OPTIONS"}
 	for name, method := range knownMethods {
 		imaginaryRequest := &RequestLine{Method: name, Target: target}
@@ -56,5 +56,10 @@ var knownMethods = map[string]Method{
 }
 
 type Method interface {
-	MakeRequest(requested *RequestLine, resource interface{}) Request
+	MakeRequest(requested *RequestLine, resource Resource) Request
+}
+
+// Handles requests of supported HTTP methods for a resource
+type Resource interface {
+	Name() string
 }

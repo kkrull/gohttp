@@ -11,7 +11,7 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
+func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
 		return &getRequest{Resource: supportedResource}
@@ -39,7 +39,7 @@ type headMethod struct {
 	Resource HeadResource
 }
 
-func (*headMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
+func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
 		return &headRequest{Resource: supportedResource}
@@ -63,11 +63,11 @@ type HeadResource interface {
 
 /* OPTIONS */
 
-type knownOptionsRequest struct {
+type optionsRequest struct {
 	SupportedMethods []string
 }
 
-func (request *knownOptionsRequest) Handle(client io.Writer) error {
+func (request *optionsRequest) Handle(client io.Writer) error {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
@@ -79,7 +79,7 @@ func (request *knownOptionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
+func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
 		return &postRequest{Resource: supportedResource}
@@ -105,7 +105,7 @@ type PostResource interface {
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
+func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
 		return &putRequest{Resource: supportedResource}
