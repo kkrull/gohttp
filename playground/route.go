@@ -44,12 +44,12 @@ type ReadWriteResource interface {
 }
 
 func (route *Route) routeToMethod(requested *http.RequestLine, resource interface{}) http.Request {
-	methods := map[string]Method {
-		"GET": &getMethod{},
-		"HEAD": &headMethod{},
+	methods := map[string]Method{
+		"GET":     &getMethod{},
+		"HEAD":    &headMethod{},
 		"OPTIONS": &optionsMethod{},
-		"POST": &postMethod{},
-		"PUT": &putMethod{},
+		"POST":    &postMethod{},
+		"PUT":     &putMethod{},
 	}
 
 	method := methods[requested.Method]
@@ -125,7 +125,7 @@ type HeadResource interface {
 
 /* OPTIONS */
 
-type optionsMethod struct {}
+type optionsMethod struct{}
 
 func (*optionsMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
 	supportedResource, ok := resource.(OptionsResource)
@@ -151,7 +151,7 @@ type OptionsResource interface {
 
 /* POST */
 
-type postMethod struct {}
+type postMethod struct{}
 
 func (*postMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
 	supportedResource, ok := resource.(PostResource)
@@ -177,7 +177,7 @@ type PostResource interface {
 
 /* PUT */
 
-type putMethod struct {}
+type putMethod struct{}
 
 func (*putMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
 	supportedResource, ok := resource.(PutResource)

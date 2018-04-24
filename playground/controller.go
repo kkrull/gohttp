@@ -22,11 +22,10 @@ func (controller *ReadableNopResource) Options(client io.Writer) {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 
-	allowedMethods := []string {"GET", "HEAD", "OPTIONS"}
+	allowedMethods := []string{"GET", "HEAD", "OPTIONS"}
 	msg.WriteHeader(client, "Allow", strings.Join(allowedMethods, ","))
 	msg.WriteEndOfMessageHeader(client)
 }
-
 
 // Handles various read/write requests, but doesn't actually do anything
 type ReadWriteNopResource struct{}
