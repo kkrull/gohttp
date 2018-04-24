@@ -1,10 +1,9 @@
-package playground
+package http
 
 import (
 	"io"
 	"strings"
 
-	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 )
 
@@ -12,7 +11,7 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (method *getMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
 		return &getRequest{Resource: supportedResource}
@@ -40,7 +39,7 @@ type headMethod struct {
 	Resource HeadResource
 }
 
-func (*headMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (*headMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
 		return &headRequest{Resource: supportedResource}
@@ -80,7 +79,7 @@ func (request *knownOptionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (*postMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
 		return &postRequest{Resource: supportedResource}
@@ -106,7 +105,7 @@ type PostResource interface {
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (*putMethod) MakeRequest(requested *RequestLine, resource interface{}) Request {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
 		return &putRequest{Resource: supportedResource}
