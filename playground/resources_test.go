@@ -6,8 +6,6 @@ import (
 	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("ReadableNopResource", func() {
@@ -115,22 +113,3 @@ var _ = Describe("ReadWriteNopResource", func() {
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 	})
 })
-
-func ShouldHaveNoBody(response *bytes.Buffer, status int, reason string) func() {
-	return func() {
-		responseMessage := httptest.ParseResponse(response)
-		responseMessage.ShouldBeWellFormed()
-		responseMessage.StatusShouldBe(status, reason)
-		responseMessage.HeaderShould("Content-Length", Equal("0"))
-		responseMessage.BodyShould(BeEmpty())
-	}
-}
-
-func ContainSubstrings(values []string) types.GomegaMatcher {
-	valueMatchers := make([]types.GomegaMatcher, len(values))
-	for i, value := range values {
-		valueMatchers[i] = ContainSubstring(value)
-	}
-
-	return SatisfyAll(valueMatchers...)
-}
