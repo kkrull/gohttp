@@ -18,6 +18,10 @@ type FileSystemResourceMock struct {
 	headTarget string
 }
 
+func (mock *FileSystemResourceMock) Name() string {
+	return "File system mock"
+}
+
 func (mock *FileSystemResourceMock) Get(client io.Writer, target string) {
 	mock.getTarget = target
 }

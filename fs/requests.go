@@ -14,6 +14,10 @@ type ReadOnlyFileSystem struct {
 	BaseDirectory string
 }
 
+func (controller *ReadOnlyFileSystem) Name() string {
+	return "Readonly file system"
+}
+
 func (controller *ReadOnlyFileSystem) Get(client io.Writer, target string) {
 	response := controller.determineResponse(target)
 	response.WriteTo(client)
