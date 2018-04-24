@@ -2,8 +2,10 @@ package playground
 
 import (
 	"io"
+	"sort"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
 func NewReadOnlyRoute() *ReadOnlyRoute {
@@ -18,7 +20,9 @@ func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target != "/method_options2" {
 		return nil
 	} else if requested.Method == "OPTIONS" {
-		return optionsRequest(requested, route.Resource)
+		return &knownOptionsRequest{
+			SupportedMethods: supportedMethods(requested.Target, route.Resource),
+		}
 	}
 
 	return resourceRequest(requested, route.Resource)
@@ -43,7 +47,9 @@ func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target != "/method_options" {
 		return nil
 	} else if requested.Method == "OPTIONS" {
-		return optionsRequest(requested, route.Resource)
+		return &knownOptionsRequest{
+			SupportedMethods: supportedMethods(requested.Target, route.Resource),
+		}
 	}
 
 	return resourceRequest(requested, route.Resource)
@@ -57,44 +63,38 @@ type ReadWriteResource interface {
 }
 
 func resourceRequest(requested *http.RequestLine, resource interface{}) http.Request {
-	methods := map[string]Method{
-		"GET":  &getMethod{},
-		"HEAD": &headMethod{},
-		"POST": &postMethod{},
-		"PUT":  &putMethod{},
-	}
-
-	method := methods[requested.Method]
+	method := knownMethods[requested.Method]
 	if method == nil {
-		return nil
+		return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
 	}
 
 	request := method.MakeRequest(requested, resource)
-	if request != nil {
-		return request
+	if request == nil {
+		return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
 	}
 
-	return nil
+	return request
 }
 
-func optionsRequest(requested *http.RequestLine, resource interface{}) http.Request {
-	methods := map[string]Method{
-		"GET":  &getMethod{},
-		"HEAD": &headMethod{},
-		"POST": &postMethod{},
-		"PUT":  &putMethod{},
-	}
-
-	supportedMethods := []string{"OPTIONS"}
-	for name, method := range methods {
-		imaginaryRequest := &http.RequestLine{Method: name, Target: requested.Target}
+func supportedMethods(target string, resource interface{}) []string {
+	supported := []string{"OPTIONS"}
+	for name, method := range knownMethods {
+		imaginaryRequest := &http.RequestLine{Method: name, Target: target}
 		request := method.MakeRequest(imaginaryRequest, resource)
 		if request != nil {
-			supportedMethods = append(supportedMethods, name)
+			supported = append(supported, name)
 		}
 	}
 
-	return &knownOptionsRequest{SupportedMethods: supportedMethods}
+	sort.Strings(supported)
+	return supported
+}
+
+var knownMethods = map[string]Method{
+	"GET":  &getMethod{},
+	"HEAD": &headMethod{},
+	"POST": &postMethod{},
+	"PUT":  &putMethod{},
 }
 
 type Method interface {

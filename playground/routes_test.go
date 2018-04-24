@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -58,10 +59,10 @@ var _ = Describe("ReadOnlyRoute", func() {
 					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS"))
 			})
 
-			It("returns nil for any other method", func() {
+			It("returns MethodNotAllowed for any other method", func() {
 				requested := &http.RequestLine{Method: "PUT", Target: "/method_options2"}
 				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeNil())
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS")))
 			})
 		})
 
@@ -131,10 +132,10 @@ var _ = Describe("ReadWriteRoute", func() {
 				resource.PutShouldHaveBeenCalled()
 			})
 
-			It("returns nil on any other method", func() {
+			It("returns MethodNotAllowed for any other method", func() {
 				requested := &http.RequestLine{Method: "TRACE", Target: "/method_options"}
 				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeNil())
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS", "POST", "PUT")))
 			})
 		})
 
