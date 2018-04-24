@@ -22,7 +22,7 @@ func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) 
 
 type getRequest struct {
 	Resource GetResource
-	Target string
+	Target   string
 }
 
 func (request *getRequest) Handle(client io.Writer) error {
@@ -36,7 +36,7 @@ type GetResource interface {
 
 /* HEAD */
 
-type headMethod struct {}
+type headMethod struct{}
 
 func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(HeadResource)
@@ -49,7 +49,7 @@ func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Reques
 
 type headRequest struct {
 	Resource HeadResource
-	Target string
+	Target   string
 }
 
 func (request *headRequest) Handle(client io.Writer) error {
@@ -90,7 +90,7 @@ func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Reques
 
 type postRequest struct {
 	Resource PostResource
-	Target string
+	Target   string
 }
 
 func (request *postRequest) Handle(client io.Writer) error {
@@ -117,7 +117,7 @@ func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request
 
 type putRequest struct {
 	Resource PutResource
-	Target string
+	Target   string
 }
 
 func (request *putRequest) Handle(client io.Writer) error {

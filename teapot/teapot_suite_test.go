@@ -14,7 +14,7 @@ func TestTeapot(t *testing.T) {
 }
 
 type TeapotMock struct {
-	getTarget string
+	getTarget       string
 	getCoffeeCalled bool
 	getTeaCalled    bool
 }
