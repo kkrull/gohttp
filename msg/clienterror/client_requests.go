@@ -7,11 +7,15 @@ import (
 	"github.com/kkrull/gohttp/msg"
 )
 
-type MethodNotAllowed struct {
+func MethodNotAllowed(supportedMethods ...string) *methodNotAllowed {
+	return &methodNotAllowed{SupportedMethods: supportedMethods}
+}
+
+type methodNotAllowed struct {
 	SupportedMethods []string
 }
 
-func (notAllowed *MethodNotAllowed) Handle(client io.Writer) error {
+func (notAllowed *methodNotAllowed) Handle(client io.Writer) error {
 	msg.WriteStatusLine(client, 405, "Method Not Allowed")
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Allow", strings.Join(notAllowed.SupportedMethods, ","))

@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
 func NewRoute() *ServerCapabilityRoute {
@@ -19,11 +20,13 @@ type ServerCapabilityRoute struct {
 }
 
 func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Method == "OPTIONS" && requested.Target == "*" {
-		return &optionsRequest{Controller: route.Controller}
+	if requested.Target != "*" {
+		return nil
+	} else if requested.Method != "OPTIONS" {
+		return clienterror.MethodNotAllowed("OPTIONS")
 	}
-
-	return nil
+	
+	return &optionsRequest{Controller: route.Controller}
 }
 
 type optionsRequest struct {

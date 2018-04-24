@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -39,17 +40,19 @@ var _ = Describe("ServerCapabilityRoute", func() {
 			router = &capability.ServerCapabilityRoute{Controller: controller}
 		})
 
-		It("routes OPTIONS * to ServerCapabilityController#Options", func() {
-			requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
-			controller.OptionsShouldHaveBeenCalled()
-		})
+		Context("when the target is *", func() {
+			It("routes OPTIONS to ServerCapabilityController", func() {
+				requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
+				routedRequest = router.Route(requested)
+				routedRequest.Handle(&bufio.Writer{})
+				controller.OptionsShouldHaveBeenCalled()
+			})
 
-		It("returns nil to pass on any other method", func() {
-			requested = &http.RequestLine{Method: "GET", Target: "*"}
-			routedRequest = router.Route(requested)
-			Expect(routedRequest).To(BeNil())
+			It("returns MethodNotAllowed for any other method", func() {
+				requested = &http.RequestLine{Method: "GET", Target: "*"}
+				routedRequest = router.Route(requested)
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("OPTIONS")))
+			})
 		})
 
 		It("returns nil to pass on any other target", func() {

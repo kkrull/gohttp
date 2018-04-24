@@ -54,10 +54,7 @@ var _ = Describe("FileSystemRoute", func() {
 		It("routes any other method to MethodNotAllowed", func() {
 			requested := &http.RequestLine{Method: "TRACE", Target: "/"}
 			routedRequest := route.Route(requested)
-			Expect(routedRequest).To(BeEquivalentTo(
-				&clienterror.MethodNotAllowed{
-					SupportedMethods: []string{"GET", "HEAD"},
-				}))
+			Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD")))
 		})
 	})
 })

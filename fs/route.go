@@ -32,7 +32,7 @@ func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
 			Target:     requested.Target,
 		}
 	default:
-		return &clienterror.MethodNotAllowed{SupportedMethods: []string{"GET", "HEAD"}}
+		return clienterror.MethodNotAllowed("GET", "HEAD")
 	}
 }
 

@@ -18,7 +18,7 @@ var _ = Describe("MethodNotAllowed", func() {
 	Describe("#Handle", func() {
 		BeforeEach(func() {
 			response.Reset()
-			request = &clienterror.MethodNotAllowed{SupportedMethods: []string{"GET", "HEAD"}}
+			request = clienterror.MethodNotAllowed("GET", "HEAD")
 			request.Handle(response)
 		})
 
