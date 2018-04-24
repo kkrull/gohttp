@@ -8,7 +8,7 @@ import (
 )
 
 func NewRoute() *ServerCapabilityRoute {
-	controller := &StaticCapabilityController{
+	controller := &StaticCapabilityServer{
 		AvailableMethods: []string{"GET", "HEAD"},
 	}
 
@@ -16,7 +16,7 @@ func NewRoute() *ServerCapabilityRoute {
 }
 
 type ServerCapabilityRoute struct {
-	Controller ServerCapabilityController
+	Controller ServerResource
 }
 
 func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Request {
@@ -26,19 +26,19 @@ func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Requ
 		return clienterror.MethodNotAllowed("OPTIONS")
 	}
 
-	return &optionsRequest{Controller: route.Controller}
+	return &optionsRequest{Resource: route.Controller}
 }
 
 type optionsRequest struct {
-	Controller ServerCapabilityController
+	Resource ServerResource
 }
 
 func (request *optionsRequest) Handle(client io.Writer) error {
-	request.Controller.Options(client)
+	request.Resource.Options(client)
 	return nil
 }
 
 // Reports the global, generic capabilities of this server, without regard to resource or state
-type ServerCapabilityController interface {
+type ServerResource interface {
 	Options(writer io.Writer)
 }

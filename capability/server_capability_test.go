@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("StaticCapabilityController", func() {
+var _ = Describe("StaticCapabilityServer", func() {
 	var (
-		controller     capability.ServerCapabilityController
+		controller     capability.ServerResource
 		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
@@ -19,7 +19,7 @@ var _ = Describe("StaticCapabilityController", func() {
 	Describe("#Options", func() {
 		BeforeEach(func() {
 			responseBuffer = &bytes.Buffer{}
-			controller = &capability.StaticCapabilityController{
+			controller = &capability.StaticCapabilityServer{
 				AvailableMethods: []string{"CONNECT", "TRACE"},
 			}
 			controller.Options(responseBuffer)
@@ -39,7 +39,7 @@ var _ = Describe("StaticCapabilityController", func() {
 		Context("given 1 available method", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &capability.StaticCapabilityController{
+				controller = &capability.StaticCapabilityServer{
 					AvailableMethods: []string{"OPTIONS"},
 				}
 				controller.Options(responseBuffer)
@@ -54,7 +54,7 @@ var _ = Describe("StaticCapabilityController", func() {
 		Context("given 2 or more available methods", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &capability.StaticCapabilityController{
+				controller = &capability.StaticCapabilityServer{
 					AvailableMethods: []string{"CONNECT", "TRACE"},
 				}
 				controller.Options(responseBuffer)

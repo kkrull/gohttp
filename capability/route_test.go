@@ -11,15 +11,15 @@ import (
 )
 
 var _ = Describe("::NewRoute", func() {
-	It("configures the route with StaticCapabilityController", func() {
+	It("configures the route with StaticCapabilityServer", func() {
 		route := capability.NewRoute()
-		Expect(route.Controller).To(BeAssignableToTypeOf(&capability.StaticCapabilityController{}))
+		Expect(route.Controller).To(BeAssignableToTypeOf(&capability.StaticCapabilityServer{}))
 	})
 
 	It("configures available methods to the server as GET and HEAD", func() {
 		route := capability.NewRoute()
 		Expect(route.Controller).To(BeEquivalentTo(
-			&capability.StaticCapabilityController{
+			&capability.StaticCapabilityServer{
 				AvailableMethods: []string{"GET", "HEAD"},
 			},
 		))
@@ -30,18 +30,18 @@ var _ = Describe("ServerCapabilityRoute", func() {
 	Describe("#Route", func() {
 		var (
 			router        http.Route
-			controller    *ServerCapabilityControllerMock
+			controller    *ServerCapabilityServerMock
 			requested     *http.RequestLine
 			routedRequest http.Request
 		)
 
 		BeforeEach(func() {
-			controller = &ServerCapabilityControllerMock{}
+			controller = &ServerCapabilityServerMock{}
 			router = &capability.ServerCapabilityRoute{Controller: controller}
 		})
 
 		Context("when the target is *", func() {
-			It("routes OPTIONS to ServerCapabilityController", func() {
+			It("routes OPTIONS to ServerResource", func() {
 				requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
