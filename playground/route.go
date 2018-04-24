@@ -21,15 +21,25 @@ type Route struct {
 func (route *Route) Route(requested *http.RequestLine) http.Request {
 	switch requested.Target {
 	case "/method_options":
+		routedRequest := route.routeToMethod(requested, route.Writable)
+		if routedRequest != nil {
+			return routedRequest
+		}
+
 		switch requested.Method {
-		case "GET", "HEAD", "OPTIONS", "POST", "PUT":
+		case "HEAD", "OPTIONS", "POST", "PUT":
 			return route.makeRequest(requested, route.Writable)
 		default:
 			return nil
 		}
 	case "/method_options2":
+		routedRequest := route.routeToMethod(requested, route.Readable)
+		if routedRequest != nil {
+			return routedRequest
+		}
+
 		switch requested.Method {
-		case "GET", "HEAD", "OPTIONS":
+		case "HEAD", "OPTIONS":
 			return route.makeRequest(requested, route.Readable)
 		default:
 			return nil
@@ -38,6 +48,35 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 		return nil
 	}
 }
+
+func (route *Route) routeToMethod(requested *http.RequestLine, resource interface{}) http.Request {
+	if requested.Method != "GET" {
+		return nil
+	}
+
+	getMethod := &getMethod{}
+	request := getMethod.MakeRequest(requested, resource)
+	if request != nil {
+		return request
+	}
+
+	return nil
+}
+
+type getMethod struct {}
+
+func (method *getMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+	gettableResource, ok := resource.(GetResource)
+	if ok {
+		return &getRequest{
+			Controller: gettableResource,
+			Target:     requested.Target,
+		}
+	}
+
+	return nil
+}
+
 
 func (route *Route) makeRequest(requested *http.RequestLine, controller interface{}) http.Request {
 	//TODO KDK: Boil this down to a typecast for the desired controller/method
@@ -78,7 +117,7 @@ func (route *Route) makeRequest(requested *http.RequestLine, controller interfac
 }
 
 type getRequest struct {
-	Controller ReadOnlyResource
+	Controller GetResource
 	Target     string
 }
 
@@ -125,6 +164,10 @@ type putRequest struct {
 func (request *putRequest) Handle(client io.Writer) error {
 	request.Controller.Put(client, request.Target)
 	return nil
+}
+
+type GetResource interface {
+	Get(client io.Writer, target string)
 }
 
 type ReadOnlyResource interface {
