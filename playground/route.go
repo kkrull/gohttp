@@ -21,17 +21,7 @@ type Route struct {
 func (route *Route) Route(requested *http.RequestLine) http.Request {
 	switch requested.Target {
 	case "/method_options":
-		routedRequest := route.routeToMethod(requested, route.Writable)
-		if routedRequest != nil {
-			return routedRequest
-		}
-
-		switch requested.Method {
-		case "POST", "PUT":
-			return route.makeRequest(requested, route.Writable)
-		default:
-			return nil
-		}
+		return route.routeToMethod(requested, route.Writable)
 	case "/method_options2":
 		return route.routeToMethod(requested, route.Readable)
 	default:
@@ -58,6 +48,8 @@ func (route *Route) routeToMethod(requested *http.RequestLine, resource interfac
 		"GET": &getMethod{},
 		"HEAD": &headMethod{},
 		"OPTIONS": &optionsMethod{},
+		"POST": &postMethod{},
+		"PUT": &putMethod{},
 	}
 
 	method := methods[requested.Method]
@@ -118,10 +110,6 @@ func (*headMethod) MakeRequest(requested *http.RequestLine, resource interface{}
 	return nil
 }
 
-type HeadResource interface {
-	Head(client io.Writer)
-}
-
 type headRequest struct {
 	Resource HeadResource
 }
@@ -129,6 +117,10 @@ type headRequest struct {
 func (request *headRequest) Handle(client io.Writer) error {
 	request.Resource.Head(client)
 	return nil
+}
+
+type HeadResource interface {
+	Head(client io.Writer)
 }
 
 /* OPTIONS */
@@ -144,10 +136,6 @@ func (*optionsMethod) MakeRequest(requested *http.RequestLine, resource interfac
 	return nil
 }
 
-type OptionsResource interface {
-	Options(client io.Writer)
-}
-
 type optionsRequest struct {
 	Resource OptionsResource
 }
@@ -157,46 +145,58 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 	return nil
 }
 
+type OptionsResource interface {
+	Options(client io.Writer)
+}
+
 /* POST */
 
+type postMethod struct {}
+
+func (*postMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+	supportedResource, ok := resource.(PostResource)
+	if ok {
+		return &postRequest{Resource: supportedResource}
+	}
+
+	return nil
+}
+
 type postRequest struct {
-	Controller ReadWriteResource
+	Resource PostResource
 }
 
 func (request *postRequest) Handle(client io.Writer) error {
-	request.Controller.Post(client)
+	request.Resource.Post(client)
 	return nil
+}
+
+type PostResource interface {
+	Post(client io.Writer)
 }
 
 /* PUT */
 
-type putRequest struct {
-	Controller ReadWriteResource
-}
+type putMethod struct {}
 
-func (request *putRequest) Handle(client io.Writer) error {
-	request.Controller.Put(client)
+func (*putMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+	supportedResource, ok := resource.(PutResource)
+	if ok {
+		return &putRequest{Resource: supportedResource}
+	}
+
 	return nil
 }
 
+type putRequest struct {
+	Resource PutResource
+}
 
+func (request *putRequest) Handle(client io.Writer) error {
+	request.Resource.Put(client)
+	return nil
+}
 
-
-
-
-
-
-
-func (route *Route) makeRequest(requested *http.RequestLine, controller interface{}) http.Request {
-	//TODO KDK: Boil this down to a typecast for the desired controller/method
-	switch requested.Method {
-	case "POST":
-		writeController, _ := controller.(ReadWriteResource)
-		return &postRequest{Controller: writeController}
-	case "PUT":
-		writeController, _ := controller.(ReadWriteResource)
-		return &putRequest{Controller: writeController}
-	default:
-		return nil
-	}
+type PutResource interface {
+	Put(client io.Writer)
 }
