@@ -3,7 +3,6 @@ package playground_test
 import (
 	"bytes"
 
-	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 )
@@ -34,22 +33,6 @@ var _ = Describe("ReadableNopResource", func() {
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
 	})
-
-	Describe("#Options", func() {
-		BeforeEach(func() {
-			controller.Options(response)
-		})
-
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
-		It("sets Allow to the methods that SimpleOption expects for this route", func() {
-			responseMessage := httptest.ParseResponse(response)
-			responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
-				"GET",
-				"HEAD",
-				"OPTIONS",
-			}))
-		})
-	})
 })
 
 var _ = Describe("ReadWriteNopResource", func() {
@@ -77,24 +60,6 @@ var _ = Describe("ReadWriteNopResource", func() {
 		})
 
 		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
-	})
-
-	Describe("#Options", func() {
-		BeforeEach(func() {
-			controller.Options(response)
-		})
-
-		It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
-		It("sets Allow to the methods that SimpleOption expects for this route", func() {
-			responseMessage := httptest.ParseResponse(response)
-			responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
-				"GET",
-				"HEAD",
-				"OPTIONS",
-				"POST",
-				"PUT",
-			}))
-		})
 	})
 
 	Describe("#Post", func() {

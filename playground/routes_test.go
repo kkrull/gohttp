@@ -1,9 +1,10 @@
 package playground_test
 
 import (
-	"bufio"
+	"bytes"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -26,9 +27,7 @@ var _ = Describe("ReadOnlyRoute", func() {
 
 		BeforeEach(func() {
 			readOnlyResource = &ReadOnlyResourceMock{}
-			router = &playground.ReadOnlyRoute{
-				Resource: readOnlyResource,
-			}
+			router = &playground.ReadOnlyRoute{Resource: readOnlyResource}
 		})
 
 		Context("when the target is /method_options2", func() {
@@ -42,9 +41,27 @@ var _ = Describe("ReadOnlyRoute", func() {
 				readOnlyResource.HeadShouldHaveBeenCalled()
 			})
 
-			It("routes OPTIONS to Resource#Options", func() {
-				handleRequest(router, "OPTIONS", "/method_options2")
-				readOnlyResource.OptionsShouldHaveBeenCalled()
+			Context("when the method is OPTIONS", func() {
+				var response = &bytes.Buffer{}
+
+				BeforeEach(func() {
+					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options2"}
+					routedRequest := router.Route(requested)
+					ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+
+					response.Reset()
+					routedRequest.Handle(response)
+				})
+
+				It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+				It("sets Allow to the methods implemented by this type", func() {
+					responseMessage := httptest.ParseResponse(response)
+					responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
+						"GET",
+						"HEAD",
+						"OPTIONS",
+					}))
+				})
 			})
 
 			It("returns nil for any other method", func() {
@@ -93,9 +110,29 @@ var _ = Describe("ReadWriteRoute", func() {
 				resource.HeadShouldHaveBeenCalled()
 			})
 
-			It("routes OPTIONS to Resource#Options", func() {
-				handleRequest(router, "OPTIONS", "/method_options")
-				resource.OptionsShouldHaveBeenCalled()
+			Context("when the method is OPTIONS", func() {
+				var response = &bytes.Buffer{}
+
+				BeforeEach(func() {
+					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options"}
+					routedRequest := router.Route(requested)
+					ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+
+					response.Reset()
+					routedRequest.Handle(response)
+				})
+
+				It("responds 200 OK with no body", ShouldHaveNoBody(response, 200, "OK"))
+				It("sets Allow to the methods implemented by this type", func() {
+					responseMessage := httptest.ParseResponse(response)
+					responseMessage.HeaderShould("Allow", ContainSubstrings([]string{
+						"GET",
+						"HEAD",
+						"OPTIONS",
+						"POST",
+						"PUT",
+					}))
+				})
 			})
 
 			It("routes POST to Resource#Post", func() {
@@ -127,5 +164,6 @@ func handleRequest(router http.Route, method, target string) {
 	requested := &http.RequestLine{Method: method, Target: target}
 	routedRequest := router.Route(requested)
 	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
-	routedRequest.Handle(&bufio.Writer{})
+
+	routedRequest.Handle(&bytes.Buffer{})
 }

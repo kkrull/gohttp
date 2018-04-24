@@ -2,8 +2,10 @@ package playground
 
 import (
 	"io"
+	"strings"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
 )
 
 /* GET */
@@ -62,28 +64,16 @@ type HeadResource interface {
 
 /* OPTIONS */
 
-type optionsMethod struct{}
+type knownOptionsRequest struct {
+	SupportedMethods []string
+}
 
-func (*optionsMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
-	supportedResource, ok := resource.(OptionsResource)
-	if ok {
-		return &optionsRequest{Resource: supportedResource}
-	}
-
+func (request *knownOptionsRequest) Handle(client io.Writer) error {
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteContentLengthHeader(client, 0)
+	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
+	msg.WriteEndOfMessageHeader(client)
 	return nil
-}
-
-type optionsRequest struct {
-	Resource OptionsResource
-}
-
-func (request *optionsRequest) Handle(client io.Writer) error {
-	request.Resource.Options(client)
-	return nil
-}
-
-type OptionsResource interface {
-	Options(client io.Writer)
 }
 
 /* POST */

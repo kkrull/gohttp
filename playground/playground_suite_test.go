@@ -40,9 +40,8 @@ func ContainSubstrings(values []string) types.GomegaMatcher {
 /* ReadOnlyResourceMock */
 
 type ReadOnlyResourceMock struct {
-	getCalled     bool
-	headCalled    bool
-	optionsCalled bool
+	getCalled  bool
+	headCalled bool
 }
 
 func (mock *ReadOnlyResourceMock) Get(client io.Writer) {
@@ -61,22 +60,13 @@ func (mock *ReadOnlyResourceMock) HeadShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.headCalled).To(BeTrue())
 }
 
-func (mock *ReadOnlyResourceMock) Options(client io.Writer) {
-	mock.optionsCalled = true
-}
-
-func (mock *ReadOnlyResourceMock) OptionsShouldHaveBeenCalled() {
-	ExpectWithOffset(1, mock.optionsCalled).To(BeTrue())
-}
-
 /* ReadWriteResourceMock */
 
 type ReadWriteResourceMock struct {
-	getCalled     bool
-	headCalled    bool
-	optionsCalled bool
-	postCalled    bool
-	putCalled     bool
+	getCalled  bool
+	headCalled bool
+	postCalled bool
+	putCalled  bool
 }
 
 func (mock *ReadWriteResourceMock) Get(client io.Writer) {
@@ -93,14 +83,6 @@ func (mock *ReadWriteResourceMock) Head(client io.Writer) {
 
 func (mock *ReadWriteResourceMock) HeadShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.headCalled).To(BeTrue())
-}
-
-func (mock *ReadWriteResourceMock) Options(client io.Writer) {
-	mock.optionsCalled = true
-}
-
-func (mock *ReadWriteResourceMock) OptionsShouldHaveBeenCalled() {
-	ExpectWithOffset(1, mock.optionsCalled).To(BeTrue())
 }
 
 func (mock *ReadWriteResourceMock) Post(client io.Writer) {
