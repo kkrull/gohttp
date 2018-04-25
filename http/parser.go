@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
-	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 // Parses an HTTP request message one line at a time.
@@ -87,14 +86,4 @@ func (parser *parseMethodObject) readCRLFLine() (line string, badRequest Respons
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
-}
-
-type RequestLine struct {
-	Method          string
-	Target          string
-	QueryParameters map[string]string
-}
-
-func (requestLine *RequestLine) NotImplemented() Response {
-	return &servererror.NotImplemented{Method: requestLine.Method}
 }
