@@ -9,22 +9,22 @@ import (
 // Responds as a teapot that is aware of its own identity
 type IdentityTeapot struct{}
 
-func (controller *IdentityTeapot) Name() string {
+func (teapot *IdentityTeapot) Name() string {
 	return "teapot"
 }
 
-func (controller *IdentityTeapot) Get(client io.Writer, target string) {
+func (teapot *IdentityTeapot) Get(client io.Writer, target string) {
 	switch target {
 	case "/coffee":
-		controller.GetCoffee(client)
+		teapot.getCoffee(client)
 	case "/tea":
-		controller.GetTea(client)
+		teapot.getTea(client)
 	default:
-		panic("unknown target")
+		panic("unknown target") //TODO KDK: Respond?
 	}
 }
 
-func (controller *IdentityTeapot) GetCoffee(client io.Writer) {
+func (teapot *IdentityTeapot) getCoffee(client io.Writer) {
 	body := "I'm a teapot"
 	writeHeaders(client, body)
 	msg.WriteBody(client, body)
@@ -37,7 +37,7 @@ func writeHeaders(client io.Writer, body string) {
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (controller *IdentityTeapot) GetTea(client io.Writer) {
+func (teapot *IdentityTeapot) getTea(client io.Writer) {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteEndOfMessageHeader(client)
