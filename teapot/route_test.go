@@ -13,7 +13,7 @@ import (
 var _ = Describe("teapotRoute", func() {
 	var (
 		router        http.Route
-		controller    *TeapotMock
+		teapotMock    *TeapotMock
 		requested     *http.RequestLine
 		routedRequest http.Request
 	)
@@ -21,15 +21,15 @@ var _ = Describe("teapotRoute", func() {
 	Describe("#Route", func() {
 		Context("when the target is a resource that the teapot can respond to", func() {
 			BeforeEach(func() {
-				controller = &TeapotMock{RespondsToTarget: "/caffeine"}
-				router = &teapot.Route{Resource: controller}
+				teapotMock = &TeapotMock{RespondsToTarget: "/caffeine"}
+				router = &teapot.Route{Teapot: teapotMock}
 			})
 
 			It("routes GET requests to that target to the teapot", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/caffeine"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
-				controller.GetShouldHaveReceived("/caffeine")
+				teapotMock.GetShouldHaveReceived("/caffeine")
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
@@ -40,8 +40,8 @@ var _ = Describe("teapotRoute", func() {
 		})
 
 		It("passes on any other target", func() {
-			controller = &TeapotMock{}
-			router = &teapot.Route{Resource: controller}
+			teapotMock = &TeapotMock{}
+			router = &teapot.Route{Teapot: teapotMock}
 
 			requested = &http.RequestLine{Method: "GET", Target: "/file.txt"}
 			routedRequest = router.Route(requested)

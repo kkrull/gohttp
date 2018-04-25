@@ -11,20 +11,20 @@ import (
 
 var _ = Describe("IdentityTeapot", func() {
 	var (
-		controller     teapot.Teapot
+		theTeapot      teapot.Teapot
 		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
 
 	Describe("#RespondsTo", func() {
 		It("returns true for /coffee", func() {
-			controller = &teapot.IdentityTeapot{}
-			Expect(controller.RespondsTo("/coffee")).To(BeTrue())
+			theTeapot = &teapot.IdentityTeapot{}
+			Expect(theTeapot.RespondsTo("/coffee")).To(BeTrue())
 		})
 
 		It("returns true for /tea", func() {
-			controller = &teapot.IdentityTeapot{}
-			Expect(controller.RespondsTo("/tea")).To(BeTrue())
+			theTeapot = &teapot.IdentityTeapot{}
+			Expect(theTeapot.RespondsTo("/tea")).To(BeTrue())
 		})
 	})
 
@@ -32,9 +32,9 @@ var _ = Describe("IdentityTeapot", func() {
 		Context("when the target is /coffee", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &teapot.IdentityTeapot{}
+				theTeapot = &teapot.IdentityTeapot{}
 
-				controller.Get(responseBuffer, "/coffee")
+				theTeapot.Get(responseBuffer, "/coffee")
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -58,9 +58,9 @@ var _ = Describe("IdentityTeapot", func() {
 		Context("when the target is /tea", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
-				controller = &teapot.IdentityTeapot{}
+				theTeapot = &teapot.IdentityTeapot{}
 
-				controller.Get(responseBuffer, "/tea")
+				theTeapot.Get(responseBuffer, "/tea")
 				response = httptest.ParseResponse(responseBuffer)
 			})
 

@@ -8,19 +8,19 @@ import (
 
 func NewRoute() http.Route {
 	teapot := &IdentityTeapot{}
-	return &Route{Resource: teapot}
+	return &Route{Teapot: teapot}
 }
 
 type Route struct {
-	Resource Teapot
+	Teapot Teapot
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
-	if !route.Resource.RespondsTo(requested.Target) {
+	if !route.Teapot.RespondsTo(requested.Target) {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Resource)
+	return http.MakeResourceRequest(requested, route.Teapot)
 }
 
 type Teapot interface {

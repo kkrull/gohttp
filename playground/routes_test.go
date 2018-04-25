@@ -32,12 +32,12 @@ var _ = Describe("ReadOnlyRoute", func() {
 		})
 
 		Context("when the target is /method_options2", func() {
-			It("routes GET to Resource#Get", func() {
+			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
 				resource.GetShouldHaveBeenCalled()
 			})
 
-			It("routes HEAD to Resource#Options", func() {
+			It("routes HEAD to Teapot#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
 				resource.HeadShouldHaveBeenCalled()
 			})
@@ -95,12 +95,12 @@ var _ = Describe("ReadWriteRoute", func() {
 		})
 
 		Context("when the target is /method_options", func() {
-			It("routes GET to Resource#Get", func() {
+			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options")
 				resource.GetShouldHaveBeenCalled()
 			})
 
-			It("routes HEAD to Resource#Head", func() {
+			It("routes HEAD to Teapot#Head", func() {
 				handleRequest(router, "HEAD", "/method_options")
 				resource.HeadShouldHaveBeenCalled()
 			})
@@ -122,12 +122,12 @@ var _ = Describe("ReadWriteRoute", func() {
 					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS", "POST", "PUT"))
 			})
 
-			It("routes POST to Resource#Post", func() {
+			It("routes POST to Teapot#Post", func() {
 				handleRequest(router, "POST", "/method_options")
 				resource.PostShouldHaveBeenCalled()
 			})
 
-			It("routes PUT to Resource#Put", func() {
+			It("routes PUT to Teapot#Put", func() {
 				handleRequest(router, "PUT", "/method_options")
 				resource.PutShouldHaveBeenCalled()
 			})
