@@ -4,7 +4,15 @@ import (
 	"bufio"
 )
 
+func NewRouter() *RequestLineRouter {
+	return &RequestLineRouter{
+		Parser: &LineRequestParser{},
+	}
+}
+
+// Routes requests based solely upon the first line in the request
 type RequestLineRouter struct {
+	Parser RequestParser
 	routes []Route
 }
 
@@ -19,8 +27,7 @@ func (router *RequestLineRouter) Routes() []Route {
 }
 
 func (router RequestLineRouter) RouteRequest(reader *bufio.Reader) (ok Request, err Response) {
-	parser := &RequestMessageParser{reader: reader}
-	requested, err := parser.Parse()
+	requested, err := router.Parser.Parse(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +44,10 @@ func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request
 	}
 
 	return nil, requested.NotImplemented()
+}
+
+type RequestParser interface {
+	Parse(reader *bufio.Reader) (ok *RequestLine, err Response)
 }
 
 type Route interface {

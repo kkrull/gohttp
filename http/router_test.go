@@ -30,7 +30,7 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Describe("it returns 400 Bad Request", func() {
 			BeforeEach(func() {
-				router = &http.RequestLineRouter{}
+				router = http.NewRouter()
 				router.AddRoute(matchAllRoute)
 			})
 
@@ -83,7 +83,7 @@ var _ = Describe("RequestLineRouter", func() {
 			BeforeEach(func() {
 				buffer := bytes.NewBufferString("GET /foo HTTP/1.1\r\nAccept: */*\r\n\r\n")
 				reader = bufio.NewReader(buffer)
-				router = &http.RequestLineRouter{}
+				router = http.NewRouter()
 				router.AddRoute(matchAllRoute)
 				request, err = router.RouteRequest(reader)
 			})
@@ -99,7 +99,7 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
-				router = &http.RequestLineRouter{}
+				router = http.NewRouter()
 				request, err = router.RouteRequest(makeReader("get / HTTP/1.1\r\n\r\n"))
 				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
@@ -112,7 +112,7 @@ var _ = Describe("RequestLineRouter", func() {
 			)
 
 			BeforeEach(func() {
-				router = &http.RequestLineRouter{}
+				router = http.NewRouter()
 				router.AddRoute(unrelatedRoute)
 				router.AddRoute(matchingRoute)
 				request, err = router.RouteRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
@@ -131,7 +131,7 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Context("given a well-formed request with query parameters", func() {
 			BeforeEach(func() {
-				router = &http.RequestLineRouter{}
+				router = http.NewRouter()
 				router.AddRoute(matchAllRoute)
 
 				request, err = router.RouteRequest(makeReader("GET /foo?one=1 HTTP/1.1\r\n\r\n"))

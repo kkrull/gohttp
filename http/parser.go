@@ -8,11 +8,19 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-type RequestMessageParser struct {
+// Parses an HTTP request message one line at a time.
+type LineRequestParser struct{}
+
+func (parser *LineRequestParser) Parse(reader *bufio.Reader) (ok *RequestLine, err Response) {
+	methodObject := &parseMethodObject{reader: reader}
+	return methodObject.Parse()
+}
+
+type parseMethodObject struct {
 	reader *bufio.Reader
 }
 
-func (parser *RequestMessageParser) Parse() (ok *RequestLine, err Response) {
+func (parser *parseMethodObject) Parse() (ok *RequestLine, err Response) {
 	requestLine, err := parser.readCRLFLine()
 	if err != nil {
 		return nil, err
@@ -21,7 +29,7 @@ func (parser *RequestMessageParser) Parse() (ok *RequestLine, err Response) {
 	return parser.doParseRequestLine(requestLine)
 }
 
-func (parser *RequestMessageParser) doParseRequestLine(requestLine string) (ok *RequestLine, err Response) {
+func (parser *parseMethodObject) doParseRequestLine(requestLine string) (ok *RequestLine, err Response) {
 	requested, err := parser.parseRequestLine(requestLine)
 	if err != nil {
 		return nil, err
@@ -30,7 +38,7 @@ func (parser *RequestMessageParser) doParseRequestLine(requestLine string) (ok *
 	return parser.doParseHeaders(requested)
 }
 
-func (parser *RequestMessageParser) doParseHeaders(requested *RequestLine) (ok *RequestLine, err Response) {
+func (parser *parseMethodObject) doParseHeaders(requested *RequestLine) (ok *RequestLine, err Response) {
 	err = parser.parseHeaders()
 	if err != nil {
 		return nil, err
@@ -39,7 +47,7 @@ func (parser *RequestMessageParser) doParseHeaders(requested *RequestLine) (ok *
 	return requested, nil
 }
 
-func (parser *RequestMessageParser) parseRequestLine(text string) (ok *RequestLine, badRequest Response) {
+func (parser *parseMethodObject) parseRequestLine(text string) (ok *RequestLine, badRequest Response) {
 	fields := strings.Split(text, " ")
 	if len(fields) != 3 {
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
@@ -51,7 +59,7 @@ func (parser *RequestMessageParser) parseRequestLine(text string) (ok *RequestLi
 	}, nil
 }
 
-func (parser *RequestMessageParser) parseHeaders() (badRequest Response) {
+func (parser *parseMethodObject) parseHeaders() (badRequest Response) {
 	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {
@@ -64,7 +72,7 @@ func (parser *RequestMessageParser) parseHeaders() (badRequest Response) {
 	}
 }
 
-func (parser *RequestMessageParser) readCRLFLine() (line string, badRequest Response) {
+func (parser *parseMethodObject) readCRLFLine() (line string, badRequest Response) {
 	maybeEndsInCR, _ := parser.reader.ReadString('\r')
 	if len(maybeEndsInCR) == 0 {
 		return "", &clienterror.BadRequest{DisplayText: "end of input before terminating CRLF"}
