@@ -21,7 +21,7 @@ var _ = Describe("RequestLineRouter", func() {
 			router        *http.RequestLineRouter
 			request       http.Request
 			err           http.Response
-			matchAllRoute http.Route
+			matchAllRoute *mock.Route
 		)
 
 		BeforeEach(func() {
@@ -126,6 +126,23 @@ var _ = Describe("RequestLineRouter", func() {
 			It("returns the request from the first matching Route", func() {
 				Expect(request).To(Equal(matchingRoute.RouteReturns))
 				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Context("given a well-formed request with query parameters", func() {
+			BeforeEach(func() {
+				router = &http.RequestLineRouter{}
+				router.AddRoute(matchAllRoute)
+
+				request, err = router.ParseRequest(makeReader("GET /foo?one=1 HTTP/1.1\r\n\r\n"))
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			XIt("removes the query string from the target", func() {
+				matchAllRoute.ShouldHaveReceived("GET", "/foo")
+			})
+			XIt("passes decoded parameters to the routes", func() {
+				matchAllRoute.ShouldHaveReceivedParameters(map[string]string{"one": "1"})
 			})
 		})
 	})

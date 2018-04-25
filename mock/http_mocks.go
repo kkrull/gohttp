@@ -87,9 +87,14 @@ func (mock *Route) Route(requested *http.RequestLine) http.Request {
 }
 
 func (mock *Route) ShouldHaveReceived(method string, target string) {
-	Expect(mock.routeRequested).To(BeEquivalentTo(&http.RequestLine{
+	ExpectWithOffset(1, mock.routeRequested).To(BeEquivalentTo(&http.RequestLine{
 		Method: method,
-		Target: target}))
+		Target: target,
+	}))
+}
+
+func (mock *Route) ShouldHaveReceivedParameters(parameters map[string]string) {
+	ExpectWithOffset(1, mock.routeRequested.QueryParameters).To(Equal(parameters))
 }
 
 type Response struct {

@@ -37,21 +37,20 @@ var _ = Describe("ParameterRoute", func() {
 
 		Context("when the target is /parameters", func() {
 			XIt("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
+				parameters := map[string]string{
+					"one": "1",
+					"two": "2",
+				}
 				requested := &http.RequestLine{
-					Method:      "GET",
-					Target:      "/parameters",
-					QueryString: "one=1&two=2",
+					Method:          "GET",
+					Target:          "/parameters",
+					QueryParameters: parameters,
 				}
 
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).NotTo(BeNil())
 				routedRequest.Handle(response)
-
-				expectedDecodedParameters := map[string]string{
-					"one": "1",
-					"two": "2",
-				}
-				decoder.GetShouldHaveReceived(expectedDecodedParameters)
+				decoder.GetShouldHaveReceived(parameters)
 			})
 
 			Context("when the method is OPTIONS", func() {
