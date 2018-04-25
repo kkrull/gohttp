@@ -22,26 +22,46 @@ func (router *RequestLineRouter) Routes() []Route {
 	return routes
 }
 
-func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, routeError Response) {
+func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, err Response) {
 	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, err
 	}
 
+	return router.doParseRequestLine(reader, requestLine)
+}
+
+func (router *RequestLineRouter) doParseRequestLine(reader *bufio.Reader, requestLine string) (ok Request, err Response) {
 	requested, err := parseRequestLine(requestLine)
 	if err != nil {
 		return nil, err
 	}
 
-	headerError := parseHeaderLines(reader)
-	if headerError != nil {
-		return nil, headerError
+	return router.doParseHeaders(reader, requested)
+}
+
+func parseRequestLine(text string) (ok *RequestLine, badRequest Response) {
+	fields := strings.Split(text, " ")
+	if len(fields) != 3 {
+		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
+	}
+
+	return &RequestLine{
+		Method: fields[0],
+		Target: fields[1],
+	}, nil
+}
+
+func (router *RequestLineRouter) doParseHeaders(reader *bufio.Reader, requested *RequestLine) (ok Request, err Response) {
+	err = parseHeaderLines(reader)
+	if err != nil {
+		return nil, err
 	}
 
 	return router.routeRequest(requested)
 }
 
-func parseHeaderLines(reader *bufio.Reader) Response {
+func parseHeaderLines(reader *bufio.Reader) (badRequest Response) {
 	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {
@@ -54,7 +74,7 @@ func parseHeaderLines(reader *bufio.Reader) Response {
 	}
 }
 
-func readCRLFLine(reader *bufio.Reader) (string, Response) {
+func readCRLFLine(reader *bufio.Reader) (line string, badRequest Response) {
 	maybeEndsInCR, _ := reader.ReadString('\r')
 	if len(maybeEndsInCR) == 0 {
 		return "", &clienterror.BadRequest{DisplayText: "end of input before terminating CRLF"}
@@ -71,19 +91,7 @@ func readCRLFLine(reader *bufio.Reader) (string, Response) {
 	return trimmed, nil
 }
 
-func parseRequestLine(text string) (*RequestLine, Response) {
-	fields := strings.Split(text, " ")
-	if len(fields) != 3 {
-		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
-	}
-
-	return &RequestLine{
-		Method: fields[0],
-		Target: fields[1],
-	}, nil
-}
-
-func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request, routeError Response) {
+func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request, notImplemented Response) {
 	for _, route := range router.routes {
 		request := route.Route(requested)
 		if request != nil {

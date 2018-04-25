@@ -35,7 +35,7 @@ func (handler *blockingConnectionHandler) Routes() []Route {
 }
 
 type Router interface {
-	ParseRequest(reader *bufio.Reader) (ok Request, routeError Response)
+	ParseRequest(reader *bufio.Reader) (ok Request, err Response)
 	Routes() []Route
 }
 
