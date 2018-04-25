@@ -15,6 +15,24 @@ func TestPlayground(t *testing.T) {
 	RunSpecs(t, "playground")
 }
 
+/* ParameterDecoderMock */
+
+type ParameterDecoderMock struct {
+	getCalled bool
+}
+
+func (mock *ParameterDecoderMock) Name() string {
+	return "Parameter Decoder Mock"
+}
+
+func (mock *ParameterDecoderMock) Get(client io.Writer, target string) {
+	mock.getCalled = true
+}
+
+func (mock *ParameterDecoderMock) GetShouldHaveReceived() {
+	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
+}
+
 /* ReadOnlyResourceMock */
 
 type ReadOnlyResourceMock struct {
