@@ -1,9 +1,11 @@
 package playground_test
 
 import (
+	"bytes"
 	"io"
 	"testing"
 
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -83,4 +85,14 @@ func (mock *ReadWriteResourceMock) Put(client io.Writer, target string) {
 
 func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.putCalled).To(BeTrue())
+}
+
+/* Helpers */
+
+func handleRequest(router http.Route, method, target string) {
+	requested := &http.RequestLine{Method: method, Target: target}
+	routedRequest := router.Route(requested)
+	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+
+	routedRequest.Handle(&bytes.Buffer{})
 }

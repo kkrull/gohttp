@@ -3,22 +3,34 @@ package playground
 import (
 	"io"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 )
 
-// Handles various read requests, but doesn't actually do anything
-type ReadableNopResource struct{}
-
-func (controller *ReadableNopResource) Name() string {
-	return "Readonly NOP"
+func NewReadWriteRoute() *ReadWriteRoute {
+	return &ReadWriteRoute{
+		Resource: &ReadWriteNopResource{},
+	}
 }
 
-func (controller *ReadableNopResource) Get(client io.Writer, target string) {
-	controller.Head(client, target)
+type ReadWriteRoute struct {
+	Resource ReadWriteResource
 }
 
-func (controller *ReadableNopResource) Head(client io.Writer, target string) {
-	writeOKWithNoBody(client)
+func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
+	if requested.Target != "/method_options" {
+		return nil
+	}
+
+	return http.MakeResourceRequest(requested, route.Resource)
+}
+
+type ReadWriteResource interface {
+	Name() string
+	Get(client io.Writer, target string)
+	Head(client io.Writer, target string)
+	Post(client io.Writer, target string)
+	Put(client io.Writer, target string)
 }
 
 // Handles various read/write requests, but doesn't actually do anything
