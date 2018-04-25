@@ -15,8 +15,6 @@ func TestTeapot(t *testing.T) {
 
 type TeapotMock struct {
 	getTarget       string
-	getCoffeeCalled bool
-	getTeaCalled    bool
 }
 
 func (mock *TeapotMock) Name() string {

@@ -25,7 +25,7 @@ var _ = Describe("teapotRoute", func() {
 
 	Describe("#Route", func() {
 		Context("when the target is /coffee", func() {
-			It("routes GET /coffee to Resource#GetCoffee", func() {
+			It("routes GET /coffee to Resource#Get", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
@@ -40,7 +40,7 @@ var _ = Describe("teapotRoute", func() {
 		})
 
 		Context("when the target is /tea", func() {
-			It("routes GET /tea to Resource#GetCoffee", func() {
+			It("routes GET /tea to Resource#Get", func() {
 				requested = &http.RequestLine{Method: "GET", Target: "/tea"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
