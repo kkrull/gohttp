@@ -17,7 +17,7 @@ type blockingConnectionHandler struct {
 }
 
 func (handler *blockingConnectionHandler) Handle(requestReader *bufio.Reader, responseWriter io.Writer) {
-	request, routeErrorResponse := handler.Router.ParseRequest(requestReader)
+	request, routeErrorResponse := handler.Router.RouteRequest(requestReader)
 	if routeErrorResponse != nil {
 		routeErrorResponse.WriteTo(responseWriter)
 		return
@@ -35,7 +35,7 @@ func (handler *blockingConnectionHandler) Routes() []Route {
 }
 
 type Router interface {
-	ParseRequest(reader *bufio.Reader) (ok Request, err Response)
+	RouteRequest(reader *bufio.Reader) (ok Request, err Response)
 	Routes() []Route
 }
 

@@ -39,7 +39,7 @@ func (mock *Router) Routes() []http.Route {
 	return nil
 }
 
-func (mock *Router) ParseRequest(reader *bufio.Reader) (http.Request, http.Response) {
+func (mock *Router) RouteRequest(reader *bufio.Reader) (http.Request, http.Response) {
 	mock.receivedReader = reader
 	allButLF, _ := reader.ReadBytes(byte('\r'))
 	shouldBeLF, _ := reader.ReadByte()

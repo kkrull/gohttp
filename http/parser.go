@@ -8,8 +8,6 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-/* RequestMessageParser */
-
 type RequestMessageParser struct {
 	reader *bufio.Reader
 }
@@ -32,6 +30,15 @@ func (parser *RequestMessageParser) doParseRequestLine(requestLine string) (ok *
 	return parser.doParseHeaders(requested)
 }
 
+func (parser *RequestMessageParser) doParseHeaders(requested *RequestLine) (ok *RequestLine, err Response) {
+	err = parser.parseHeaders()
+	if err != nil {
+		return nil, err
+	}
+
+	return requested, nil
+}
+
 func (parser *RequestMessageParser) parseRequestLine(text string) (ok *RequestLine, badRequest Response) {
 	fields := strings.Split(text, " ")
 	if len(fields) != 3 {
@@ -44,16 +51,7 @@ func (parser *RequestMessageParser) parseRequestLine(text string) (ok *RequestLi
 	}, nil
 }
 
-func (parser *RequestMessageParser) doParseHeaders(requested *RequestLine) (ok *RequestLine, err Response) {
-	err = parser.parseHeaderLines()
-	if err != nil {
-		return nil, err
-	}
-
-	return requested, nil
-}
-
-func (parser *RequestMessageParser) parseHeaderLines() (badRequest Response) {
+func (parser *RequestMessageParser) parseHeaders() (badRequest Response) {
 	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {

@@ -18,7 +18,7 @@ func (router *RequestLineRouter) Routes() []Route {
 	return routes
 }
 
-func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, err Response) {
+func (router RequestLineRouter) RouteRequest(reader *bufio.Reader) (ok Request, err Response) {
 	parser := &RequestMessageParser{reader: reader}
 	requested, err := parser.Parse()
 	if err != nil {
