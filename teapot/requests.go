@@ -14,14 +14,13 @@ func (teapot *IdentityTeapot) Name() string {
 }
 
 func (teapot *IdentityTeapot) Get(client io.Writer, target string) {
-	switch target {
-	case "/coffee":
-		teapot.getCoffee(client)
-	case "/tea":
-		teapot.getTea(client)
-	default:
-		panic("unknown target") //TODO KDK: Respond?
+	var beverageRequestHandlers = map[string]func(writer io.Writer) {
+		"/coffee": teapot.getCoffee,
+		"/tea": teapot.getTea,
 	}
+
+	handler := beverageRequestHandlers[target]
+	handler(client)
 }
 
 func (teapot *IdentityTeapot) getCoffee(client io.Writer) {

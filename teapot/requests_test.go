@@ -15,7 +15,7 @@ var _ = Describe("IdentityTeapot", func() {
 		response       *httptest.ResponseMessage
 		responseBuffer *bytes.Buffer
 	)
-	
+
 	Describe("#Get", func() {
 		Context("when the target is /coffee", func() {
 			BeforeEach(func() {
