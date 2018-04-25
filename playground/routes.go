@@ -17,16 +17,15 @@ type ReadOnlyRoute struct {
 func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target != "/method_options2" {
 		return nil
-	} else if requested.Method == "OPTIONS" {
-		return optionsRequest(requested, route.Resource)
 	}
 
-	return resourceRequest(requested, route.Resource)
+	return http.MakeResourceRequest(requested, route.Resource)
 }
 
 type ReadOnlyResource interface {
-	Get(client io.Writer)
-	Head(client io.Writer)
+	Name() string
+	Get(client io.Writer, target string)
+	Head(client io.Writer, target string)
 }
 
 func NewReadWriteRoute() *ReadWriteRoute {
@@ -42,61 +41,15 @@ type ReadWriteRoute struct {
 func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
 	if requested.Target != "/method_options" {
 		return nil
-	} else if requested.Method == "OPTIONS" {
-		return optionsRequest(requested, route.Resource)
 	}
 
-	return resourceRequest(requested, route.Resource)
+	return http.MakeResourceRequest(requested, route.Resource)
 }
 
 type ReadWriteResource interface {
-	Get(client io.Writer)
-	Head(client io.Writer)
-	Post(client io.Writer)
-	Put(client io.Writer)
-}
-
-func resourceRequest(requested *http.RequestLine, resource interface{}) http.Request {
-	methods := map[string]Method{
-		"GET":  &getMethod{},
-		"HEAD": &headMethod{},
-		"POST": &postMethod{},
-		"PUT":  &putMethod{},
-	}
-
-	method := methods[requested.Method]
-	if method == nil {
-		return nil
-	}
-
-	request := method.MakeRequest(requested, resource)
-	if request != nil {
-		return request
-	}
-
-	return nil
-}
-
-func optionsRequest(requested *http.RequestLine, resource interface{}) http.Request {
-	methods := map[string]Method{
-		"GET":  &getMethod{},
-		"HEAD": &headMethod{},
-		"POST": &postMethod{},
-		"PUT":  &putMethod{},
-	}
-
-	supportedMethods := []string{"OPTIONS"}
-	for name, method := range methods {
-		imaginaryRequest := &http.RequestLine{Method: name, Target: requested.Target}
-		request := method.MakeRequest(imaginaryRequest, resource)
-		if request != nil {
-			supportedMethods = append(supportedMethods, name)
-		}
-	}
-
-	return &knownOptionsRequest{SupportedMethods: supportedMethods}
-}
-
-type Method interface {
-	MakeRequest(requested *http.RequestLine, resource interface{}) http.Request
+	Name() string
+	Get(client io.Writer, target string)
+	Head(client io.Writer, target string)
+	Post(client io.Writer, target string)
+	Put(client io.Writer, target string)
 }

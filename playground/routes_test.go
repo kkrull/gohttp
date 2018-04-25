@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,24 +22,24 @@ var _ = Describe("::NewReadOnlyRoute", func() {
 var _ = Describe("ReadOnlyRoute", func() {
 	Describe("#Route", func() {
 		var (
-			router           http.Route
-			readOnlyResource *ReadOnlyResourceMock
+			router   http.Route
+			resource *ReadOnlyResourceMock
 		)
 
 		BeforeEach(func() {
-			readOnlyResource = &ReadOnlyResourceMock{}
-			router = &playground.ReadOnlyRoute{Resource: readOnlyResource}
+			resource = &ReadOnlyResourceMock{}
+			router = &playground.ReadOnlyRoute{Resource: resource}
 		})
 
 		Context("when the target is /method_options2", func() {
-			It("routes GET to Resource#Get", func() {
+			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
-				readOnlyResource.GetShouldHaveBeenCalled()
+				resource.GetShouldHaveBeenCalled()
 			})
 
-			It("routes HEAD to Resource#Options", func() {
+			It("routes HEAD to Teapot#Options", func() {
 				handleRequest(router, "HEAD", "/method_options2")
-				readOnlyResource.HeadShouldHaveBeenCalled()
+				resource.HeadShouldHaveBeenCalled()
 			})
 
 			Context("when the method is OPTIONS", func() {
@@ -47,7 +48,7 @@ var _ = Describe("ReadOnlyRoute", func() {
 				BeforeEach(func() {
 					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options2"}
 					routedRequest := router.Route(requested)
-					ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+					Expect(routedRequest).NotTo(BeNil())
 
 					response.Reset()
 					routedRequest.Handle(response)
@@ -58,10 +59,10 @@ var _ = Describe("ReadOnlyRoute", func() {
 					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS"))
 			})
 
-			It("returns nil for any other method", func() {
+			It("returns MethodNotAllowed for any other method", func() {
 				requested := &http.RequestLine{Method: "PUT", Target: "/method_options2"}
 				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeNil())
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS")))
 			})
 		})
 
@@ -94,12 +95,12 @@ var _ = Describe("ReadWriteRoute", func() {
 		})
 
 		Context("when the target is /method_options", func() {
-			It("routes GET to Resource#Get", func() {
+			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options")
 				resource.GetShouldHaveBeenCalled()
 			})
 
-			It("routes HEAD to Resource#Head", func() {
+			It("routes HEAD to Teapot#Head", func() {
 				handleRequest(router, "HEAD", "/method_options")
 				resource.HeadShouldHaveBeenCalled()
 			})
@@ -110,7 +111,7 @@ var _ = Describe("ReadWriteRoute", func() {
 				BeforeEach(func() {
 					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options"}
 					routedRequest := router.Route(requested)
-					ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+					Expect(routedRequest).NotTo(BeNil())
 
 					response.Reset()
 					routedRequest.Handle(response)
@@ -121,20 +122,20 @@ var _ = Describe("ReadWriteRoute", func() {
 					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS", "POST", "PUT"))
 			})
 
-			It("routes POST to Resource#Post", func() {
+			It("routes POST to Teapot#Post", func() {
 				handleRequest(router, "POST", "/method_options")
 				resource.PostShouldHaveBeenCalled()
 			})
 
-			It("routes PUT to Resource#Put", func() {
+			It("routes PUT to Teapot#Put", func() {
 				handleRequest(router, "PUT", "/method_options")
 				resource.PutShouldHaveBeenCalled()
 			})
 
-			It("returns nil on any other method", func() {
+			It("returns MethodNotAllowed for any other method", func() {
 				requested := &http.RequestLine{Method: "TRACE", Target: "/method_options"}
 				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeNil())
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS", "POST", "PUT")))
 			})
 		})
 

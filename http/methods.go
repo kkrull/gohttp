@@ -1,10 +1,9 @@
-package playground
+package http
 
 import (
 	"io"
 	"strings"
 
-	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 )
 
@@ -12,10 +11,10 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
-		return &getRequest{Resource: supportedResource}
+		return &getRequest{Resource: supportedResource, Target: requested.Target}
 	}
 
 	return nil
@@ -23,27 +22,26 @@ func (method *getMethod) MakeRequest(requested *http.RequestLine, resource inter
 
 type getRequest struct {
 	Resource GetResource
+	Target   string
 }
 
 func (request *getRequest) Handle(client io.Writer) error {
-	request.Resource.Get(client)
+	request.Resource.Get(client, request.Target)
 	return nil
 }
 
 type GetResource interface {
-	Get(client io.Writer)
+	Get(client io.Writer, target string)
 }
 
 /* HEAD */
 
-type headMethod struct {
-	Resource HeadResource
-}
+type headMethod struct{}
 
-func (*headMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
-		return &headRequest{Resource: supportedResource}
+		return &headRequest{Resource: supportedResource, Target: requested.Target}
 	}
 
 	return nil
@@ -51,24 +49,25 @@ func (*headMethod) MakeRequest(requested *http.RequestLine, resource interface{}
 
 type headRequest struct {
 	Resource HeadResource
+	Target   string
 }
 
 func (request *headRequest) Handle(client io.Writer) error {
-	request.Resource.Head(client)
+	request.Resource.Head(client, request.Target)
 	return nil
 }
 
 type HeadResource interface {
-	Head(client io.Writer)
+	Head(client io.Writer, target string)
 }
 
 /* OPTIONS */
 
-type knownOptionsRequest struct {
+type optionsRequest struct {
 	SupportedMethods []string
 }
 
-func (request *knownOptionsRequest) Handle(client io.Writer) error {
+func (request *optionsRequest) Handle(client io.Writer) error {
 	msg.WriteStatusLine(client, 200, "OK")
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
@@ -80,10 +79,10 @@ func (request *knownOptionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
-		return &postRequest{Resource: supportedResource}
+		return &postRequest{Resource: supportedResource, Target: requested.Target}
 	}
 
 	return nil
@@ -91,25 +90,26 @@ func (*postMethod) MakeRequest(requested *http.RequestLine, resource interface{}
 
 type postRequest struct {
 	Resource PostResource
+	Target   string
 }
 
 func (request *postRequest) Handle(client io.Writer) error {
-	request.Resource.Post(client)
+	request.Resource.Post(client, request.Target)
 	return nil
 }
 
 type PostResource interface {
-	Post(client io.Writer)
+	Post(client io.Writer, target string)
 }
 
 /* PUT */
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *http.RequestLine, resource interface{}) http.Request {
+func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
-		return &putRequest{Resource: supportedResource}
+		return &putRequest{Resource: supportedResource, Target: requested.Target}
 	}
 
 	return nil
@@ -117,13 +117,14 @@ func (*putMethod) MakeRequest(requested *http.RequestLine, resource interface{})
 
 type putRequest struct {
 	Resource PutResource
+	Target   string
 }
 
 func (request *putRequest) Handle(client io.Writer) error {
-	request.Resource.Put(client)
+	request.Resource.Put(client, request.Target)
 	return nil
 }
 
 type PutResource interface {
-	Put(client io.Writer)
+	Put(client io.Writer, target string)
 }

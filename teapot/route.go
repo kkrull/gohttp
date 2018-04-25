@@ -7,34 +7,24 @@ import (
 )
 
 func NewRoute() http.Route {
-	controller := &IdentityController{}
-	return &Route{Controller: controller}
+	teapot := &IdentityTeapot{}
+	return &Route{Teapot: teapot}
 }
 
 type Route struct {
-	Controller Controller
+	Teapot Teapot
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
-	if requested.Method != "GET" {
+	if !route.Teapot.RespondsTo(requested.Target) {
 		return nil
 	}
 
-	switch requested.Target {
-	case "/coffee":
-		return &GetCoffeeRequest{
-			Controller: route.Controller,
-		}
-	case "/tea":
-		return &GetTeaRequest{
-			Controller: route.Controller,
-		}
-	default:
-		return nil
-	}
+	return http.MakeResourceRequest(requested, route.Teapot)
 }
 
-type Controller interface {
-	GetCoffee(client io.Writer)
-	GetTea(client io.Writer)
+type Teapot interface {
+	Name() string
+	Get(client io.Writer, target string)
+	RespondsTo(target string) bool
 }

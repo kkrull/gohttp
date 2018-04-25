@@ -12,9 +12,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ReadOnlyFilesystem", func() {
+var _ = Describe("ReadOnlyFileSystem", func() {
 	var (
-		controller *fs.ReadOnlyFilesystem
+		controller *fs.ReadOnlyFileSystem
 		basePath   string
 
 		response       *httptest.ResponseMessage
@@ -22,8 +22,8 @@ var _ = Describe("ReadOnlyFilesystem", func() {
 	)
 
 	BeforeEach(func() {
-		basePath = makeEmptyTestDirectory("ReadOnlyFilesystem", os.ModePerm)
-		controller = &fs.ReadOnlyFilesystem{BaseDirectory: basePath}
+		basePath = makeEmptyTestDirectory("ReadOnlyFileSystem", os.ModePerm)
+		controller = &fs.ReadOnlyFileSystem{BaseDirectory: basePath}
 		responseBuffer = &bytes.Buffer{}
 	})
 

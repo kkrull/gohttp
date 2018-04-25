@@ -20,7 +20,11 @@ type ReadOnlyResourceMock struct {
 	headCalled bool
 }
 
-func (mock *ReadOnlyResourceMock) Get(client io.Writer) {
+func (mock *ReadOnlyResourceMock) Name() string {
+	return "Readonly Mock"
+}
+
+func (mock *ReadOnlyResourceMock) Get(client io.Writer, target string) {
 	mock.getCalled = true
 }
 
@@ -28,7 +32,7 @@ func (mock *ReadOnlyResourceMock) GetShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadOnlyResourceMock) Head(client io.Writer) {
+func (mock *ReadOnlyResourceMock) Head(client io.Writer, target string) {
 	mock.headCalled = true
 }
 
@@ -45,7 +49,11 @@ type ReadWriteResourceMock struct {
 	putCalled  bool
 }
 
-func (mock *ReadWriteResourceMock) Get(client io.Writer) {
+func (mock *ReadWriteResourceMock) Name() string {
+	return "Read/Write Mock"
+}
+
+func (mock *ReadWriteResourceMock) Get(client io.Writer, target string) {
 	mock.getCalled = true
 }
 
@@ -53,7 +61,7 @@ func (mock *ReadWriteResourceMock) GetShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Head(client io.Writer) {
+func (mock *ReadWriteResourceMock) Head(client io.Writer, target string) {
 	mock.headCalled = true
 }
 
@@ -61,7 +69,7 @@ func (mock *ReadWriteResourceMock) HeadShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.headCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Post(client io.Writer) {
+func (mock *ReadWriteResourceMock) Post(client io.Writer, target string) {
 	mock.postCalled = true
 }
 
@@ -69,7 +77,7 @@ func (mock *ReadWriteResourceMock) PostShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.postCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Put(client io.Writer) {
+func (mock *ReadWriteResourceMock) Put(client io.Writer, target string) {
 	mock.putCalled = true
 }
 

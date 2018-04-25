@@ -5,23 +5,21 @@ import (
 
 	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-//Panics due to incomplete wiring are easy to cause due to Go's permissive struct declaration
-//and hard to root cause when the server goes down and starts refusing connections behind a FitNesse suite
-//that swallows console output from the server
 var _ = Describe("::NewRoute", func() {
-	It("configures the route with StaticCapabilityController", func() {
+	It("configures the route with StaticCapabilityServer", func() {
 		route := capability.NewRoute()
-		Expect(route.Controller).To(BeAssignableToTypeOf(&capability.StaticCapabilityController{}))
+		Expect(route.Controller).To(BeAssignableToTypeOf(&capability.StaticCapabilityServer{}))
 	})
 
 	It("configures available methods to the server as GET and HEAD", func() {
 		route := capability.NewRoute()
 		Expect(route.Controller).To(BeEquivalentTo(
-			&capability.StaticCapabilityController{
+			&capability.StaticCapabilityServer{
 				AvailableMethods: []string{"GET", "HEAD"},
 			},
 		))
@@ -32,27 +30,29 @@ var _ = Describe("ServerCapabilityRoute", func() {
 	Describe("#Route", func() {
 		var (
 			router        http.Route
-			controller    *ServerCapabilityControllerMock
+			controller    *ServerCapabilityServerMock
 			requested     *http.RequestLine
 			routedRequest http.Request
 		)
 
 		BeforeEach(func() {
-			controller = &ServerCapabilityControllerMock{}
+			controller = &ServerCapabilityServerMock{}
 			router = &capability.ServerCapabilityRoute{Controller: controller}
 		})
 
-		It("routes OPTIONS * to ServerCapabilityController#Options", func() {
-			requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
-			routedRequest = router.Route(requested)
-			routedRequest.Handle(&bufio.Writer{})
-			controller.OptionsShouldHaveBeenCalled()
-		})
+		Context("when the target is *", func() {
+			It("routes OPTIONS to ServerResource", func() {
+				requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
+				routedRequest = router.Route(requested)
+				routedRequest.Handle(&bufio.Writer{})
+				controller.OptionsShouldHaveBeenCalled()
+			})
 
-		It("returns nil to pass on any other method", func() {
-			requested = &http.RequestLine{Method: "GET", Target: "*"}
-			routedRequest = router.Route(requested)
-			Expect(routedRequest).To(BeNil())
+			It("returns MethodNotAllowed for any other method", func() {
+				requested = &http.RequestLine{Method: "GET", Target: "*"}
+				routedRequest = router.Route(requested)
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("OPTIONS")))
+			})
 		})
 
 		It("returns nil to pass on any other target", func() {
