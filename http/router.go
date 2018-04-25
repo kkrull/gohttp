@@ -2,13 +2,19 @@ package http
 
 import (
 	"bufio"
-	"strings"
 
-	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
+func NewRouter() *RequestLineRouter {
+	return &RequestLineRouter{
+		Parser: &LineRequestParser{},
+	}
+}
+
+// Routes requests based solely upon the first line in the request
 type RequestLineRouter struct {
+	Parser RequestParser
 	routes []Route
 }
 
@@ -22,89 +28,28 @@ func (router *RequestLineRouter) Routes() []Route {
 	return routes
 }
 
-func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, routeError Response) {
-	request, err := router.parseRequestLine(reader)
+func (router RequestLineRouter) RouteRequest(reader *bufio.Reader) (ok Request, err Response) {
+	requested, err := router.Parser.Parse(reader)
 	if err != nil {
 		return nil, err
 	}
 
-	headerError := parseHeaderLines(reader)
-	if headerError != nil {
-		return nil, headerError
-	}
-
-	return request, nil
+	return router.routeRequest(requested)
 }
 
-func (router RequestLineRouter) parseRequestLine(reader *bufio.Reader) (Request, Response) {
-	requestLineText, err := readCRLFLine(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	requested, err := parseRequestLine(requestLineText)
-	if err != nil {
-		return nil, err
-	}
-
-	if request := router.routeRequest(requested); request != nil {
-		return request, nil
+func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request, notImplemented Response) {
+	for _, route := range router.routes {
+		request := route.Route(requested)
+		if request != nil {
+			return request, nil
+		}
 	}
 
 	return nil, requested.NotImplemented()
 }
 
-func parseHeaderLines(reader *bufio.Reader) Response {
-	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
-
-	for {
-		line, err := readCRLFLine(reader)
-		if err != nil {
-			return err
-		} else if isBlankLineBetweenHeadersAndBody(line) {
-			return nil
-		}
-	}
-}
-
-func readCRLFLine(reader *bufio.Reader) (string, Response) {
-	maybeEndsInCR, _ := reader.ReadString('\r')
-	if len(maybeEndsInCR) == 0 {
-		return "", &clienterror.BadRequest{DisplayText: "end of input before terminating CRLF"}
-	} else if !strings.HasSuffix(maybeEndsInCR, "\r") {
-		return "", &clienterror.BadRequest{DisplayText: "line in request header not ending in CRLF"}
-	}
-
-	nextCharacter, _ := reader.ReadByte()
-	if nextCharacter != '\n' {
-		return "", &clienterror.BadRequest{DisplayText: "message header line does not end in LF"}
-	}
-
-	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
-	return trimmed, nil
-}
-
-func parseRequestLine(text string) (*RequestLine, Response) {
-	fields := strings.Split(text, " ")
-	if len(fields) != 3 {
-		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
-	}
-
-	return &RequestLine{
-		Method: fields[0],
-		Target: fields[1],
-	}, nil
-}
-
-func (router RequestLineRouter) routeRequest(requested *RequestLine) Request {
-	for _, route := range router.routes {
-		request := route.Route(requested)
-		if request != nil {
-			return request
-		}
-	}
-
-	return nil
+type RequestParser interface {
+	Parse(reader *bufio.Reader) (ok *RequestLine, err Response)
 }
 
 type Route interface {
@@ -112,8 +57,9 @@ type Route interface {
 }
 
 type RequestLine struct {
-	Method string
-	Target string
+	Method          string
+	Target          string
+	QueryParameters map[string]string
 }
 
 func (requestLine *RequestLine) NotImplemented() Response {

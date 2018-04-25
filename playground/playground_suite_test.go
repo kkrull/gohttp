@@ -1,9 +1,11 @@
 package playground_test
 
 import (
+	"bytes"
 	"io"
 	"testing"
 
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -11,6 +13,28 @@ import (
 func TestPlayground(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "playground")
+}
+
+/* ParameterDecoderMock */
+
+type ParameterDecoderMock struct {
+	getParameters map[string]string
+}
+
+func (mock *ParameterDecoderMock) Name() string {
+	return "Parameter Decoder Mock"
+}
+
+func (mock *ParameterDecoderMock) Get(client io.Writer, target string) {
+	//TODO KDK: Work here to get the parameters and expand the interface
+	//mock.getParameters = map[string]string {
+	//	"two": "2",
+	//	"one": "1",
+	//}
+}
+
+func (mock *ParameterDecoderMock) GetShouldHaveReceived(parameters map[string]string) {
+	ExpectWithOffset(1, mock.getParameters).To(Equal(parameters))
 }
 
 /* ReadOnlyResourceMock */
@@ -83,4 +107,14 @@ func (mock *ReadWriteResourceMock) Put(client io.Writer, target string) {
 
 func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.putCalled).To(BeTrue())
+}
+
+/* Helpers */
+
+func handleRequest(router http.Route, method, target string) {
+	requested := &http.RequestLine{Method: method, Target: target}
+	routedRequest := router.Route(requested)
+	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
+
+	routedRequest.Handle(&bytes.Buffer{})
 }
