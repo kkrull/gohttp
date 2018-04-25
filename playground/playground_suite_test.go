@@ -18,7 +18,7 @@ func TestPlayground(t *testing.T) {
 /* ParameterDecoderMock */
 
 type ParameterDecoderMock struct {
-	getCalled bool
+	getParameters map[string]string
 }
 
 func (mock *ParameterDecoderMock) Name() string {
@@ -26,11 +26,15 @@ func (mock *ParameterDecoderMock) Name() string {
 }
 
 func (mock *ParameterDecoderMock) Get(client io.Writer, target string) {
-	mock.getCalled = true
+	//TODO KDK: Work here to get the parameters and expand the interface
+	//mock.getParameters = map[string]string {
+	//	"two": "2",
+	//	"one": "1",
+	//}
 }
 
-func (mock *ParameterDecoderMock) GetShouldHaveReceived() {
-	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
+func (mock *ParameterDecoderMock) GetShouldHaveReceived(parameters map[string]string) {
+	ExpectWithOffset(1, mock.getParameters).To(Equal(parameters))
 }
 
 /* ReadOnlyResourceMock */

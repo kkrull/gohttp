@@ -12,10 +12,9 @@ import (
 )
 
 var _ = Describe("::NewParameterRoute", func() {
-	It("returns a fully bona fide ParameterRoute", func() {
+	It("returns a fully configured ParameterRoute", func() {
 		route := playground.NewParameterRoute()
 		Expect(route).NotTo(BeNil())
-		Expect(route).To(BeAssignableToTypeOf(&playground.ParameterRoute{}))
 		Expect(route).To(BeEquivalentTo(&playground.ParameterRoute{
 			Decoder: &playground.TheDecoder{},
 		}))
@@ -32,23 +31,31 @@ var _ = Describe("ParameterRoute", func() {
 
 		BeforeEach(func() {
 			decoder = &ParameterDecoderMock{}
+			router = &playground.ParameterRoute{Decoder: decoder}
 			response.Reset()
 		})
 
 		Context("when the target is /parameters", func() {
-			It("routes GET to ParameterDecoder#Get", func() {
-				router = &playground.ParameterRoute{Decoder: decoder}
-				requested := &http.RequestLine{Method: "GET", Target: "/parameters"}
+			XIt("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
+				requested := &http.RequestLine{
+					Method:      "GET",
+					Target:      "/parameters",
+					QueryString: "one=1&two=2",
+				}
 
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).NotTo(BeNil())
 				routedRequest.Handle(response)
-				decoder.GetShouldHaveReceived()
+
+				expectedDecodedParameters := map[string]string{
+					"one": "1",
+					"two": "2",
+				}
+				decoder.GetShouldHaveReceived(expectedDecodedParameters)
 			})
 
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					router = &playground.ParameterRoute{Decoder: decoder}
 					requested := &http.RequestLine{Method: "OPTIONS", Target: "/parameters"}
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
@@ -61,16 +68,13 @@ var _ = Describe("ParameterRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				router = &playground.ParameterRoute{Decoder: decoder}
 				requested := &http.RequestLine{Method: "TRACE", Target: "/parameters"}
-
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
 		})
 
 		It("returns nil for any other target", func() {
-			router := &playground.ParameterRoute{}
 			requested := &http.RequestLine{Method: "GET", Target: "/"}
 			Expect(router.Route(requested)).To(BeNil())
 		})

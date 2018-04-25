@@ -112,8 +112,9 @@ type Route interface {
 }
 
 type RequestLine struct {
-	Method string
-	Target string
+	Method      string
+	Target      string
+	QueryString string
 }
 
 func (requestLine *RequestLine) NotImplemented() Response {
