@@ -16,13 +16,7 @@ type Route struct {
 }
 
 func (route *Route) Route(requested *http.RequestLine) http.Request {
-	var resources = map[string]bool{
-		"/coffee": true,
-		"/tea":    true,
-	}
-
-	_, ownResource := resources[requested.Target]
-	if !ownResource {
+	if !route.Resource.RespondsTo(requested.Target) {
 		return nil
 	}
 
@@ -32,4 +26,5 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 type Teapot interface {
 	Name() string
 	Get(client io.Writer, target string)
+	RespondsTo(target string) bool
 }

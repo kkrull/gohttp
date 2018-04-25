@@ -14,11 +14,16 @@ func TestTeapot(t *testing.T) {
 }
 
 type TeapotMock struct {
-	getTarget       string
+	RespondsToTarget string
+	getTarget        string
 }
 
 func (mock *TeapotMock) Name() string {
 	return "teapot mock"
+}
+
+func (mock *TeapotMock) RespondsTo(target string) bool {
+	return mock.RespondsToTarget == target
 }
 
 func (mock *TeapotMock) Get(client io.Writer, target string) {

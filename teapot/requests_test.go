@@ -16,6 +16,18 @@ var _ = Describe("IdentityTeapot", func() {
 		responseBuffer *bytes.Buffer
 	)
 
+	Describe("#RespondsTo", func() {
+		It("returns true for /coffee", func() {
+			controller = &teapot.IdentityTeapot{}
+			Expect(controller.RespondsTo("/coffee")).To(BeTrue())
+		})
+
+		It("returns true for /tea", func() {
+			controller = &teapot.IdentityTeapot{}
+			Expect(controller.RespondsTo("/tea")).To(BeTrue())
+		})
+	})
+
 	Describe("#Get", func() {
 		Context("when the target is /coffee", func() {
 			BeforeEach(func() {

@@ -18,43 +18,31 @@ var _ = Describe("teapotRoute", func() {
 		routedRequest http.Request
 	)
 
-	BeforeEach(func() {
-		controller = &TeapotMock{}
-		router = &teapot.Route{Resource: controller}
-	})
-
 	Describe("#Route", func() {
-		Context("when the target is /coffee", func() {
-			It("routes GET /coffee to Resource#Get", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "/coffee"}
+		Context("when the target is a resource that the teapot can respond to", func() {
+			BeforeEach(func() {
+				controller = &TeapotMock{RespondsToTarget: "/caffeine"}
+				router = &teapot.Route{Resource: controller}
+			})
+
+			It("routes GET requests to that target to the teapot", func() {
+				requested = &http.RequestLine{Method: "GET", Target: "/caffeine"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
-				controller.GetShouldHaveReceived("/coffee")
+				controller.GetShouldHaveReceived("/caffeine")
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/coffee"}
-				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "OPTIONS")))
-			})
-		})
-
-		Context("when the target is /tea", func() {
-			It("routes GET /tea to Resource#Get", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "/tea"}
-				routedRequest = router.Route(requested)
-				routedRequest.Handle(&bufio.Writer{})
-				controller.GetShouldHaveReceived("/tea")
-			})
-
-			It("returns MethodNotAllowed for any other method", func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/tea"}
+				requested := &http.RequestLine{Method: "TRACE", Target: "/caffeine"}
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "OPTIONS")))
 			})
 		})
 
 		It("passes on any other target", func() {
+			controller = &TeapotMock{}
+			router = &teapot.Route{Resource: controller}
+
 			requested = &http.RequestLine{Method: "GET", Target: "/file.txt"}
 			routedRequest = router.Route(requested)
 			Expect(routedRequest).To(BeNil())

@@ -13,10 +13,19 @@ func (teapot *IdentityTeapot) Name() string {
 	return "teapot"
 }
 
+func (teapot *IdentityTeapot) RespondsTo(target string) bool {
+	switch target {
+	case "/coffee", "/tea":
+		return true
+	default:
+		return false
+	}
+}
+
 func (teapot *IdentityTeapot) Get(client io.Writer, target string) {
-	var beverageRequestHandlers = map[string]func(writer io.Writer) {
+	var beverageRequestHandlers = map[string]func(writer io.Writer){
 		"/coffee": teapot.getCoffee,
-		"/tea": teapot.getTea,
+		"/tea":    teapot.getTea,
 	}
 
 	handler := beverageRequestHandlers[target]
