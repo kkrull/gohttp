@@ -100,7 +100,7 @@ var _ = Describe("RequestLineRouter", func() {
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
 				router = &http.RequestLineRouter{}
-				request, err = router.ParseRequest(makeReader("get / HTTP/1.1\r\n\n"))
+				request, err = router.ParseRequest(makeReader("get / HTTP/1.1\r\n\r\n"))
 				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "get"}))
 			})
 		})

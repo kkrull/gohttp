@@ -23,19 +23,14 @@ func (router *RequestLineRouter) Routes() []Route {
 }
 
 func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, routeError Response) {
-	requestLineText, err := readCRLFLine(reader)
+	requestLine, err := readCRLFLine(reader)
 	if err != nil {
 		return nil, err
 	}
 
-	requested, err := parseRequestLine(requestLineText)
+	requested, err := parseRequestLine(requestLine)
 	if err != nil {
 		return nil, err
-	}
-
-	request := router.routeRequest(requested)
-	if request == nil {
-		return nil, requested.NotImplemented()
 	}
 
 	headerError := parseHeaderLines(reader)
@@ -43,7 +38,7 @@ func (router RequestLineRouter) ParseRequest(reader *bufio.Reader) (ok Request, 
 		return nil, headerError
 	}
 
-	return request, nil
+	return router.routeRequest(requested)
 }
 
 func parseHeaderLines(reader *bufio.Reader) Response {
@@ -88,15 +83,15 @@ func parseRequestLine(text string) (*RequestLine, Response) {
 	}, nil
 }
 
-func (router RequestLineRouter) routeRequest(requested *RequestLine) Request {
+func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request, routeError Response) {
 	for _, route := range router.routes {
 		request := route.Route(requested)
 		if request != nil {
-			return request
+			return request, nil
 		}
 	}
 
-	return nil
+	return nil, requested.NotImplemented()
 }
 
 type Route interface {
