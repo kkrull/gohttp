@@ -46,7 +46,7 @@ var _ = Describe("ReadWriteRoute", func() {
 				var response = &bytes.Buffer{}
 
 				BeforeEach(func() {
-					requested := &http.RequestLine{TheMethod: "OPTIONS", TheTarget: "/method_options"}
+					requested := http.NewRequestMessage("OPTIONS", "/method_options")
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 
@@ -70,14 +70,14 @@ var _ = Describe("ReadWriteRoute", func() {
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested := &http.RequestLine{TheMethod: "TRACE", TheTarget: "/method_options"}
+				requested := http.NewRequestMessage("TRACE", "/method_options")
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS", "POST", "PUT")))
 			})
 		})
 
 		It("returns nil on any other target", func() {
-			requested := &http.RequestLine{TheMethod: "GET", TheTarget: "/"}
+			requested := http.NewRequestMessage("GET", "/")
 			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})

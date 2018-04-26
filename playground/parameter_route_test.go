@@ -41,11 +41,7 @@ var _ = Describe("ParameterRoute", func() {
 					"one": "1",
 					"two": "2",
 				}
-				requested := &http.RequestLine{
-					TheMethod:          "GET",
-					TheTarget:          "/parameters",
-					TheQueryParameters: parameters,
-				}
+				requested := http.NewRequestMessage("GET", "/parameters") //TODO KDK: Add query parameters
 
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).NotTo(BeNil())
@@ -55,7 +51,7 @@ var _ = Describe("ParameterRoute", func() {
 
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := &http.RequestLine{TheMethod: "OPTIONS", TheTarget: "/parameters"}
+					requested := http.NewRequestMessage("OPTIONS", "/parameters")
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -67,14 +63,14 @@ var _ = Describe("ParameterRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := &http.RequestLine{TheMethod: "TRACE", TheTarget: "/parameters"}
+				requested := http.NewRequestMessage("TRACE", "/parameters")
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
 		})
 
 		It("returns nil for any other target", func() {
-			requested := &http.RequestLine{TheMethod: "GET", TheTarget: "/"}
+			requested := http.NewRequestMessage("GET", "/")
 			Expect(router.Route(requested)).To(BeNil())
 		})
 	})

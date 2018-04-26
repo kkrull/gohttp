@@ -7,6 +7,13 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
+func NewRequestMessage(method, target string) RequestMessage {
+	return &RequestLine{
+		TheMethod: method,
+		TheTarget: target,
+	}
+}
+
 type RequestLine struct {
 	TheMethod          string
 	TheTarget          string
