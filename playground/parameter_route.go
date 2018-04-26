@@ -14,8 +14,8 @@ type ParameterRoute struct {
 	Decoder ParameterDecoder
 }
 
-func (route *ParameterRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.TheTarget != "/parameters" {
+func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Target() != "/parameters" {
 		return nil
 	}
 

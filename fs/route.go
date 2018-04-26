@@ -18,7 +18,7 @@ type FileSystemRoute struct {
 	Resource        FileSystemResource
 }
 
-func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
+func (route FileSystemRoute) Route(requested http.RequestMessage) http.Request {
 	return requested.MakeResourceRequest(route.Resource)
 }
 

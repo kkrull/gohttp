@@ -31,7 +31,7 @@ var _ = Describe("ServerCapabilityRoute", func() {
 		var (
 			router        http.Route
 			controller    *ServerCapabilityServerMock
-			requested     *http.RequestLine
+			requested     http.RequestMessage
 			routedRequest http.Request
 		)
 

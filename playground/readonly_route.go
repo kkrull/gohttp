@@ -14,8 +14,8 @@ type ReadOnlyRoute struct {
 	Resource ReadOnlyResource
 }
 
-func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.TheTarget != "/method_options2" {
+func (route *ReadOnlyRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Target() != "/method_options2" {
 		return nil
 	}
 

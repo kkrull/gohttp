@@ -78,10 +78,10 @@ func (mock *Request) VerifyHandle(writer *bufio.Writer) {
 
 type Route struct {
 	RouteReturns   http.Request
-	routeRequested *http.RequestLine
+	routeRequested http.RequestMessage
 }
 
-func (mock *Route) Route(requested *http.RequestLine) http.Request {
+func (mock *Route) Route(requested http.RequestMessage) http.Request {
 	mock.routeRequested = requested
 	return mock.RouteReturns
 }
@@ -94,7 +94,7 @@ func (mock *Route) ShouldHaveReceived(method string, target string) {
 }
 
 func (mock *Route) ShouldHaveReceivedParameters(parameters map[string]string) {
-	ExpectWithOffset(1, mock.routeRequested.TheQueryParameters).To(Equal(parameters))
+	ExpectWithOffset(1, mock.routeRequested.QueryParameters()).To(Equal(parameters))
 }
 
 type Response struct {

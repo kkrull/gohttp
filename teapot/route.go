@@ -15,8 +15,8 @@ type Route struct {
 	Teapot Teapot
 }
 
-func (route *Route) Route(requested *http.RequestLine) http.Request {
-	if !route.Teapot.RespondsTo(requested.TheTarget) {
+func (route *Route) Route(requested http.RequestMessage) http.Request {
+	if !route.Teapot.RespondsTo(requested.Target()) {
 		return nil
 	}
 

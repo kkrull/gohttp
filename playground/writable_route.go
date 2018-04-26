@@ -17,8 +17,8 @@ type ReadWriteRoute struct {
 	Resource ReadWriteResource
 }
 
-func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.TheTarget != "/method_options" {
+func (route *ReadWriteRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Target() != "/method_options" {
 		return nil
 	}
 

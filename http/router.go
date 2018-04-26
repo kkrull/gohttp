@@ -58,5 +58,5 @@ type RequestMessage interface {
 }
 
 type Route interface {
-	Route(requested *RequestLine) Request
+	Route(requested RequestMessage) Request
 }
