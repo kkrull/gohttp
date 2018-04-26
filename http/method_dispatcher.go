@@ -13,6 +13,18 @@ type RequestLine struct {
 	TheQueryParameters map[string]string
 }
 
+func (requestLine *RequestLine) Method() string {
+	return requestLine.TheMethod
+}
+
+func (requestLine *RequestLine) Target() string {
+	return requestLine.TheTarget
+}
+
+func (requestLine *RequestLine) QueryParameters() map[string]string {
+	return requestLine.TheQueryParameters
+}
+
 func (requestLine *RequestLine) NotImplemented() Response {
 	return &servererror.NotImplemented{Method: requestLine.TheMethod}
 }

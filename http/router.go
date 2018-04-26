@@ -50,6 +50,13 @@ type RequestParser interface {
 	Parse(reader *bufio.Reader) (ok *RequestLine, err Response)
 }
 
+type RequestMessage interface {
+	MakeResourceRequest(resource Resource) Request
+	Method() string
+	Target() string
+	QueryParameters() map[string]string
+}
+
 type Route interface {
 	Route(requested *RequestLine) Request
 }
