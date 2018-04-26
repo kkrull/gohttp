@@ -8,23 +8,23 @@ import (
 )
 
 type RequestLine struct {
-	Method          string
-	Target          string
-	QueryParameters map[string]string
+	TheMethod          string
+	TheTarget          string
+	TheQueryParameters map[string]string
 }
 
 func (requestLine *RequestLine) NotImplemented() Response {
-	return &servererror.NotImplemented{Method: requestLine.Method}
+	return &servererror.NotImplemented{Method: requestLine.TheMethod}
 }
 
 func (requestLine *RequestLine) MakeResourceRequest(resource Resource) Request {
-	if requestLine.Method == "OPTIONS" {
+	if requestLine.TheMethod == "OPTIONS" {
 		return &optionsRequest{
 			SupportedMethods: requestLine.supportedMethods(resource),
 		}
 	}
 
-	method := knownMethods[requestLine.Method]
+	method := knownMethods[requestLine.TheMethod]
 	if method == nil {
 		return requestLine.unknownHttpMethod(resource)
 	}
@@ -48,7 +48,7 @@ func (requestLine *RequestLine) unsupportedMethod(resource Resource) Request {
 func (requestLine *RequestLine) supportedMethods(resource Resource) []string {
 	supported := []string{"OPTIONS"}
 	for name, method := range knownMethods {
-		imaginaryRequest := &RequestLine{Method: name, Target: requestLine.Target}
+		imaginaryRequest := &RequestLine{TheMethod: name, TheTarget: requestLine.TheTarget}
 		request := method.MakeRequest(imaginaryRequest, resource)
 		if request != nil {
 			supported = append(supported, name)

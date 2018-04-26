@@ -14,7 +14,7 @@ type getMethod struct{}
 func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
-		return &getRequest{Resource: supportedResource, Target: requested.Target}
+		return &getRequest{Resource: supportedResource, Target: requested.TheTarget}
 	}
 
 	return nil
@@ -41,7 +41,7 @@ type headMethod struct{}
 func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
-		return &headRequest{Resource: supportedResource, Target: requested.Target}
+		return &headRequest{Resource: supportedResource, Target: requested.TheTarget}
 	}
 
 	return nil
@@ -82,7 +82,7 @@ type postMethod struct{}
 func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
-		return &postRequest{Resource: supportedResource, Target: requested.Target}
+		return &postRequest{Resource: supportedResource, Target: requested.TheTarget}
 	}
 
 	return nil
@@ -109,7 +109,7 @@ type putMethod struct{}
 func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
-		return &putRequest{Resource: supportedResource, Target: requested.Target}
+		return &putRequest{Resource: supportedResource, Target: requested.TheTarget}
 	}
 
 	return nil

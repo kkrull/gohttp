@@ -15,7 +15,7 @@ type ReadOnlyRoute struct {
 }
 
 func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "/method_options2" {
+	if requested.TheTarget != "/method_options2" {
 		return nil
 	}
 

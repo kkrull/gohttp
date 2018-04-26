@@ -38,21 +38,21 @@ var _ = Describe("FileSystemRoute", func() {
 
 	Describe("#Route", func() {
 		It("routes GET requests to GetRequest", func() {
-			requested := &http.RequestLine{Method: "GET", Target: "/foo"}
+			requested := &http.RequestLine{TheMethod: "GET", TheTarget: "/foo"}
 			routedRequest := route.Route(requested)
 			routedRequest.Handle(response)
 			resource.GetShouldHaveReceived("/foo")
 		})
 
 		It("routes HEAD requests to HeadRequest", func() {
-			requested := &http.RequestLine{Method: "HEAD", Target: "/foo"}
+			requested := &http.RequestLine{TheMethod: "HEAD", TheTarget: "/foo"}
 			routedRequest := route.Route(requested)
 			routedRequest.Handle(response)
 			resource.HeadShouldHaveReceived("/foo")
 		})
 
 		It("routes any other method to MethodNotAllowed", func() {
-			requested := &http.RequestLine{Method: "TRACE", Target: "/"}
+			requested := &http.RequestLine{TheMethod: "TRACE", TheTarget: "/"}
 			routedRequest := route.Route(requested)
 			Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS")))
 		})

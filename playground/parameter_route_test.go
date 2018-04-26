@@ -42,9 +42,9 @@ var _ = Describe("ParameterRoute", func() {
 					"two": "2",
 				}
 				requested := &http.RequestLine{
-					Method:          "GET",
-					Target:          "/parameters",
-					QueryParameters: parameters,
+					TheMethod:          "GET",
+					TheTarget:          "/parameters",
+					TheQueryParameters: parameters,
 				}
 
 				routedRequest := router.Route(requested)
@@ -55,7 +55,7 @@ var _ = Describe("ParameterRoute", func() {
 
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := &http.RequestLine{Method: "OPTIONS", Target: "/parameters"}
+					requested := &http.RequestLine{TheMethod: "OPTIONS", TheTarget: "/parameters"}
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -67,14 +67,14 @@ var _ = Describe("ParameterRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/parameters"}
+				requested := &http.RequestLine{TheMethod: "TRACE", TheTarget: "/parameters"}
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
 		})
 
 		It("returns nil for any other target", func() {
-			requested := &http.RequestLine{Method: "GET", Target: "/"}
+			requested := &http.RequestLine{TheMethod: "GET", TheTarget: "/"}
 			Expect(router.Route(requested)).To(BeNil())
 		})
 	})

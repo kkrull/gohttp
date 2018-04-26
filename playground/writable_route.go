@@ -18,7 +18,7 @@ type ReadWriteRoute struct {
 }
 
 func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "/method_options" {
+	if requested.TheTarget != "/method_options" {
 		return nil
 	}
 

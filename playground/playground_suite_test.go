@@ -112,7 +112,7 @@ func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
 /* Helpers */
 
 func handleRequest(router http.Route, method, target string) {
-	requested := &http.RequestLine{Method: method, Target: target}
+	requested := &http.RequestLine{TheMethod: method, TheTarget: target}
 	routedRequest := router.Route(requested)
 	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
 

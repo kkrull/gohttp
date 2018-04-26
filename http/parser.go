@@ -53,8 +53,8 @@ func (parser *parseMethodObject) parseRequestLine(text string) (ok *RequestLine,
 	}
 
 	return &RequestLine{
-		Method: fields[0],
-		Target: fields[1],
+		TheMethod: fields[0],
+		TheTarget: fields[1],
 	}, nil
 }
 

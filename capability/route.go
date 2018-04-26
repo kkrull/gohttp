@@ -20,9 +20,9 @@ type ServerCapabilityRoute struct {
 }
 
 func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "*" {
+	if requested.TheTarget != "*" {
 		return nil
-	} else if requested.Method != "OPTIONS" {
+	} else if requested.TheMethod != "OPTIONS" {
 		return clienterror.MethodNotAllowed("OPTIONS")
 	}
 

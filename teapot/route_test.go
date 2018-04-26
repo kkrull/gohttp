@@ -26,14 +26,14 @@ var _ = Describe("teapotRoute", func() {
 			})
 
 			It("routes GET requests to that target to the teapot", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "/caffeine"}
+				requested = &http.RequestLine{TheMethod: "GET", TheTarget: "/caffeine"}
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
 				teapotMock.GetShouldHaveReceived("/caffeine")
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/caffeine"}
+				requested := &http.RequestLine{TheMethod: "TRACE", TheTarget: "/caffeine"}
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "OPTIONS")))
 			})
@@ -43,7 +43,7 @@ var _ = Describe("teapotRoute", func() {
 			teapotMock = &TeapotMock{}
 			router = &teapot.Route{Teapot: teapotMock}
 
-			requested = &http.RequestLine{Method: "GET", Target: "/file.txt"}
+			requested = &http.RequestLine{TheMethod: "GET", TheTarget: "/file.txt"}
 			routedRequest = router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})
