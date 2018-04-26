@@ -19,7 +19,7 @@ func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Resource)
+	return requested.MakeResourceRequest(route.Resource)
 }
 
 type ReadOnlyResource interface {

@@ -19,7 +19,7 @@ type FileSystemRoute struct {
 }
 
 func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
-	return http.MakeResourceRequest(requested, route.Resource)
+	return requested.MakeResourceRequest(route.Resource)
 }
 
 // Represents files and directories on the file system

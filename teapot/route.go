@@ -20,7 +20,7 @@ func (route *Route) Route(requested *http.RequestLine) http.Request {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Teapot)
+	return requested.MakeResourceRequest(route.Teapot)
 }
 
 type Teapot interface {

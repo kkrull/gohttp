@@ -4,40 +4,51 @@ import (
 	"sort"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
+	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-func MakeResourceRequest(requested *RequestLine, resource Resource) Request {
-	if requested.Method == "OPTIONS" {
+type RequestLine struct {
+	Method          string
+	Target          string
+	QueryParameters map[string]string
+}
+
+func (requestLine *RequestLine) NotImplemented() Response {
+	return &servererror.NotImplemented{Method: requestLine.Method}
+}
+
+func (requestLine *RequestLine) MakeResourceRequest(resource Resource) Request {
+	if requestLine.Method == "OPTIONS" {
 		return &optionsRequest{
-			SupportedMethods: supportedMethods(requested.Target, resource),
+			SupportedMethods: requestLine.supportedMethods(resource),
 		}
 	}
 
-	method := knownMethods[requested.Method]
+	method := knownMethods[requestLine.Method]
 	if method == nil {
-		return unknownHttpMethod(requested, resource)
+		return requestLine.unknownHttpMethod(resource)
 	}
 
-	request := method.MakeRequest(requested, resource)
+	request := method.MakeRequest(requestLine, resource)
 	if request == nil {
-		return unsupportedMethod(requested, resource)
+		return requestLine.unsupportedMethod(resource)
 	}
 
 	return request
 }
 
-func unknownHttpMethod(requested *RequestLine, resource Resource) Request {
-	return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
+func (requestLine *RequestLine) unknownHttpMethod(resource Resource) Request {
+	return clienterror.MethodNotAllowed(requestLine.supportedMethods(resource)...)
 }
 
-func unsupportedMethod(requested *RequestLine, resource Resource) Request {
-	return clienterror.MethodNotAllowed(supportedMethods(requested.Target, resource)...)
+func (requestLine *RequestLine) unsupportedMethod(resource Resource) Request {
+	return clienterror.MethodNotAllowed(requestLine.supportedMethods(resource)...)
 }
 
-func supportedMethods(target string, resource Resource) []string {
+func (requestLine *RequestLine) supportedMethods(resource Resource) []string {
 	supported := []string{"OPTIONS"}
 	for name, method := range knownMethods {
-		imaginaryRequest := &RequestLine{Method: name, Target: target}
+		imaginaryRequest := &RequestLine{Method: name, Target: requestLine.Target}
 		request := method.MakeRequest(imaginaryRequest, resource)
 		if request != nil {
 			supported = append(supported, name)

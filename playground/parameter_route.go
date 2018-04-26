@@ -19,7 +19,7 @@ func (route *ParameterRoute) Route(requested *http.RequestLine) http.Request {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Decoder)
+	return requested.MakeResourceRequest(route.Decoder)
 }
 
 type ParameterDecoder interface {

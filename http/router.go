@@ -2,8 +2,6 @@ package http
 
 import (
 	"bufio"
-
-	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 func NewRouter() *RequestLineRouter {
@@ -54,14 +52,4 @@ type RequestParser interface {
 
 type Route interface {
 	Route(requested *RequestLine) Request
-}
-
-type RequestLine struct {
-	Method          string
-	Target          string
-	QueryParameters map[string]string
-}
-
-func (requestLine *RequestLine) NotImplemented() Response {
-	return &servererror.NotImplemented{Method: requestLine.Method}
 }
