@@ -8,35 +8,35 @@ import (
 )
 
 func NewRequestMessage(method, target string) RequestMessage {
-	return &RequestLine{
+	return &requestMessage{
 		TheMethod: method,
 		TheTarget: target,
 	}
 }
 
-type RequestLine struct {
+type requestMessage struct {
 	TheMethod          string
 	TheTarget          string
 	TheQueryParameters map[string]string
 }
 
-func (requestLine *RequestLine) Method() string {
+func (requestLine *requestMessage) Method() string {
 	return requestLine.TheMethod
 }
 
-func (requestLine *RequestLine) Target() string {
+func (requestLine *requestMessage) Target() string {
 	return requestLine.TheTarget
 }
 
-func (requestLine *RequestLine) QueryParameters() map[string]string {
+func (requestLine *requestMessage) QueryParameters() map[string]string {
 	return requestLine.TheQueryParameters
 }
 
-func (requestLine *RequestLine) NotImplemented() Response {
+func (requestLine *requestMessage) NotImplemented() Response {
 	return &servererror.NotImplemented{Method: requestLine.TheMethod}
 }
 
-func (requestLine *RequestLine) MakeResourceRequest(resource Resource) Request {
+func (requestLine *requestMessage) MakeResourceRequest(resource Resource) Request {
 	if requestLine.TheMethod == "OPTIONS" {
 		return &optionsRequest{
 			SupportedMethods: requestLine.supportedMethods(resource),
@@ -56,18 +56,18 @@ func (requestLine *RequestLine) MakeResourceRequest(resource Resource) Request {
 	return request
 }
 
-func (requestLine *RequestLine) unknownHttpMethod(resource Resource) Request {
+func (requestLine *requestMessage) unknownHttpMethod(resource Resource) Request {
 	return clienterror.MethodNotAllowed(requestLine.supportedMethods(resource)...)
 }
 
-func (requestLine *RequestLine) unsupportedMethod(resource Resource) Request {
+func (requestLine *requestMessage) unsupportedMethod(resource Resource) Request {
 	return clienterror.MethodNotAllowed(requestLine.supportedMethods(resource)...)
 }
 
-func (requestLine *RequestLine) supportedMethods(resource Resource) []string {
+func (requestLine *requestMessage) supportedMethods(resource Resource) []string {
 	supported := []string{"OPTIONS"}
 	for name, method := range knownMethods {
-		imaginaryRequest := &RequestLine{TheMethod: name, TheTarget: requestLine.TheTarget}
+		imaginaryRequest := &requestMessage{TheMethod: name, TheTarget: requestLine.TheTarget}
 		request := method.MakeRequest(imaginaryRequest, resource)
 		if request != nil {
 			supported = append(supported, name)
@@ -86,7 +86,7 @@ var knownMethods = map[string]Method{
 }
 
 type Method interface {
-	MakeRequest(requested *RequestLine, resource Resource) Request
+	MakeRequest(requested *requestMessage, resource Resource) Request
 }
 
 // Handles requests of supported HTTP methods for a resource

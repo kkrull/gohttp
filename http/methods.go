@@ -11,7 +11,7 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (method *getMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
 		return &getRequest{Resource: supportedResource, Target: requested.TheTarget}
@@ -38,7 +38,7 @@ type GetResource interface {
 
 type headMethod struct{}
 
-func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
 		return &headRequest{Resource: supportedResource, Target: requested.TheTarget}
@@ -79,7 +79,7 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
 		return &postRequest{Resource: supportedResource, Target: requested.TheTarget}
@@ -106,7 +106,7 @@ type PostResource interface {
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
 		return &putRequest{Resource: supportedResource, Target: requested.TheTarget}
