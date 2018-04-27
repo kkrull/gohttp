@@ -52,7 +52,7 @@ func (parser *parseMethodObject) parseRequestLine(text string) (ok *requestMessa
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	return &requestMessage{
+	return &requestMessage{ //TODO KDK: RFC 3986 Section 3.4 -- the query is between ? and # or the end of the URI, non-inclusive
 		TheMethod: fields[0],
 		TheTarget: fields[1],
 	}, nil

@@ -41,7 +41,10 @@ var _ = Describe("ParameterRoute", func() {
 					"one": "1",
 					"two": "2",
 				}
-				requested := http.NewGetMessage("/parameters") //TODO KDK: Add query parameters
+				requested := http.NewGetMessage(
+					"/parameters",
+					Query{Name: "one", Value: "1"},
+				) //TODO KDK: Add query parameters
 
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).NotTo(BeNil())
