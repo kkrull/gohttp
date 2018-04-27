@@ -19,13 +19,13 @@ var _ = Describe("teapotRoute", func() {
 	)
 
 	Describe("#Route", func() {
-		Context("when the target is a resource that the teapot can respond to", func() {
+		Context("when the path is a resource that the teapot can respond to", func() {
 			BeforeEach(func() {
 				teapotMock = &TeapotMock{RespondsToPath: "/caffeine"}
 				router = &teapot.Route{Teapot: teapotMock}
 			})
 
-			It("routes GET requests to that target to the teapot", func() {
+			It("routes GET requests to that path to the teapot", func() {
 				requested = http.NewGetMessage("/caffeine")
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
@@ -39,7 +39,7 @@ var _ = Describe("teapotRoute", func() {
 			})
 		})
 
-		It("passes on any other target", func() {
+		It("passes on any other path", func() {
 			teapotMock = &TeapotMock{}
 			router = &teapot.Route{Teapot: teapotMock}
 

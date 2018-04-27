@@ -16,7 +16,7 @@ func TestTeapot(t *testing.T) {
 
 type TeapotMock struct {
 	RespondsToPath string
-	getTarget      string
+	getPath        string
 }
 
 func (mock *TeapotMock) Name() string {
@@ -28,9 +28,9 @@ func (mock *TeapotMock) RespondsTo(path string) bool {
 }
 
 func (mock *TeapotMock) Get(client io.Writer, req http.RequestMessage) {
-	mock.getTarget = req.Target()
+	mock.getPath = req.Path()
 }
 
-func (mock *TeapotMock) GetShouldHaveReceived(target string) {
-	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
+func (mock *TeapotMock) GetShouldHaveReceived(path string) {
+	ExpectWithOffset(1, mock.getPath).To(Equal(path))
 }

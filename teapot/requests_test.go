@@ -30,7 +30,7 @@ var _ = Describe("IdentityTeapot", func() {
 	})
 
 	Describe("#Get", func() {
-		Context("when the target is /coffee", func() {
+		Context("when the path is /coffee", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				theTeapot = &teapot.IdentityTeapot{}
@@ -56,7 +56,7 @@ var _ = Describe("IdentityTeapot", func() {
 			})
 		})
 
-		Context("when the target is /tea", func() {
+		Context("when the path is /tea", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				theTeapot = &teapot.IdentityTeapot{}

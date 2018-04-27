@@ -15,7 +15,7 @@ func (method *getMethod) MakeRequest(requested *requestMessage, resource Resourc
 	supportedResource, ok := resource.(GetResource)
 	if ok {
 		return &getRequest{
-			Message: requested,
+			Message:  requested,
 			Resource: supportedResource,
 		}
 	}
