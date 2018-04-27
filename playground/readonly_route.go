@@ -15,7 +15,7 @@ type ReadOnlyRoute struct {
 }
 
 func (route *ReadOnlyRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Target() != "/method_options2" {
+	if requested.Path() != "/method_options2" {
 		return nil
 	}
 
@@ -36,7 +36,7 @@ func (controller *ReadableNopResource) Name() string {
 }
 
 func (controller *ReadableNopResource) Get(client io.Writer, req http.RequestMessage) {
-	controller.Head(client, req.Target())
+	controller.Head(client, req.Path())
 }
 
 func (controller *ReadableNopResource) Head(client io.Writer, target string) {

@@ -18,7 +18,7 @@ type ReadWriteRoute struct {
 }
 
 func (route *ReadWriteRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Target() != "/method_options" {
+	if requested.Path() != "/method_options" {
 		return nil
 	}
 
@@ -41,7 +41,7 @@ func (controller *ReadWriteNopResource) Name() string {
 }
 
 func (controller *ReadWriteNopResource) Get(client io.Writer, req http.RequestMessage) {
-	controller.Head(client, req.Target())
+	controller.Head(client, req.Path())
 }
 
 func (controller *ReadWriteNopResource) Head(client io.Writer, target string) {

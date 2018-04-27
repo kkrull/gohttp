@@ -21,7 +21,7 @@ var _ = Describe("teapotRoute", func() {
 	Describe("#Route", func() {
 		Context("when the target is a resource that the teapot can respond to", func() {
 			BeforeEach(func() {
-				teapotMock = &TeapotMock{RespondsToTarget: "/caffeine"}
+				teapotMock = &TeapotMock{RespondsToPath: "/caffeine"}
 				router = &teapot.Route{Teapot: teapotMock}
 			})
 

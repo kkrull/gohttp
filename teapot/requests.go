@@ -14,8 +14,8 @@ func (teapot *IdentityTeapot) Name() string {
 	return "teapot"
 }
 
-func (teapot *IdentityTeapot) RespondsTo(target string) bool {
-	switch target {
+func (teapot *IdentityTeapot) RespondsTo(path string) bool {
+	switch path {
 	case "/coffee", "/tea":
 		return true
 	default:
@@ -29,7 +29,7 @@ func (teapot *IdentityTeapot) Get(client io.Writer, req http.RequestMessage) {
 		"/tea":    teapot.getTea,
 	}
 
-	handler := beverageRequestHandlers[req.Target()]
+	handler := beverageRequestHandlers[req.Path()]
 	handler(client)
 }
 

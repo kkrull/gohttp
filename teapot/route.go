@@ -16,7 +16,7 @@ type Route struct {
 }
 
 func (route *Route) Route(requested http.RequestMessage) http.Request {
-	if !route.Teapot.RespondsTo(requested.Target()) {
+	if !route.Teapot.RespondsTo(requested.Path()) {
 		return nil
 	}
 
@@ -26,5 +26,5 @@ func (route *Route) Route(requested http.RequestMessage) http.Request {
 type Teapot interface {
 	Name() string
 	Get(client io.Writer, req http.RequestMessage)
-	RespondsTo(target string) bool
+	RespondsTo(path string) bool
 }
