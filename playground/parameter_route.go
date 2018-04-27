@@ -29,10 +29,10 @@ type ParameterDecoder interface {
 
 type TheDecoder struct{}
 
-func (decoder *TheDecoder) Get(client io.Writer, target string) {
-	panic("implement me")
+func (decoder *TheDecoder) Name() string {
+	return "Parameters"
 }
 
-func (decoder *TheDecoder) Name() string {
+func (decoder *TheDecoder) Get(client io.Writer, target string) {
 	panic("implement me")
 }
