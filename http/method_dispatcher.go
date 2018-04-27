@@ -52,7 +52,6 @@ func NewRequestMessage(method, target string) RequestMessage {
 type requestMessage struct {
 	TheMethod          string
 	TheTarget          string
-	TheQueryParameters map[string]string
 }
 
 func (requestLine *requestMessage) Method() string {
@@ -63,8 +62,8 @@ func (requestLine *requestMessage) Target() string {
 	return requestLine.TheTarget
 }
 
-func (requestLine *requestMessage) QueryParameters() map[string]string {
-	return requestLine.TheQueryParameters
+func (requestLine *requestMessage) QueryParameters() []QueryParameter {
+	panic("implement me")
 }
 
 func (requestLine *requestMessage) NotImplemented() Response {

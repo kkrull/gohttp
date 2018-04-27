@@ -36,20 +36,22 @@ var _ = Describe("ParameterRoute", func() {
 		})
 
 		Context("when the target is /parameters", func() {
-			XIt("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
-				parameters := map[string]string{
-					"one": "1",
-					"two": "2",
+			It("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
+				requested := &httptest.RequestMessage{
+					ItsMethod: "GET",
+					ItsTarget: "/parameters?one=1;two=2",
+					ItsPath:   "/parameters",
 				}
-				requested := http.NewGetMessage(
-					"/parameters",
-					Query{Name: "one", Value: "1"},
-				) //TODO KDK: Add query parameters
+				requested.AddQueryParameter("one", "1")
+				requested.AddQueryParameter("two", "2")
 
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).NotTo(BeNil())
 				routedRequest.Handle(response)
-				decoder.GetShouldHaveReceived(parameters)
+				decoder.GetShouldHaveReceived(map[string]string{
+					"one": "1",
+					"two": "2",
+				})
 			})
 
 			Context("when the method is OPTIONS", func() {

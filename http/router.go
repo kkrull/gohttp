@@ -54,9 +54,13 @@ type RequestMessage interface {
 	MakeResourceRequest(resource Resource) Request
 	Method() string
 	Target() string
-	QueryParameters() map[string]string
+	QueryParameters() []QueryParameter
 }
 
 type Route interface {
 	Route(requested RequestMessage) Request
+}
+
+type QueryParameter struct {
+	Name, Value string
 }
