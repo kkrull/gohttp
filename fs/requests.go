@@ -32,7 +32,7 @@ func (controller *ReadOnlyFileSystem) determineResponse(requestedPath string) ht
 	resolvedPath := path.Join(controller.BaseDirectory, requestedPath)
 	info, err := os.Stat(resolvedPath)
 	if err != nil {
-		return &clienterror.NotFound{Target: requestedPath}
+		return &clienterror.NotFound{Path: requestedPath}
 	} else if info.IsDir() {
 		files, _ := ioutil.ReadDir(resolvedPath)
 		return &DirectoryListing{

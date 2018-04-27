@@ -29,7 +29,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 	})
 
 	Describe("#Get", func() {
-		Context("when the resolved target does not exist", func() {
+		Context("when the resolved path does not exist", func() {
 			BeforeEach(func() {
 				controller.Get(responseBuffer, http.NewGetMessage("/missing.txt"))
 				response = httptest.ParseResponse(responseBuffer)
@@ -49,7 +49,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the target is a readable text file in the base path", func() {
+		Context("when the path is a readable text file in the base path", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -71,7 +71,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the target is a readable file named with a registered extension", func() {
+		Context("when the path is a readable file named with a registered extension", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "image.jpeg")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -84,7 +84,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the target is a readable file without an extension", func() {
+		Context("when the path is a readable file without an extension", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "assumed-text")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -97,7 +97,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the target is /", func() {
+		Context("when the path is /", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "one")
 				Expect(createTextFile(existingFile, "1")).To(Succeed())

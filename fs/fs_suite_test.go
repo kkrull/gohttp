@@ -15,7 +15,7 @@ func TestFs(t *testing.T) {
 }
 
 type FileSystemResourceMock struct {
-	getTarget  string
+	getPath    string
 	headTarget string
 }
 
@@ -24,11 +24,11 @@ func (mock *FileSystemResourceMock) Name() string {
 }
 
 func (mock *FileSystemResourceMock) Get(client io.Writer, req http.RequestMessage) {
-	mock.getTarget = req.Target()
+	mock.getPath = req.Path()
 }
 
-func (mock *FileSystemResourceMock) GetShouldHaveReceived(target string) {
-	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
+func (mock *FileSystemResourceMock) GetShouldHaveReceived(path string) {
+	ExpectWithOffset(1, mock.getPath).To(Equal(path))
 }
 
 func (mock *FileSystemResourceMock) Head(client io.Writer, target string) {
