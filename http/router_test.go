@@ -49,7 +49,7 @@ var _ = Describe("RequestLineRouter", func() {
 				request, err = router.RouteRequest(makeReader("HEAD /foo HTTP/1.1\r\nAccept: */*\r\n\r\n"))
 			})
 
-			It("tries routing the method and target from the request until it finds a match", func() {
+			It("tries routing the method and path from the request until it finds a match", func() {
 				unrelatedRoute.ShouldHaveReceived("HEAD", "/foo")
 				matchingRoute.ShouldHaveReceived("HEAD", "/foo")
 			})
