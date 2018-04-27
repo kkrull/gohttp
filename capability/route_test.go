@@ -40,7 +40,7 @@ var _ = Describe("ServerCapabilityRoute", func() {
 			router = &capability.ServerCapabilityRoute{Controller: controller}
 		})
 
-		Context("when the target is *", func() {
+		Context("when the path is *", func() {
 			It("routes OPTIONS to ServerResource", func() {
 				requested = http.NewOptionsMessage("*")
 				routedRequest = router.Route(requested)
@@ -55,7 +55,7 @@ var _ = Describe("ServerCapabilityRoute", func() {
 			})
 		})
 
-		It("returns nil to pass on any other target", func() {
+		It("returns nil to pass on any other path", func() {
 			requested = http.NewOptionsMessage("/")
 			routedRequest = router.Route(requested)
 			Expect(routedRequest).To(BeNil())
