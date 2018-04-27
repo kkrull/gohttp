@@ -10,104 +10,104 @@ import (
 
 func NewGetMessage(target string) RequestMessage {
 	return &requestMessage{
-		TheMethod: "GET",
-		TheTarget: target,
+		method: "GET",
+		target: target,
 	}
 }
 
 func NewHeadMessage(target string) RequestMessage {
 	return &requestMessage{
-		TheMethod: "HEAD",
-		TheTarget: target,
+		method: "HEAD",
+		target: target,
 	}
 }
 
 func NewOptionsMessage(target string) RequestMessage {
 	return &requestMessage{
-		TheMethod: "OPTIONS",
-		TheTarget: target,
+		method: "OPTIONS",
+		target: target,
 	}
 }
 
 func NewPutMessage(target string) RequestMessage {
 	return &requestMessage{
-		TheMethod: "PUT",
-		TheTarget: target,
+		method: "PUT",
+		target: target,
 	}
 }
 
 func NewTraceMessage(target string) RequestMessage {
 	return &requestMessage{
-		TheMethod: "TRACE",
-		TheTarget: target,
+		method: "TRACE",
+		target: target,
 	}
 }
 
 func NewRequestMessage(method, target string) RequestMessage {
 	return &requestMessage{
-		TheMethod: method,
-		TheTarget: target,
+		method: method,
+		target: target,
 	}
 }
 
 type requestMessage struct {
-	TheMethod          string
-	TheTarget          string
+	method string
+	target string
 }
 
-func (requestLine *requestMessage) Method() string {
-	return requestLine.TheMethod
+func (message *requestMessage) Method() string {
+	return message.method
 }
 
-func (requestLine *requestMessage) Path() string {
-	fields := strings.Split(requestLine.TheTarget, "?")
+func (message *requestMessage) Path() string {
+	fields := strings.Split(message.target, "?")
 	return fields[0]
 }
 
-func (requestLine *requestMessage) Target() string {
-	return requestLine.TheTarget
+func (message *requestMessage) Target() string {
+	return message.target
 }
 
-func (requestLine *requestMessage) QueryParameters() []QueryParameter {
+func (message *requestMessage) QueryParameters() []QueryParameter {
 	panic("implement me")
 }
 
-func (requestLine *requestMessage) NotImplemented() Response {
-	return &servererror.NotImplemented{Method: requestLine.TheMethod}
+func (message *requestMessage) NotImplemented() Response {
+	return &servererror.NotImplemented{Method: message.method}
 }
 
-func (requestLine *requestMessage) MakeResourceRequest(resource Resource) Request {
-	if requestLine.TheMethod == "OPTIONS" {
+func (message *requestMessage) MakeResourceRequest(resource Resource) Request {
+	if message.method == "OPTIONS" {
 		return &optionsRequest{
-			SupportedMethods: requestLine.supportedMethods(resource),
+			SupportedMethods: message.supportedMethods(resource),
 		}
 	}
 
-	method := knownMethods[requestLine.TheMethod]
+	method := knownMethods[message.method]
 	if method == nil {
-		return requestLine.unknownHttpMethod(resource)
+		return message.unknownHttpMethod(resource)
 	}
 
-	request := method.MakeRequest(requestLine, resource)
+	request := method.MakeRequest(message, resource)
 	if request == nil {
-		return requestLine.unsupportedMethod(resource)
+		return message.unsupportedMethod(resource)
 	}
 
 	return request
 }
 
-func (requestLine *requestMessage) unknownHttpMethod(resource Resource) Request {
-	return clienterror.MethodNotAllowed(requestLine.supportedMethods(resource)...)
+func (message *requestMessage) unknownHttpMethod(resource Resource) Request {
+	return clienterror.MethodNotAllowed(message.supportedMethods(resource)...)
 }
 
-func (requestLine *requestMessage) unsupportedMethod(resource Resource) Request {
-	return clienterror.MethodNotAllowed(requestLine.supportedMethods(resource)...)
+func (message *requestMessage) unsupportedMethod(resource Resource) Request {
+	return clienterror.MethodNotAllowed(message.supportedMethods(resource)...)
 }
 
-func (requestLine *requestMessage) supportedMethods(resource Resource) []string {
+func (message *requestMessage) supportedMethods(resource Resource) []string {
 	supported := []string{"OPTIONS"}
 	for name, method := range knownMethods {
-		imaginaryRequest := &requestMessage{TheMethod: name, TheTarget: requestLine.TheTarget}
+		imaginaryRequest := &requestMessage{method: name, target: message.target}
 		request := method.MakeRequest(imaginaryRequest, resource)
 		if request != nil {
 			supported = append(supported, name)
