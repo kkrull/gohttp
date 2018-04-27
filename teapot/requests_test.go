@@ -35,7 +35,7 @@ var _ = Describe("IdentityTeapot", func() {
 				responseBuffer = &bytes.Buffer{}
 				theTeapot = &teapot.IdentityTeapot{}
 
-				theTeapot.Get(responseBuffer, http.NewRequestMessage("GET", "/coffee"))
+				theTeapot.Get(responseBuffer, http.NewGetMessage("/coffee"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -61,7 +61,7 @@ var _ = Describe("IdentityTeapot", func() {
 				responseBuffer = &bytes.Buffer{}
 				theTeapot = &teapot.IdentityTeapot{}
 
-				theTeapot.Get(responseBuffer, http.NewRequestMessage("GET", "/tea"))
+				theTeapot.Get(responseBuffer, http.NewGetMessage("/tea"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 

@@ -7,6 +7,41 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
+func NewGetMessage(target string) RequestMessage {
+	return &requestMessage{
+		TheMethod: "GET",
+		TheTarget: target,
+	}
+}
+
+func NewHeadMessage(target string) RequestMessage {
+	return &requestMessage{
+		TheMethod: "HEAD",
+		TheTarget: target,
+	}
+}
+
+func NewOptionsMessage(target string) RequestMessage {
+	return &requestMessage{
+		TheMethod: "OPTIONS",
+		TheTarget: target,
+	}
+}
+
+func NewPutMessage(target string) RequestMessage {
+	return &requestMessage{
+		TheMethod: "PUT",
+		TheTarget: target,
+	}
+}
+
+func NewTraceMessage(target string) RequestMessage {
+	return &requestMessage{
+		TheMethod: "TRACE",
+		TheTarget: target,
+	}
+}
+
 func NewRequestMessage(method, target string) RequestMessage {
 	return &requestMessage{
 		TheMethod: method,

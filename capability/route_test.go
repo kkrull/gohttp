@@ -42,21 +42,21 @@ var _ = Describe("ServerCapabilityRoute", func() {
 
 		Context("when the target is *", func() {
 			It("routes OPTIONS to ServerResource", func() {
-				requested = http.NewRequestMessage("OPTIONS", "*")
+				requested = http.NewOptionsMessage("*")
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
 				controller.OptionsShouldHaveBeenCalled()
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested = http.NewRequestMessage("GET", "*")
+				requested = http.NewGetMessage("*")
 				routedRequest = router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("OPTIONS")))
 			})
 		})
 
 		It("returns nil to pass on any other target", func() {
-			requested = http.NewRequestMessage("OPTIONS", "/")
+			requested = http.NewOptionsMessage("/")
 			routedRequest = router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})

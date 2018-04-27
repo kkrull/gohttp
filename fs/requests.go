@@ -18,7 +18,7 @@ func (controller *ReadOnlyFileSystem) Name() string {
 	return "Readonly file system"
 }
 
-func (controller *ReadOnlyFileSystem) Get(client io.Writer, req http.RequestMessage) {
+func (controller *ReadOnlyFileSystem) Get(client io.Writer, req http.RequestMessage) { //TODO KDK: Should req be called something else?
 	response := controller.determineResponse(req.Target())
 	response.WriteTo(client)
 }
