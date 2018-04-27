@@ -31,7 +31,7 @@ var _ = Describe("ReadOnlyRoute", func() {
 			router = &playground.ReadOnlyRoute{Resource: resource}
 		})
 
-		Context("when the target is /method_options2", func() {
+		Context("when the path is /method_options2", func() {
 			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options2")
 				resource.GetShouldHaveBeenCalled()
@@ -66,7 +66,7 @@ var _ = Describe("ReadOnlyRoute", func() {
 			})
 		})
 
-		It("returns nil on any other target", func() {
+		It("returns nil on any other path", func() {
 			requested := http.NewGetMessage("/")
 			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())

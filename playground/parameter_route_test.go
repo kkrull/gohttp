@@ -36,7 +36,7 @@ var _ = Describe("ParameterRoute", func() {
 			response.Reset()
 		})
 
-		Context("when the target is /parameters", func() {
+		Context("when the path is /parameters", func() {
 			It("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
 				request := &mock.Request{}
 				requested := &httptest.RequestMessage{
@@ -68,7 +68,7 @@ var _ = Describe("ParameterRoute", func() {
 			})
 		})
 
-		It("returns nil for any other target", func() {
+		It("returns nil for any other path", func() {
 			requested := http.NewGetMessage("/")
 			Expect(router.Route(requested)).To(BeNil())
 		})

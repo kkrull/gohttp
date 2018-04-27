@@ -31,7 +31,7 @@ var _ = Describe("ReadWriteRoute", func() {
 			router = &playground.ReadWriteRoute{Resource: resource}
 		})
 
-		Context("when the target is /method_options", func() {
+		Context("when the path is /method_options", func() {
 			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options")
 				resource.GetShouldHaveBeenCalled()
@@ -76,7 +76,7 @@ var _ = Describe("ReadWriteRoute", func() {
 			})
 		})
 
-		It("returns nil on any other target", func() {
+		It("returns nil on any other path", func() {
 			requested := http.NewGetMessage("/")
 			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())
