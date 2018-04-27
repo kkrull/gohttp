@@ -1,24 +1,32 @@
 package httptest
 
-import "github.com/kkrull/gohttp/http"
+import (
+	"github.com/kkrull/gohttp/http"
+
+	. "github.com/onsi/gomega"
+)
 
 type RequestMessage struct {
-	ItsMethod       string
-	ItsPath         string
-	ItsTarget       string
+	MethodReturns string
+	PathReturns   string
+	TargetReturns string
+
+	MakeResourceRequestReturns  http.Request
+	makeResourceRequestReceived http.Resource
+
 	queryParameters []http.QueryParameter
 }
 
-func (*RequestMessage) MakeResourceRequest(resource http.Resource) http.Request {
-	panic("implement me")
+func (message *RequestMessage) Method() string {
+	return message.MethodReturns
 }
 
-func (message *RequestMessage) Method() string {
-	return message.ItsMethod
+func (message *RequestMessage) Path() string {
+	return message.PathReturns
 }
 
 func (message *RequestMessage) Target() string {
-	return message.ItsTarget
+	return message.TargetReturns
 }
 
 func (message *RequestMessage) AddQueryParameter(name string, value string) {
@@ -27,4 +35,13 @@ func (message *RequestMessage) AddQueryParameter(name string, value string) {
 
 func (message *RequestMessage) QueryParameters() []http.QueryParameter {
 	return message.queryParameters
+}
+
+func (message *RequestMessage) MakeResourceRequest(resource http.Resource) http.Request {
+	message.makeResourceRequestReceived = resource
+	return message.MakeResourceRequestReturns
+}
+
+func (message *RequestMessage) MakeResourceRequestShouldHaveReceived(resource http.Resource) {
+	ExpectWithOffset(1, message.makeResourceRequestReceived).To(BeIdenticalTo(resource))
 }

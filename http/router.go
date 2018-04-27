@@ -51,10 +51,12 @@ type RequestParser interface {
 }
 
 type RequestMessage interface {
-	MakeResourceRequest(resource Resource) Request
 	Method() string
 	Target() string
+	Path() string
 	QueryParameters() []QueryParameter
+	
+	MakeResourceRequest(resource Resource) Request
 }
 
 type Route interface {

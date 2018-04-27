@@ -15,7 +15,7 @@ type ParameterRoute struct {
 }
 
 func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Target() != "/parameters" {
+	if requested.Path() != "/parameters" {
 		return nil
 	}
 

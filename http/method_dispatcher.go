@@ -2,6 +2,7 @@ package http
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
@@ -56,6 +57,11 @@ type requestMessage struct {
 
 func (requestLine *requestMessage) Method() string {
 	return requestLine.TheMethod
+}
+
+func (requestLine *requestMessage) Path() string {
+	fields := strings.Split(requestLine.TheTarget, "?")
+	return fields[0]
 }
 
 func (requestLine *requestMessage) Target() string {
