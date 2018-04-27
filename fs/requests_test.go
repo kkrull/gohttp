@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/kkrull/gohttp/fs"
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,7 +31,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 	Describe("#Get", func() {
 		Context("when the resolved target does not exist", func() {
 			BeforeEach(func() {
-				controller.Get(responseBuffer, "/missing.txt")
+				controller.Get(responseBuffer, http.NewRequestMessage("GET", "/missing.txt"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -52,7 +53,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				controller.Get(responseBuffer, "/readable.txt")
+				controller.Get(responseBuffer, http.NewRequestMessage("GET", "/readable.txt"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -77,7 +78,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 
 			It("sets Content-Type to the MIME type registered for that extension", func() {
-				controller.Get(responseBuffer, "/image.jpeg")
+				controller.Get(responseBuffer, http.NewRequestMessage("GET", "/image.jpeg"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("image/jpeg"))
 			})
@@ -90,7 +91,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 
 			It("sets Content-Type to text/plain", func() {
-				controller.Get(responseBuffer, "/assumed-text")
+				controller.Get(responseBuffer, http.NewRequestMessage("GET", "/assumed-text"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("text/plain"))
 			})
@@ -103,7 +104,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 
 			It("responds with 200 OK", func() {
-				controller.Get(responseBuffer, "/")
+				controller.Get(responseBuffer, http.NewRequestMessage("GET", "/"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.StatusShouldBe(200, "OK")
 			})
@@ -117,7 +118,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 		)
 
 		BeforeEach(func() {
-			controller.Get(getResponseBuffer, "/missing.txt")
+			controller.Get(getResponseBuffer, http.NewRequestMessage("GET", "/missing.txt"))
 			getResponse = httptest.ParseResponse(getResponseBuffer)
 
 			controller.Head(responseBuffer, "/missing.txt")

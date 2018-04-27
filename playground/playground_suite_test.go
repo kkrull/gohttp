@@ -25,7 +25,7 @@ func (mock *ParameterDecoderMock) Name() string {
 	return "Parameter Decoder Mock"
 }
 
-func (mock *ParameterDecoderMock) Get(client io.Writer, target string) {
+func (mock *ParameterDecoderMock) Get(client io.Writer, req http.RequestMessage) {
 	//TODO KDK: Work here to get the parameters and expand the interface
 	//mock.getParameters = map[string]string {
 	//	"two": "2",
@@ -48,7 +48,7 @@ func (mock *ReadOnlyResourceMock) Name() string {
 	return "Readonly Mock"
 }
 
-func (mock *ReadOnlyResourceMock) Get(client io.Writer, target string) {
+func (mock *ReadOnlyResourceMock) Get(client io.Writer, req http.RequestMessage) {
 	mock.getCalled = true
 }
 
@@ -77,7 +77,7 @@ func (mock *ReadWriteResourceMock) Name() string {
 	return "Read/Write Mock"
 }
 
-func (mock *ReadWriteResourceMock) Get(client io.Writer, target string) {
+func (mock *ReadWriteResourceMock) Get(client io.Writer, req http.RequestMessage) {
 	mock.getCalled = true
 }
 

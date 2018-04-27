@@ -87,7 +87,7 @@ var _ = Describe("ReadableNopResource", func() {
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(response, "/")
+			controller.Get(response, http.NewRequestMessage("GET", "/"))
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))

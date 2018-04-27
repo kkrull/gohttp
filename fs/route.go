@@ -25,6 +25,6 @@ func (route FileSystemRoute) Route(requested http.RequestMessage) http.Request {
 // Represents files and directories on the file system
 type FileSystemResource interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 	Head(client io.Writer, target string)
 }

@@ -25,6 +25,6 @@ func (route *Route) Route(requested http.RequestMessage) http.Request {
 
 type Teapot interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 	RespondsTo(target string) bool
 }

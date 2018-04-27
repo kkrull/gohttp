@@ -24,7 +24,7 @@ func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
 
 type ParameterDecoder interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 }
 
 type TheDecoder struct{}
@@ -33,6 +33,6 @@ func (decoder *TheDecoder) Name() string {
 	return "Parameters"
 }
 
-func (decoder *TheDecoder) Get(client io.Writer, target string) {
+func (decoder *TheDecoder) Get(client io.Writer, req http.RequestMessage) {
 	panic("implement me")
 }

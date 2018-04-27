@@ -18,8 +18,8 @@ func (controller *ReadOnlyFileSystem) Name() string {
 	return "Readonly file system"
 }
 
-func (controller *ReadOnlyFileSystem) Get(client io.Writer, target string) {
-	response := controller.determineResponse(target)
+func (controller *ReadOnlyFileSystem) Get(client io.Writer, req http.RequestMessage) {
+	response := controller.determineResponse(req.Target())
 	response.WriteTo(client)
 }
 

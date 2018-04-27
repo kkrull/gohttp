@@ -4,6 +4,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -22,8 +23,8 @@ func (mock *FileSystemResourceMock) Name() string {
 	return "File system mock"
 }
 
-func (mock *FileSystemResourceMock) Get(client io.Writer, target string) {
-	mock.getTarget = target
+func (mock *FileSystemResourceMock) Get(client io.Writer, req http.RequestMessage) {
+	mock.getTarget = req.Target()
 }
 
 func (mock *FileSystemResourceMock) GetShouldHaveReceived(target string) {

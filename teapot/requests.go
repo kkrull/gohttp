@@ -3,6 +3,7 @@ package teapot
 import (
 	"io"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 )
 
@@ -22,13 +23,13 @@ func (teapot *IdentityTeapot) RespondsTo(target string) bool {
 	}
 }
 
-func (teapot *IdentityTeapot) Get(client io.Writer, target string) {
+func (teapot *IdentityTeapot) Get(client io.Writer, req http.RequestMessage) {
 	var beverageRequestHandlers = map[string]func(writer io.Writer){
 		"/coffee": teapot.getCoffee,
 		"/tea":    teapot.getTea,
 	}
 
-	handler := beverageRequestHandlers[target]
+	handler := beverageRequestHandlers[req.Target()]
 	handler(client)
 }
 

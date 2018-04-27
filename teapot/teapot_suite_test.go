@@ -4,6 +4,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -26,8 +27,8 @@ func (mock *TeapotMock) RespondsTo(target string) bool {
 	return mock.RespondsToTarget == target
 }
 
-func (mock *TeapotMock) Get(client io.Writer, target string) {
-	mock.getTarget = target
+func (mock *TeapotMock) Get(client io.Writer, req http.RequestMessage) {
+	mock.getTarget = req.Target()
 }
 
 func (mock *TeapotMock) GetShouldHaveReceived(target string) {
