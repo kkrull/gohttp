@@ -60,16 +60,79 @@ func (message *requestMessage) Method() string {
 }
 
 func (message *requestMessage) Path() string {
-	fields := strings.Split(message.target, "?")
-	return fields[0]
+	path, _, _ := message.splitTarget()
+	return path
+}
+
+func (message *requestMessage) QueryParameters() []QueryParameter {
+	_, query, _ := message.splitTarget()
+	if query == "" {
+		return nil
+	}
+
+	return parseQueryString(query)
+}
+
+func (message *requestMessage) splitTarget() (path, query, fragment string) {
+	//there is a path
+
+	splitOnQuery := strings.Split(message.target, "?")
+	if len(splitOnQuery) == 1 {
+		//there is a path
+		//there is no query string
+		//there may be a fragment
+		splitOnFragment := strings.Split(splitOnQuery[0], "#")
+		if len(splitOnFragment) == 1 {
+			//there is a path
+			//there is no query string
+			//there is no fragment
+			return message.target, "", ""
+		}
+
+		//there is a path
+		//there is no query string
+		//there is a fragment
+		return splitOnFragment[0], "", splitOnFragment[1]
+	}
+
+	//there is a path
+	//there is a query string
+	//there may be a fragment
+	splitOnFragment := strings.Split(splitOnQuery[1], "#")
+	if len(splitOnFragment) == 1 {
+		//there is a path
+		//there is a query string
+		//there is no fragment
+		return splitOnQuery[0], splitOnQuery[1], ""
+	}
+
+	//there is a path
+	//there is a query string
+	//there is a fragment
+	return splitOnQuery[0], splitOnFragment[0], splitOnFragment[1]
+}
+
+func parseQueryString(rawQuery string) []QueryParameter {
+	stringParameters := strings.Split(rawQuery, "&")
+	parsedParameters := make([]QueryParameter, len(stringParameters))
+	for i, stringParameter := range stringParameters {
+		parsedParameters[i] = parseQueryParameter(stringParameter)
+	}
+
+	return parsedParameters
+}
+
+func parseQueryParameter(stringParameter string) QueryParameter {
+	nameValueFields := strings.Split(stringParameter, "=")
+	if len(nameValueFields) == 1 {
+		return QueryParameter{Name: nameValueFields[0]}
+	} else {
+		return QueryParameter{Name: nameValueFields[0], Value: nameValueFields[1]}
+	}
 }
 
 func (message *requestMessage) Target() string {
 	return message.target
-}
-
-func (message *requestMessage) QueryParameters() []QueryParameter {
-	panic("implement me")
 }
 
 func (message *requestMessage) NotImplemented() Response {
