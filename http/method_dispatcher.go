@@ -74,42 +74,25 @@ func (message *requestMessage) QueryParameters() []QueryParameter {
 }
 
 func (message *requestMessage) splitTarget() (path, query, fragment string) {
-	//there is a path
-
 	splitOnQuery := strings.Split(message.target, "?")
 	if len(splitOnQuery) == 1 {
-		//there is a path
-		//there is no query string
-		//there may be a fragment
-		splitOnFragment := strings.Split(splitOnQuery[0], "#")
-		if len(splitOnFragment) == 1 {
-			//there is a path
-			//there is no query string
-			//there is no fragment
-			return message.target, "", ""
-		}
-
-		//there is a path
-		//there is no query string
-		//there is a fragment
-		return splitOnFragment[0], "", splitOnFragment[1]
+		query = ""
+		path, fragment = extractFragment(splitOnQuery[0])
+		return
 	}
 
-	//there is a path
-	//there is a query string
-	//there may be a fragment
-	splitOnFragment := strings.Split(splitOnQuery[1], "#")
-	if len(splitOnFragment) == 1 {
-		//there is a path
-		//there is a query string
-		//there is no fragment
-		return splitOnQuery[0], splitOnQuery[1], ""
-	}
+	path = splitOnQuery[0]
+	query, fragment = extractFragment(splitOnQuery[1])
+	return
+}
 
-	//there is a path
-	//there is a query string
-	//there is a fragment
-	return splitOnQuery[0], splitOnFragment[0], splitOnFragment[1]
+func extractFragment(maybeHasFragment string) (prefix string, fragment string) {
+	fields := strings.Split(maybeHasFragment, "#")
+	if len(fields) == 1 {
+		return fields[0], ""
+	} else {
+		return fields[0], fields[1]
+	}
 }
 
 func parseQueryString(rawQuery string) []QueryParameter {
