@@ -17,25 +17,13 @@ func TestPlayground(t *testing.T) {
 
 /* ParameterReporterMock */
 
-type ParameterReporterMock struct {
-	getParameters map[string]string
-}
+type ParameterReporterMock struct{}
 
 func (mock *ParameterReporterMock) Name() string {
 	return "Parameter Reporter Mock"
 }
 
-func (mock *ParameterReporterMock) Get(client io.Writer, req http.RequestMessage) {
-	//TODO KDK: Work here to get the parameters and expand the interface
-	//mock.getParameters = map[string]string {
-	//	"two": "2",
-	//	"one": "1",
-	//}
-}
-
-func (mock *ParameterReporterMock) GetShouldHaveReceived(parameters map[string]string) {
-	ExpectWithOffset(1, mock.getParameters).To(Equal(parameters))
-}
+func (mock *ParameterReporterMock) Get(client io.Writer, req http.RequestMessage) {}
 
 /* ReadOnlyResourceMock */
 
