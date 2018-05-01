@@ -12,61 +12,46 @@ type LineRequestParser struct{}
 
 func (parser *LineRequestParser) Parse(reader *bufio.Reader) (ok *requestMessage, err Response) {
 	methodObject := &parseMethodObject{reader: reader}
-	return methodObject.Parse()
+	return methodObject.ReadingRequestLine()
 }
 
+//A state machine that parses an HTTP request during the process of reading the request from input
 type parseMethodObject struct {
 	reader *bufio.Reader
 }
 
-func (parser *parseMethodObject) Parse() (ok *requestMessage, err Response) {
+func (parser *parseMethodObject) ReadingRequestLine() (ok *requestMessage, badRequest Response) {
 	requestLine, err := parser.readCRLFLine()
 	if err != nil {
 		return nil, err
 	}
 
-	return parser.doParseRequestLine(requestLine)
+	return parser.parsingRequestLine(requestLine)
 }
 
-func (parser *parseMethodObject) doParseRequestLine(requestLine string) (ok *requestMessage, err Response) {
-	requested, err := parser.parseRequestLine(requestLine)
-	if err != nil {
-		return nil, err
-	}
-
-	return parser.doParseHeaders(requested)
-}
-
-func (parser *parseMethodObject) doParseHeaders(requested *requestMessage) (ok *requestMessage, err Response) {
-	err = parser.parseHeaders()
-	if err != nil {
-		return nil, err
-	}
-
-	return requested, nil
-}
-
-func (parser *parseMethodObject) parseRequestLine(text string) (ok *requestMessage, badRequest Response) {
-	fields := strings.Split(text, " ")
+func (parser *parseMethodObject) parsingRequestLine(requestLine string) (ok *requestMessage, badRequest Response) {
+	fields := strings.Split(requestLine, " ")
 	if len(fields) != 3 {
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	return &requestMessage{
+	requested := &requestMessage{
 		method: fields[0],
 		target: fields[1],
-	}, nil
+	}
+
+	return parser.readingHeaders(requested)
 }
 
-func (parser *parseMethodObject) parseHeaders() (badRequest Response) {
+func (parser *parseMethodObject) readingHeaders(requested *requestMessage) (ok *requestMessage, badRequest Response) {
 	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {
 		line, err := parser.readCRLFLine()
 		if err != nil {
-			return err
+			return nil, err
 		} else if isBlankLineBetweenHeadersAndBody(line) {
-			return nil
+			return requested, nil
 		}
 	}
 }
