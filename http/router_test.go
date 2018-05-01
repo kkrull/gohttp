@@ -62,8 +62,8 @@ var _ = Describe("RequestLineRouter", func() {
 	})
 })
 
-func makeReader(template string, values ...string) *bufio.Reader {
-	text := fmt.Sprintf(template, values)
+func makeReader(template string, values ...interface{}) *bufio.Reader {
+	text := fmt.Sprintf(template, values...)
 	return bufio.NewReader(bytes.NewBufferString(text))
 }
 
