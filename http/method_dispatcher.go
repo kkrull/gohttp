@@ -2,23 +2,24 @@ package http
 
 import (
 	"sort"
-	"strings"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
-func NewGetMessage(target string) RequestMessage {
+func NewGetMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "GET",
-		target: target,
+		target: path,
+		path: path,
 	}
 }
 
-func NewHeadMessage(target string) RequestMessage {
+func NewHeadMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "HEAD",
-		target: target,
+		target: path,
+		path: path,
 	}
 }
 
@@ -26,33 +27,39 @@ func NewOptionsMessage(target string) RequestMessage {
 	return &requestMessage{
 		method: "OPTIONS",
 		target: target,
+		path: target,
 	}
 }
 
-func NewPutMessage(target string) RequestMessage {
+func NewPutMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "PUT",
-		target: target,
+		target: path,
+		path: path,
 	}
 }
 
-func NewTraceMessage(target string) RequestMessage {
+func NewTraceMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "TRACE",
-		target: target,
+		target: path,
+		path: path,
 	}
 }
 
-func NewRequestMessage(method, target string) RequestMessage {
+func NewRequestMessage(method, path string) RequestMessage {
 	return &requestMessage{
 		method: method,
-		target: target,
+		target: path,
+		path: path,
 	}
 }
 
 type requestMessage struct {
-	method string
-	target string
+	method          string
+	path            string
+	target          string
+	queryParameters []QueryParameter
 }
 
 func (message *requestMessage) Method() string {
@@ -60,58 +67,19 @@ func (message *requestMessage) Method() string {
 }
 
 func (message *requestMessage) Path() string {
-	path, _, _ := message.splitTarget()
-	return path
+	return message.path
+}
+
+func (message *requestMessage) AddQueryFlag(name string) {
+	message.queryParameters = append(message.queryParameters, QueryParameter{Name: name})
+}
+
+func (message *requestMessage) AddQueryParameter(name, value string) {
+	message.queryParameters = append(message.queryParameters, QueryParameter{Name: name, Value: value})
 }
 
 func (message *requestMessage) QueryParameters() []QueryParameter {
-	_, query, _ := message.splitTarget()
-	if query == "" {
-		return nil
-	}
-
-	return parseQueryString(query)
-}
-
-func (message *requestMessage) splitTarget() (path, query, fragment string) {
-	splitOnQuery := strings.Split(message.target, "?")
-	if len(splitOnQuery) == 1 {
-		query = ""
-		path, fragment = extractFragment(splitOnQuery[0])
-		return
-	}
-
-	path = splitOnQuery[0]
-	query, fragment = extractFragment(splitOnQuery[1])
-	return
-}
-
-func extractFragment(maybeHasFragment string) (prefix string, fragment string) {
-	fields := strings.Split(maybeHasFragment, "#")
-	if len(fields) == 1 {
-		return fields[0], ""
-	} else {
-		return fields[0], fields[1]
-	}
-}
-
-func parseQueryString(rawQuery string) []QueryParameter {
-	stringParameters := strings.Split(rawQuery, "&")
-	parsedParameters := make([]QueryParameter, len(stringParameters))
-	for i, stringParameter := range stringParameters {
-		parsedParameters[i] = parseQueryParameter(stringParameter)
-	}
-
-	return parsedParameters
-}
-
-func parseQueryParameter(stringParameter string) QueryParameter {
-	nameValueFields := strings.Split(stringParameter, "=")
-	if len(nameValueFields) == 1 {
-		return QueryParameter{Name: nameValueFields[0]}
-	} else {
-		return QueryParameter{Name: nameValueFields[0], Value: nameValueFields[1]}
-	}
+	return message.queryParameters
 }
 
 func (message *requestMessage) Target() string {

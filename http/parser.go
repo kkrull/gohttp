@@ -35,9 +35,33 @@ func (parser *parseMethodObject) parsingRequestLine(requestLine string) (ok *req
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
+	return parser.parsingTarget(fields[0], fields[1])
+}
+
+func (parser *parseMethodObject) parsingTarget(method, target string) (ok *requestMessage, badRequest Response) {
+	path, query, _ := splitTarget(target)
 	requested := &requestMessage{
-		method: fields[0],
-		target: fields[1],
+		method: method,
+		target: target,
+		path: path,
+	}
+
+	return parser.parsingQueryString(requested, query)
+}
+
+func (parser *parseMethodObject) parsingQueryString(requested *requestMessage, rawQuery string) (ok *requestMessage, badRequest Response) {
+	if len(rawQuery) == 0 {
+		return parser.readingHeaders(requested)
+	}
+
+	stringParameters := strings.Split(rawQuery, "&")
+	for _, stringParameter := range stringParameters {
+		nameValueFields := strings.Split(stringParameter, "=")
+		if len(nameValueFields) == 1 {
+			requested.AddQueryFlag(nameValueFields[0])
+		} else {
+			requested.AddQueryParameter(nameValueFields[0], nameValueFields[1])
+		}
 	}
 
 	return parser.readingHeaders(requested)
@@ -71,4 +95,26 @@ func (parser *parseMethodObject) readCRLFLine() (line string, badRequest Respons
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
+}
+
+func splitTarget(target string) (path, query, fragment string) {
+	splitOnQuery := strings.Split(target, "?")
+	if len(splitOnQuery) == 1 {
+		query = ""
+		path, fragment = extractFragment(splitOnQuery[0])
+		return
+	}
+
+	path = splitOnQuery[0]
+	query, fragment = extractFragment(splitOnQuery[1])
+	return
+}
+
+func extractFragment(target string) (prefix string, fragment string) {
+	fields := strings.Split(target, "#")
+	if len(fields) == 1 {
+		return fields[0], ""
+	} else {
+		return fields[0], fields[1]
+	}
 }

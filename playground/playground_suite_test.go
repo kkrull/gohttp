@@ -111,8 +111,8 @@ func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
 
 /* Helpers */
 
-func handleRequest(router http.Route, method, target string) {
-	requested := http.NewRequestMessage(method, target)
+func handleRequest(router http.Route, method, path string) {
+	requested := http.NewRequestMessage(method, path)
 	routedRequest := router.Route(requested)
 	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
 
