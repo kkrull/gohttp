@@ -161,7 +161,12 @@ var _ = Describe("LineRequestParser", func() {
 		})
 
 		Context("given a target with percent-encoded query parameters", func() {
-			XIt("decodes each percent triplet to its corresponding ASCII character")
+			It("decodes percent-encoded values", func() {
+				request, _ = parser.Parse(requestWithTarget("/widget?less=%3C"))
+				Expect(request.QueryParameters()).To(Equal([]http.QueryParameter{
+					{Name: "less", Value: "<"},
+				}))
+			})
 		})
 	})
 })
