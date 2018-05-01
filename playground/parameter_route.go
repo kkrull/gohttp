@@ -1,9 +1,12 @@
 package playground
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
 )
 
 func NewParameterRoute() *ParameterRoute {
@@ -27,13 +30,29 @@ type ParameterReporter interface {
 	Get(client io.Writer, req http.RequestMessage)
 }
 
-// Lists parameters as simple assignment statements
+// Lists query parameters as simple assignment statements
 type AssignmentReporter struct{}
 
-func (decoder *AssignmentReporter) Name() string {
-	return "Parameters"
+func (reporter *AssignmentReporter) Name() string {
+	return "Parameter Report"
 }
 
-func (decoder *AssignmentReporter) Get(client io.Writer, req http.RequestMessage) {
-	panic("implement me")
+func (reporter *AssignmentReporter) Get(client io.Writer, req http.RequestMessage) {
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteContentTypeHeader(client, "text/plain")
+
+	body := reporter.makeBody(req)
+	msg.WriteContentLengthHeader(client, body.Len())
+	msg.WriteEndOfMessageHeader(client)
+
+	msg.WriteBody(client, body.String())
+}
+
+func (reporter *AssignmentReporter) makeBody(requestMessage http.RequestMessage) *bytes.Buffer {
+	body := &bytes.Buffer{}
+	for _, parameter := range requestMessage.QueryParameters() {
+		fmt.Fprintf(body, "%s = %s\n", parameter.Name, parameter.Value)
+	}
+
+	return body
 }

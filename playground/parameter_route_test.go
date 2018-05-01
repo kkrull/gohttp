@@ -77,6 +77,78 @@ var _ = Describe("ParameterRoute", func() {
 
 var _ = Describe("AssignmentReporter", func() {
 	Describe("#Get", func() {
-		XIt("works")
+		var (
+			controller      *playground.AssignmentReporter
+			request         *httptest.RequestMessage
+			responseMessage *httptest.ResponseMessage
+
+			response = &bytes.Buffer{}
+		)
+
+		BeforeEach(func() {
+			response.Reset()
+		})
+
+		Context("given any number of query parameters", func() {
+			BeforeEach(func() {
+				controller = &playground.AssignmentReporter{}
+				request = &httptest.RequestMessage{
+					MethodReturns: "GET",
+					PathReturns: "/parameters",
+				}
+
+				controller.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("responds 200 OK", func() {
+				responseMessage.StatusShouldBe(200, "OK")
+				responseMessage.ShouldBeWellFormed()
+			})
+			It("sets Content-Type to text/plain", func() {
+				responseMessage.HeaderShould("Content-Type", Equal("text/plain"))
+			})
+		})
+
+		Context("given a request with no query parameters", func() {
+			BeforeEach(func() {
+				controller = &playground.AssignmentReporter{}
+				request = &httptest.RequestMessage{
+					MethodReturns: "GET",
+					PathReturns: "/parameters",
+				}
+
+				controller.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("sets Content-Length to 0", func() {
+				responseMessage.HeaderShould("Content-Length", Equal("0"))
+			})
+			It("writes no body", func() {
+				responseMessage.BodyShould(BeEmpty())
+			})
+		})
+
+		Context("given a request with 1 or more query parameters", func() {
+			BeforeEach(func() {
+				controller = &playground.AssignmentReporter{}
+				request = &httptest.RequestMessage{
+					MethodReturns: "GET",
+					PathReturns: "/parameters",
+				}
+				request.AddQueryParameter("foo", "bar")
+
+				controller.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("sets Content-Length", func() {
+				responseMessage.HeaderShould("Content-Length", Not(Equal("0")))
+			})
+			It("lists each parameter and its value in the body", func() {
+				responseMessage.BodyShould(ContainSubstring("foo = bar"))
+			})
+		})
 	})
 })
