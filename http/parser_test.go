@@ -159,6 +159,10 @@ var _ = Describe("LineRequestParser", func() {
 				}))
 			})
 		})
+
+		Context("given a target with percent-encoded query parameters", func() {
+			XIt("decodes each percent triplet to its corresponding ASCII character")
+		})
 	})
 })
 

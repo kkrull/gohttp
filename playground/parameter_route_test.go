@@ -74,3 +74,9 @@ var _ = Describe("ParameterRoute", func() {
 		})
 	})
 })
+
+var _ = Describe("ParameterDecoder", func() {
+	Describe("#Get", func() {
+		XIt("works")
+	})
+})
