@@ -43,7 +43,7 @@ func (parser *parseMethodObject) parsingTarget(method, target string) (ok *reque
 	requested := &requestMessage{
 		method: method,
 		target: target,
-		path: path,
+		path:   path,
 	}
 
 	return parser.parsingQueryString(requested, query)

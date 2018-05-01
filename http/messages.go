@@ -11,7 +11,7 @@ func NewGetMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "GET",
 		target: path,
-		path: path,
+		path:   path,
 	}
 }
 
@@ -19,7 +19,7 @@ func NewHeadMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "HEAD",
 		target: path,
-		path: path,
+		path:   path,
 	}
 }
 
@@ -27,7 +27,7 @@ func NewOptionsMessage(target string) RequestMessage {
 	return &requestMessage{
 		method: "OPTIONS",
 		target: target,
-		path: target,
+		path:   target,
 	}
 }
 
@@ -35,7 +35,7 @@ func NewPutMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "PUT",
 		target: path,
-		path: path,
+		path:   path,
 	}
 }
 
@@ -43,7 +43,7 @@ func NewTraceMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: "TRACE",
 		target: path,
-		path: path,
+		path:   path,
 	}
 }
 
@@ -51,7 +51,7 @@ func NewRequestMessage(method, path string) RequestMessage {
 	return &requestMessage{
 		method: method,
 		target: path,
-		path: path,
+		path:   path,
 	}
 }
 

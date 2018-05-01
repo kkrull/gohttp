@@ -94,7 +94,7 @@ var _ = Describe("AssignmentReporter", func() {
 				controller = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: "GET",
-					PathReturns: "/parameters",
+					PathReturns:   "/parameters",
 				}
 
 				controller.Get(response, request)
@@ -115,7 +115,7 @@ var _ = Describe("AssignmentReporter", func() {
 				controller = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: "GET",
-					PathReturns: "/parameters",
+					PathReturns:   "/parameters",
 				}
 
 				controller.Get(response, request)
@@ -135,7 +135,7 @@ var _ = Describe("AssignmentReporter", func() {
 				controller = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: "GET",
-					PathReturns: "/parameters",
+					PathReturns:   "/parameters",
 				}
 				request.AddQueryParameter("foo", "bar")
 
