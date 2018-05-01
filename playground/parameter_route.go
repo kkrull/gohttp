@@ -7,11 +7,11 @@ import (
 )
 
 func NewParameterRoute() *ParameterRoute {
-	return &ParameterRoute{Decoder: &TheDecoder{}}
+	return &ParameterRoute{Reporter: &AssignmentReporter{}}
 }
 
 type ParameterRoute struct {
-	Decoder ParameterDecoder
+	Reporter ParameterReporter
 }
 
 func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
@@ -19,20 +19,21 @@ func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
 		return nil
 	}
 
-	return requested.MakeResourceRequest(route.Decoder)
+	return requested.MakeResourceRequest(route.Reporter)
 }
 
-type ParameterDecoder interface {
+type ParameterReporter interface {
 	Name() string
 	Get(client io.Writer, req http.RequestMessage)
 }
 
-type TheDecoder struct{}
+// Lists parameters as simple assignment statements
+type AssignmentReporter struct{}
 
-func (decoder *TheDecoder) Name() string {
+func (decoder *AssignmentReporter) Name() string {
 	return "Parameters"
 }
 
-func (decoder *TheDecoder) Get(client io.Writer, req http.RequestMessage) {
+func (decoder *AssignmentReporter) Get(client io.Writer, req http.RequestMessage) {
 	panic("implement me")
 }

@@ -17,7 +17,7 @@ var _ = Describe("::NewParameterRoute", func() {
 		route := playground.NewParameterRoute()
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.ParameterRoute{
-			Decoder: &playground.TheDecoder{},
+			Reporter: &playground.AssignmentReporter{},
 		}))
 	})
 })
@@ -26,18 +26,18 @@ var _ = Describe("ParameterRoute", func() {
 	Describe("#Route", func() {
 		var (
 			router   http.Route
-			decoder  *ParameterDecoderMock
+			reporter *ParameterReporterMock
 			response = &bytes.Buffer{}
 		)
 
 		BeforeEach(func() {
-			decoder = &ParameterDecoderMock{}
-			router = &playground.ParameterRoute{Decoder: decoder}
+			reporter = &ParameterReporterMock{}
+			router = &playground.ParameterRoute{Reporter: reporter}
 			response.Reset()
 		})
 
 		Context("when the path is /parameters", func() {
-			It("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
+			It("routes GET to ParameterReporter#Get with the decoded query parameters", func() {
 				request := &mock.Request{}
 				requested := &httptest.RequestMessage{
 					PathReturns:                "/parameters",
@@ -45,7 +45,7 @@ var _ = Describe("ParameterRoute", func() {
 				}
 
 				Expect(router.Route(requested)).To(BeIdenticalTo(request))
-				requested.MakeResourceRequestShouldHaveReceived(decoder)
+				requested.MakeResourceRequestShouldHaveReceived(reporter)
 			})
 
 			Context("when the method is OPTIONS", func() {
@@ -75,7 +75,7 @@ var _ = Describe("ParameterRoute", func() {
 	})
 })
 
-var _ = Describe("ParameterDecoder", func() {
+var _ = Describe("AssignmentReporter", func() {
 	Describe("#Get", func() {
 		XIt("works")
 	})
