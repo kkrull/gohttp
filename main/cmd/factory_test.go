@@ -103,6 +103,10 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadWriteRoute())))
 		})
 
+		It("has a playground route for redirects", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewRedirectRoute())))
+		})
+
 		It("has a teapot route", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
 		})
