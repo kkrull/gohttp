@@ -14,4 +14,12 @@ var _ = Describe("PercentDecode", func() {
 	It("decodes a % triplet into the ASCII character for its hexadecimal code", func() {
 		Expect(http.PercentDecode("%3C")).To(Equal("<"))
 	})
+
+	It("retains characters after a percent triplet", func() {
+		Expect(http.PercentDecode("%3Cabc")).To(Equal("<abc"))
+	})
+
+	It("decodes multiple percent triplets", func() {
+		Expect(http.PercentDecode("%3Ca%3Cb")).To(Equal("<a<b"))
+	})
 })
