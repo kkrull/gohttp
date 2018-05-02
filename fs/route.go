@@ -18,13 +18,13 @@ type FileSystemRoute struct {
 	Resource        FileSystemResource
 }
 
-func (route FileSystemRoute) Route(requested *http.RequestLine) http.Request {
-	return http.MakeResourceRequest(requested, route.Resource)
+func (route FileSystemRoute) Route(requested http.RequestMessage) http.Request {
+	return requested.MakeResourceRequest(route.Resource)
 }
 
 // Represents files and directories on the file system
 type FileSystemResource interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 	Head(client io.Writer, target string)
 }

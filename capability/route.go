@@ -19,10 +19,10 @@ type ServerCapabilityRoute struct {
 	Controller ServerResource
 }
 
-func (route *ServerCapabilityRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "*" {
+func (route *ServerCapabilityRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Target() != "*" {
 		return nil
-	} else if requested.Method != "OPTIONS" {
+	} else if requested.Method() != "OPTIONS" {
 		return clienterror.MethodNotAllowed("OPTIONS")
 	}
 

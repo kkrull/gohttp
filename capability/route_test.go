@@ -31,7 +31,7 @@ var _ = Describe("ServerCapabilityRoute", func() {
 		var (
 			router        http.Route
 			controller    *ServerCapabilityServerMock
-			requested     *http.RequestLine
+			requested     http.RequestMessage
 			routedRequest http.Request
 		)
 
@@ -40,23 +40,23 @@ var _ = Describe("ServerCapabilityRoute", func() {
 			router = &capability.ServerCapabilityRoute{Controller: controller}
 		})
 
-		Context("when the target is *", func() {
+		Context("when the path is *", func() {
 			It("routes OPTIONS to ServerResource", func() {
-				requested = &http.RequestLine{Method: "OPTIONS", Target: "*"}
+				requested = http.NewOptionsMessage("*")
 				routedRequest = router.Route(requested)
 				routedRequest.Handle(&bufio.Writer{})
 				controller.OptionsShouldHaveBeenCalled()
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested = &http.RequestLine{Method: "GET", Target: "*"}
+				requested = http.NewGetMessage("*")
 				routedRequest = router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("OPTIONS")))
 			})
 		})
 
-		It("returns nil to pass on any other target", func() {
-			requested = &http.RequestLine{Method: "OPTIONS", Target: "/"}
+		It("returns nil to pass on any other path", func() {
+			requested = http.NewOptionsMessage("/")
 			routedRequest = router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})

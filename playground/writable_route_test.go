@@ -31,7 +31,7 @@ var _ = Describe("ReadWriteRoute", func() {
 			router = &playground.ReadWriteRoute{Resource: resource}
 		})
 
-		Context("when the target is /method_options", func() {
+		Context("when the path is /method_options", func() {
 			It("routes GET to Teapot#Get", func() {
 				handleRequest(router, "GET", "/method_options")
 				resource.GetShouldHaveBeenCalled()
@@ -46,7 +46,7 @@ var _ = Describe("ReadWriteRoute", func() {
 				var response = &bytes.Buffer{}
 
 				BeforeEach(func() {
-					requested := &http.RequestLine{Method: "OPTIONS", Target: "/method_options"}
+					requested := http.NewOptionsMessage("/method_options")
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 
@@ -70,14 +70,14 @@ var _ = Describe("ReadWriteRoute", func() {
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/method_options"}
+				requested := http.NewTraceMessage("/method_options")
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS", "POST", "PUT")))
 			})
 		})
 
-		It("returns nil on any other target", func() {
-			requested := &http.RequestLine{Method: "GET", Target: "/"}
+		It("returns nil on any other path", func() {
+			requested := http.NewGetMessage("/")
 			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})
@@ -97,7 +97,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Get", func() {
 		BeforeEach(func() {
-			controller.Get(response, "/")
+			controller.Get(response, http.NewGetMessage("/"))
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))

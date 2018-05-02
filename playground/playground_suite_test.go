@@ -15,27 +15,15 @@ func TestPlayground(t *testing.T) {
 	RunSpecs(t, "playground")
 }
 
-/* ParameterDecoderMock */
+/* ParameterReporterMock */
 
-type ParameterDecoderMock struct {
-	getParameters map[string]string
+type ParameterReporterMock struct{}
+
+func (mock *ParameterReporterMock) Name() string {
+	return "Parameter Reporter Mock"
 }
 
-func (mock *ParameterDecoderMock) Name() string {
-	return "Parameter Decoder Mock"
-}
-
-func (mock *ParameterDecoderMock) Get(client io.Writer, target string) {
-	//TODO KDK: Work here to get the parameters and expand the interface
-	//mock.getParameters = map[string]string {
-	//	"two": "2",
-	//	"one": "1",
-	//}
-}
-
-func (mock *ParameterDecoderMock) GetShouldHaveReceived(parameters map[string]string) {
-	ExpectWithOffset(1, mock.getParameters).To(Equal(parameters))
-}
+func (mock *ParameterReporterMock) Get(client io.Writer, req http.RequestMessage) {}
 
 /* ReadOnlyResourceMock */
 
@@ -48,7 +36,7 @@ func (mock *ReadOnlyResourceMock) Name() string {
 	return "Readonly Mock"
 }
 
-func (mock *ReadOnlyResourceMock) Get(client io.Writer, target string) {
+func (mock *ReadOnlyResourceMock) Get(client io.Writer, req http.RequestMessage) {
 	mock.getCalled = true
 }
 
@@ -77,7 +65,7 @@ func (mock *ReadWriteResourceMock) Name() string {
 	return "Read/Write Mock"
 }
 
-func (mock *ReadWriteResourceMock) Get(client io.Writer, target string) {
+func (mock *ReadWriteResourceMock) Get(client io.Writer, req http.RequestMessage) {
 	mock.getCalled = true
 }
 
@@ -111,8 +99,8 @@ func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
 
 /* Helpers */
 
-func handleRequest(router http.Route, method, target string) {
-	requested := &http.RequestLine{Method: method, Target: target}
+func handleRequest(router http.Route, method, path string) {
+	requested := http.NewRequestMessage(method, path)
 	routedRequest := router.Route(requested)
 	ExpectWithOffset(1, routedRequest).NotTo(BeNil())
 

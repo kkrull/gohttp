@@ -1,38 +1,58 @@
 package playground
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
 )
 
 func NewParameterRoute() *ParameterRoute {
-	return &ParameterRoute{Decoder: &TheDecoder{}}
+	return &ParameterRoute{Reporter: &AssignmentReporter{}}
 }
 
 type ParameterRoute struct {
-	Decoder ParameterDecoder
+	Reporter ParameterReporter
 }
 
-func (route *ParameterRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "/parameters" {
+func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Path() != "/parameters" {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Decoder)
+	return requested.MakeResourceRequest(route.Reporter)
 }
 
-type ParameterDecoder interface {
+type ParameterReporter interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 }
 
-type TheDecoder struct{}
+// Lists query parameters as simple assignment statements
+type AssignmentReporter struct{}
 
-func (decoder *TheDecoder) Get(client io.Writer, target string) {
-	panic("implement me")
+func (reporter *AssignmentReporter) Name() string {
+	return "Parameter Report"
 }
 
-func (decoder *TheDecoder) Name() string {
-	panic("implement me")
+func (reporter *AssignmentReporter) Get(client io.Writer, req http.RequestMessage) {
+	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteContentTypeHeader(client, "text/plain")
+
+	body := reporter.makeBody(req)
+	msg.WriteContentLengthHeader(client, body.Len())
+	msg.WriteEndOfMessageHeader(client)
+
+	msg.WriteBody(client, body.String())
+}
+
+func (reporter *AssignmentReporter) makeBody(requestMessage http.RequestMessage) *bytes.Buffer {
+	body := &bytes.Buffer{}
+	for _, parameter := range requestMessage.QueryParameters() {
+		fmt.Fprintf(body, "%s = %s\n", parameter.Name, parameter.Value)
+	}
+
+	return body
 }

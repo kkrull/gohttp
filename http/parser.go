@@ -10,63 +10,73 @@ import (
 // Parses an HTTP request message one line at a time.
 type LineRequestParser struct{}
 
-func (parser *LineRequestParser) Parse(reader *bufio.Reader) (ok *RequestLine, err Response) {
+func (parser *LineRequestParser) Parse(reader *bufio.Reader) (ok *requestMessage, err Response) {
 	methodObject := &parseMethodObject{reader: reader}
-	return methodObject.Parse()
+	return methodObject.ReadingRequestLine()
 }
 
+//A state machine that parses an HTTP request during the process of reading the request from input
 type parseMethodObject struct {
 	reader *bufio.Reader
 }
 
-func (parser *parseMethodObject) Parse() (ok *RequestLine, err Response) {
+func (parser *parseMethodObject) ReadingRequestLine() (ok *requestMessage, badRequest Response) {
 	requestLine, err := parser.readCRLFLine()
 	if err != nil {
 		return nil, err
 	}
 
-	return parser.doParseRequestLine(requestLine)
+	return parser.parsingRequestLine(requestLine)
 }
 
-func (parser *parseMethodObject) doParseRequestLine(requestLine string) (ok *RequestLine, err Response) {
-	requested, err := parser.parseRequestLine(requestLine)
-	if err != nil {
-		return nil, err
-	}
-
-	return parser.doParseHeaders(requested)
-}
-
-func (parser *parseMethodObject) doParseHeaders(requested *RequestLine) (ok *RequestLine, err Response) {
-	err = parser.parseHeaders()
-	if err != nil {
-		return nil, err
-	}
-
-	return requested, nil
-}
-
-func (parser *parseMethodObject) parseRequestLine(text string) (ok *RequestLine, badRequest Response) {
-	fields := strings.Split(text, " ")
+func (parser *parseMethodObject) parsingRequestLine(requestLine string) (ok *requestMessage, badRequest Response) {
+	fields := strings.Split(requestLine, " ")
 	if len(fields) != 3 {
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	return &RequestLine{
-		Method: fields[0],
-		Target: fields[1],
-	}, nil
+	return parser.parsingTarget(fields[0], fields[1])
 }
 
-func (parser *parseMethodObject) parseHeaders() (badRequest Response) {
+func (parser *parseMethodObject) parsingTarget(method, target string) (ok *requestMessage, badRequest Response) {
+	path, query, _ := splitTarget(target)
+	requested := &requestMessage{
+		method: method,
+		target: target,
+		path:   path,
+	}
+
+	return parser.parsingQueryString(requested, query)
+}
+
+func (parser *parseMethodObject) parsingQueryString(requested *requestMessage, rawQuery string) (ok *requestMessage, badRequest Response) {
+	if len(rawQuery) == 0 {
+		return parser.readingHeaders(requested)
+	}
+
+	stringParameters := strings.Split(rawQuery, "&")
+	for _, stringParameter := range stringParameters {
+		nameValueFields := strings.Split(stringParameter, "=")
+		if len(nameValueFields) == 1 {
+			requested.AddQueryFlag(nameValueFields[0])
+		} else {
+			decodedValue, _ := PercentDecode(nameValueFields[1])
+			requested.AddQueryParameter(nameValueFields[0], decodedValue)
+		}
+	}
+
+	return parser.readingHeaders(requested)
+}
+
+func (parser *parseMethodObject) readingHeaders(requested *requestMessage) (ok *requestMessage, badRequest Response) {
 	isBlankLineBetweenHeadersAndBody := func(line string) bool { return line == "" }
 
 	for {
 		line, err := parser.readCRLFLine()
 		if err != nil {
-			return err
+			return nil, err
 		} else if isBlankLineBetweenHeadersAndBody(line) {
-			return nil
+			return requested, nil
 		}
 	}
 }
@@ -86,4 +96,26 @@ func (parser *parseMethodObject) readCRLFLine() (line string, badRequest Respons
 
 	trimmed := strings.TrimSuffix(maybeEndsInCR, "\r")
 	return trimmed, nil
+}
+
+func splitTarget(target string) (path, query, fragment string) {
+	splitOnQuery := strings.Split(target, "?")
+	if len(splitOnQuery) == 1 {
+		query = ""
+		path, fragment = extractFragment(splitOnQuery[0])
+		return
+	}
+
+	path = splitOnQuery[0]
+	query, fragment = extractFragment(splitOnQuery[1])
+	return
+}
+
+func extractFragment(target string) (prefix string, fragment string) {
+	fields := strings.Split(target, "#")
+	if len(fields) == 1 {
+		return fields[0], ""
+	} else {
+		return fields[0], fields[1]
+	}
 }

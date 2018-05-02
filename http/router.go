@@ -2,8 +2,6 @@ package http
 
 import (
 	"bufio"
-
-	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 func NewRouter() *RequestLineRouter {
@@ -37,7 +35,7 @@ func (router RequestLineRouter) RouteRequest(reader *bufio.Reader) (ok Request, 
 	return router.routeRequest(requested)
 }
 
-func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request, notImplemented Response) {
+func (router RequestLineRouter) routeRequest(requested *requestMessage) (ok Request, notImplemented Response) {
 	for _, route := range router.routes {
 		request := route.Route(requested)
 		if request != nil {
@@ -49,19 +47,22 @@ func (router RequestLineRouter) routeRequest(requested *RequestLine) (ok Request
 }
 
 type RequestParser interface {
-	Parse(reader *bufio.Reader) (ok *RequestLine, err Response)
+	Parse(reader *bufio.Reader) (ok *requestMessage, err Response)
+}
+
+type RequestMessage interface {
+	Method() string
+	Target() string
+	Path() string
+	QueryParameters() []QueryParameter
+
+	MakeResourceRequest(resource Resource) Request
 }
 
 type Route interface {
-	Route(requested *RequestLine) Request
+	Route(requested RequestMessage) Request
 }
 
-type RequestLine struct {
-	Method          string
-	Target          string
-	QueryParameters map[string]string
-}
-
-func (requestLine *RequestLine) NotImplemented() Response {
-	return &servererror.NotImplemented{Method: requestLine.Method}
+type QueryParameter struct {
+	Name, Value string
 }

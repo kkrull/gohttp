@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
+	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
@@ -16,7 +17,7 @@ var _ = Describe("::NewParameterRoute", func() {
 		route := playground.NewParameterRoute()
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.ParameterRoute{
-			Decoder: &playground.TheDecoder{},
+			Reporter: &playground.AssignmentReporter{},
 		}))
 	})
 })
@@ -25,37 +26,31 @@ var _ = Describe("ParameterRoute", func() {
 	Describe("#Route", func() {
 		var (
 			router   http.Route
-			decoder  *ParameterDecoderMock
+			reporter *ParameterReporterMock
 			response = &bytes.Buffer{}
 		)
 
 		BeforeEach(func() {
-			decoder = &ParameterDecoderMock{}
-			router = &playground.ParameterRoute{Decoder: decoder}
+			reporter = &ParameterReporterMock{}
+			router = &playground.ParameterRoute{Reporter: reporter}
 			response.Reset()
 		})
 
-		Context("when the target is /parameters", func() {
-			XIt("routes GET to ParameterDecoder#Get with the decoded query parameters", func() {
-				parameters := map[string]string{
-					"one": "1",
-					"two": "2",
-				}
-				requested := &http.RequestLine{
-					Method:          "GET",
-					Target:          "/parameters",
-					QueryParameters: parameters,
+		Context("when the path is /parameters", func() {
+			It("routes GET to ParameterReporter#Get with the decoded query parameters", func() {
+				request := &mock.Request{}
+				requested := &httptest.RequestMessage{
+					PathReturns:                "/parameters",
+					MakeResourceRequestReturns: request,
 				}
 
-				routedRequest := router.Route(requested)
-				Expect(routedRequest).NotTo(BeNil())
-				routedRequest.Handle(response)
-				decoder.GetShouldHaveReceived(parameters)
+				Expect(router.Route(requested)).To(BeIdenticalTo(request))
+				requested.MakeResourceRequestShouldHaveReceived(reporter)
 			})
 
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := &http.RequestLine{Method: "OPTIONS", Target: "/parameters"}
+					requested := http.NewOptionsMessage("/parameters")
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -67,15 +62,93 @@ var _ = Describe("ParameterRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := &http.RequestLine{Method: "TRACE", Target: "/parameters"}
+				requested := http.NewTraceMessage("/parameters")
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
 		})
 
-		It("returns nil for any other target", func() {
-			requested := &http.RequestLine{Method: "GET", Target: "/"}
+		It("returns nil for any other path", func() {
+			requested := http.NewGetMessage("/")
 			Expect(router.Route(requested)).To(BeNil())
+		})
+	})
+})
+
+var _ = Describe("AssignmentReporter", func() {
+	Describe("#Get", func() {
+		var (
+			controller      *playground.AssignmentReporter
+			request         *httptest.RequestMessage
+			responseMessage *httptest.ResponseMessage
+
+			response = &bytes.Buffer{}
+		)
+
+		BeforeEach(func() {
+			response.Reset()
+		})
+
+		Context("given any number of query parameters", func() {
+			BeforeEach(func() {
+				controller = &playground.AssignmentReporter{}
+				request = &httptest.RequestMessage{
+					MethodReturns: "GET",
+					PathReturns:   "/parameters",
+				}
+
+				controller.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("responds 200 OK", func() {
+				responseMessage.StatusShouldBe(200, "OK")
+				responseMessage.ShouldBeWellFormed()
+			})
+			It("sets Content-Type to text/plain", func() {
+				responseMessage.HeaderShould("Content-Type", Equal("text/plain"))
+			})
+		})
+
+		Context("given a request with no query parameters", func() {
+			BeforeEach(func() {
+				controller = &playground.AssignmentReporter{}
+				request = &httptest.RequestMessage{
+					MethodReturns: "GET",
+					PathReturns:   "/parameters",
+				}
+
+				controller.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("sets Content-Length to 0", func() {
+				responseMessage.HeaderShould("Content-Length", Equal("0"))
+			})
+			It("writes no body", func() {
+				responseMessage.BodyShould(BeEmpty())
+			})
+		})
+
+		Context("given a request with 1 or more query parameters", func() {
+			BeforeEach(func() {
+				controller = &playground.AssignmentReporter{}
+				request = &httptest.RequestMessage{
+					MethodReturns: "GET",
+					PathReturns:   "/parameters",
+				}
+				request.AddQueryParameter("foo", "bar")
+
+				controller.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("sets Content-Length", func() {
+				responseMessage.HeaderShould("Content-Length", Not(Equal("0")))
+			})
+			It("lists each parameter and its value in the body", func() {
+				responseMessage.BodyShould(ContainSubstring("foo = bar"))
+			})
 		})
 	})
 })

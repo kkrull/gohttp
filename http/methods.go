@@ -11,37 +11,40 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (method *getMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
-		return &getRequest{Resource: supportedResource, Target: requested.Target}
+		return &getRequest{
+			Message:  requested,
+			Resource: supportedResource,
+		}
 	}
 
 	return nil
 }
 
 type getRequest struct {
+	Message  RequestMessage
 	Resource GetResource
-	Target   string
 }
 
 func (request *getRequest) Handle(client io.Writer) error {
-	request.Resource.Get(client, request.Target)
+	request.Resource.Get(client, request.Message)
 	return nil
 }
 
 type GetResource interface {
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req RequestMessage)
 }
 
 /* HEAD */
 
 type headMethod struct{}
 
-func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
-		return &headRequest{Resource: supportedResource, Target: requested.Target}
+		return &headRequest{Resource: supportedResource, Target: requested.target}
 	}
 
 	return nil
@@ -79,10 +82,10 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
-		return &postRequest{Resource: supportedResource, Target: requested.Target}
+		return &postRequest{Resource: supportedResource, Target: requested.target}
 	}
 
 	return nil
@@ -106,10 +109,10 @@ type PostResource interface {
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
-		return &putRequest{Resource: supportedResource, Target: requested.Target}
+		return &putRequest{Resource: supportedResource, Target: requested.target}
 	}
 
 	return nil

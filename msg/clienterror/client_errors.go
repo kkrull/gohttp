@@ -23,8 +23,8 @@ func (badRequest *BadRequest) WriteHeader(client io.Writer) error {
 }
 
 type NotFound struct {
-	Target string
-	body   string
+	Path string
+	body string
 }
 
 func (notFound *NotFound) WriteTo(client io.Writer) error {
@@ -37,7 +37,7 @@ func (notFound *NotFound) WriteHeader(client io.Writer) error {
 	msg.WriteStatusLine(client, 404, "Not Found")
 	msg.WriteContentTypeHeader(client, "text/plain")
 
-	notFound.body = fmt.Sprintf("Not found: %s", notFound.Target)
+	notFound.body = fmt.Sprintf("Not found: %s", notFound.Path)
 	msg.WriteContentLengthHeader(client, len(notFound.body))
 	msg.WriteEndOfMessageHeader(client)
 	return nil

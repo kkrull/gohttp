@@ -3,6 +3,7 @@ package teapot_test
 import (
 	"bytes"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/teapot"
 	. "github.com/onsi/ginkgo"
@@ -29,12 +30,12 @@ var _ = Describe("IdentityTeapot", func() {
 	})
 
 	Describe("#Get", func() {
-		Context("when the target is /coffee", func() {
+		Context("when the path is /coffee", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				theTeapot = &teapot.IdentityTeapot{}
 
-				theTeapot.Get(responseBuffer, "/coffee")
+				theTeapot.Get(responseBuffer, http.NewGetMessage("/coffee"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -55,12 +56,12 @@ var _ = Describe("IdentityTeapot", func() {
 			})
 		})
 
-		Context("when the target is /tea", func() {
+		Context("when the path is /tea", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				theTeapot = &teapot.IdentityTeapot{}
 
-				theTeapot.Get(responseBuffer, "/tea")
+				theTeapot.Get(responseBuffer, http.NewGetMessage("/tea"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
