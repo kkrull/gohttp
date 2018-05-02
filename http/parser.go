@@ -60,7 +60,8 @@ func (parser *parseMethodObject) parsingQueryString(requested *requestMessage, r
 		if len(nameValueFields) == 1 {
 			requested.AddQueryFlag(nameValueFields[0])
 		} else {
-			requested.AddQueryParameter(nameValueFields[0], PercentDecode(nameValueFields[1]))
+			decodedValue, _ := PercentDecode(nameValueFields[1])
+			requested.AddQueryParameter(nameValueFields[0], decodedValue)
 		}
 	}
 
