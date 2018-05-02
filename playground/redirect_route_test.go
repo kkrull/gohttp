@@ -72,3 +72,41 @@ var _ = Describe("RedirectRoute", func() {
 		})
 	})
 })
+
+var _ = Describe("GoBackHomeResource", func() {
+	Describe("#Get", func() {
+		var (
+			resource        *playground.GoBackHomeResource
+			request         *httptest.RequestMessage
+			responseMessage *httptest.ResponseMessage
+
+			response = &bytes.Buffer{}
+		)
+
+		BeforeEach(func() {
+			response.Reset()
+			resource = &playground.GoBackHomeResource{}
+			request = &httptest.RequestMessage{
+				MethodReturns: "GET",
+				PathReturns:   "/redirect",
+			}
+
+			resource.Get(response, request)
+			responseMessage = httptest.ParseResponse(response)
+		})
+
+		It("responds 302 Found", func() {
+			responseMessage.StatusShouldBe(302, "Found")
+			responseMessage.ShouldBeWellFormed()
+		})
+		It("Sets Location to /", func() {
+			responseMessage.HeaderShould("Location", Equal("/"))
+		})
+		It("sets Content-Length to 0", func() {
+			responseMessage.HeaderShould("Content-Length", Equal("0"))
+		})
+		It("writes no body", func() {
+			responseMessage.BodyShould(BeEmpty())
+		})
+	})
+})
