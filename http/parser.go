@@ -78,6 +78,8 @@ func (parser *parseMethodObject) readingHeaders(requested *requestMessage) (ok *
 			return nil, err
 		} else if isBlankLineBetweenHeadersAndBody(line) {
 			return requested, nil
+		} else {
+			requested.AddHeader(line)
 		}
 	}
 }

@@ -1,7 +1,10 @@
 package http
 
 import (
+	"fmt"
+	"os"
 	"sort"
+	"time"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
@@ -72,6 +75,7 @@ type requestMessage struct {
 	path            string
 	target          string
 	queryParameters []QueryParameter
+	headerLines     []string
 }
 
 func (message *requestMessage) Method() string {
@@ -96,6 +100,10 @@ func (message *requestMessage) QueryParameters() []QueryParameter {
 
 func (message *requestMessage) Target() string {
 	return message.target
+}
+
+func (message *requestMessage) AddHeader(line string) {
+	message.headerLines = append(message.headerLines, line)
 }
 
 func (message *requestMessage) NotImplemented() Response {
@@ -142,6 +150,13 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 
 	sort.Strings(supported)
 	return supported
+}
+
+func (message *requestMessage) Print(file *os.File) {
+	fmt.Fprintf(file, "%s : %s %s\n", time.Now().Format("2006-01-02 03:04:05 Z07:00"), message.method, message.target)
+	for _, header := range message.headerLines {
+		fmt.Fprintln(file, header)
+	}
 }
 
 var knownMethods = map[string]Method{
