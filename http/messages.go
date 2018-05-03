@@ -23,11 +23,13 @@ func NewHeadMessage(path string) RequestMessage {
 	}
 }
 
-func NewOptionsMessage(target string) RequestMessage {
+// Creates an OPTIONS request to the specified target, which can either be a path starting with /
+// or an asterisk-form query of the server as a whole (https://tools.ietf.org/html/rfc7230#section-5.3.4).
+func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 	return &requestMessage{
 		method: "OPTIONS",
-		target: target,
-		path:   target,
+		target: targetAsteriskOrPath,
+		path:   targetAsteriskOrPath,
 	}
 }
 
