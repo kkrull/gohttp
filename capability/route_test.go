@@ -20,7 +20,7 @@ var _ = Describe("::NewRoute", func() {
 		route := capability.NewRoute()
 		Expect(route.Controller).To(BeEquivalentTo(
 			&capability.StaticCapabilityServer{
-				AvailableMethods: []string{"GET", "HEAD"},
+				AvailableMethods: []string{http.GET, http.HEAD},
 			},
 		))
 	})
@@ -51,7 +51,7 @@ var _ = Describe("ServerCapabilityRoute", func() {
 			It("returns MethodNotAllowed for any other method", func() {
 				requested = http.NewGetMessage("*")
 				routedRequest = router.Route(requested)
-				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("OPTIONS")))
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed(http.OPTIONS)))
 			})
 		})
 

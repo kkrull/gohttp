@@ -9,7 +9,7 @@ import (
 
 func NewRoute() *ServerCapabilityRoute {
 	controller := &StaticCapabilityServer{
-		AvailableMethods: []string{"GET", "HEAD"},
+		AvailableMethods: []string{http.GET, http.HEAD},
 	}
 
 	return &ServerCapabilityRoute{Controller: controller}
@@ -22,8 +22,8 @@ type ServerCapabilityRoute struct {
 func (route *ServerCapabilityRoute) Route(requested http.RequestMessage) http.Request {
 	if requested.Target() != "*" {
 		return nil
-	} else if requested.Method() != "OPTIONS" {
-		return clienterror.MethodNotAllowed("OPTIONS")
+	} else if requested.Method() != http.OPTIONS {
+		return clienterror.MethodNotAllowed(http.OPTIONS)
 	}
 
 	return &optionsRequest{Resource: route.Controller}

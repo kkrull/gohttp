@@ -7,9 +7,18 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
+const (
+	GET     string = "GET"
+	HEAD    string = "HEAD"
+	OPTIONS string = "OPTIONS"
+	POST    string = "POST"
+	PUT     string = "PUT"
+	TRACE   string = "TRACE"
+)
+
 func NewGetMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: "GET",
+		method: GET,
 		target: path,
 		path:   path,
 	}
@@ -17,7 +26,7 @@ func NewGetMessage(path string) RequestMessage {
 
 func NewHeadMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: "HEAD",
+		method: HEAD,
 		target: path,
 		path:   path,
 	}
@@ -27,7 +36,7 @@ func NewHeadMessage(path string) RequestMessage {
 // or an asterisk-form query of the server as a whole (https://tools.ietf.org/html/rfc7230#section-5.3.4).
 func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 	return &requestMessage{
-		method: "OPTIONS",
+		method: OPTIONS,
 		target: targetAsteriskOrPath,
 		path:   targetAsteriskOrPath,
 	}
@@ -35,7 +44,7 @@ func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 
 func NewPutMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: "PUT",
+		method: PUT,
 		target: path,
 		path:   path,
 	}
@@ -43,7 +52,7 @@ func NewPutMessage(path string) RequestMessage {
 
 func NewTraceMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: "TRACE",
+		method: TRACE,
 		target: path,
 		path:   path,
 	}
@@ -93,7 +102,7 @@ func (message *requestMessage) NotImplemented() Response {
 }
 
 func (message *requestMessage) MakeResourceRequest(resource Resource) Request {
-	if message.method == "OPTIONS" {
+	if message.method == OPTIONS {
 		return &optionsRequest{
 			SupportedMethods: message.supportedMethods(resource),
 		}
@@ -121,7 +130,7 @@ func (message *requestMessage) unsupportedMethod(resource Resource) Request {
 }
 
 func (message *requestMessage) supportedMethods(resource Resource) []string {
-	supported := []string{"OPTIONS"}
+	supported := []string{OPTIONS}
 	for name, method := range knownMethods {
 		imaginaryRequest := &requestMessage{method: name, target: message.target}
 		request := method.MakeRequest(imaginaryRequest, resource)
@@ -135,10 +144,10 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 }
 
 var knownMethods = map[string]Method{
-	"GET":  &getMethod{},
-	"HEAD": &headMethod{},
-	"POST": &postMethod{},
-	"PUT":  &putMethod{},
+	GET:  &getMethod{},
+	HEAD: &headMethod{},
+	POST: &postMethod{},
+	PUT:  &putMethod{},
 }
 
 type Method interface {

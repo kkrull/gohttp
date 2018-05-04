@@ -50,8 +50,8 @@ var _ = Describe("RequestLineRouter", func() {
 			})
 
 			It("tries routing the method and path from the request until it finds a match", func() {
-				unrelatedRoute.ShouldHaveReceived("HEAD", "/foo")
-				matchingRoute.ShouldHaveReceived("HEAD", "/foo")
+				unrelatedRoute.ShouldHaveReceived(http.HEAD, "/foo")
+				matchingRoute.ShouldHaveReceived(http.HEAD, "/foo")
 			})
 
 			It("returns the request from the first matching Route", func() {

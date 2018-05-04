@@ -73,7 +73,7 @@ var _ = Describe("LineRequestParser", func() {
 			})
 
 			It("parses the request-line", func() {
-				Expect(request.Method()).To(Equal("GET"))
+				Expect(request.Method()).To(Equal(http.GET))
 				Expect(request.Target()).To(Equal("/foo"))
 			})
 

@@ -58,7 +58,7 @@ var _ = Describe("ParameterRoute", func() {
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("sets Allow to the methods implemented by this type",
-					httptest.ShouldAllowMethods(response, "GET", "OPTIONS"))
+					httptest.ShouldAllowMethods(response, http.GET, http.OPTIONS))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -93,7 +93,7 @@ var _ = Describe("AssignmentReporter", func() {
 			BeforeEach(func() {
 				controller = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
-					MethodReturns: "GET",
+					MethodReturns: http.GET,
 					PathReturns:   "/parameters",
 				}
 
@@ -114,7 +114,7 @@ var _ = Describe("AssignmentReporter", func() {
 			BeforeEach(func() {
 				controller = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
-					MethodReturns: "GET",
+					MethodReturns: http.GET,
 					PathReturns:   "/parameters",
 				}
 
@@ -134,7 +134,7 @@ var _ = Describe("AssignmentReporter", func() {
 			BeforeEach(func() {
 				controller = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
-					MethodReturns: "GET",
+					MethodReturns: http.GET,
 					PathReturns:   "/parameters",
 				}
 				request.AddQueryParameter("foo", "bar")

@@ -35,7 +35,7 @@ var _ = Describe("teapotRoute", func() {
 			It("returns MethodNotAllowed for any other method", func() {
 				requested := http.NewTraceMessage("/caffeine")
 				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "OPTIONS")))
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed(http.GET, http.OPTIONS)))
 			})
 		})
 

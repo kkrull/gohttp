@@ -33,12 +33,12 @@ var _ = Describe("ReadOnlyRoute", func() {
 
 		Context("when the path is /method_options2", func() {
 			It("routes GET to Teapot#Get", func() {
-				handleRequest(router, "GET", "/method_options2")
+				handleRequest(router, http.GET, "/method_options2")
 				resource.GetShouldHaveBeenCalled()
 			})
 
 			It("routes HEAD to Teapot#Options", func() {
-				handleRequest(router, "HEAD", "/method_options2")
+				handleRequest(router, http.HEAD, "/method_options2")
 				resource.HeadShouldHaveBeenCalled()
 			})
 
@@ -56,13 +56,13 @@ var _ = Describe("ReadOnlyRoute", func() {
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("sets Allow to the methods implemented by this type",
-					httptest.ShouldAllowMethods(response, "GET", "HEAD", "OPTIONS"))
+					httptest.ShouldAllowMethods(response, http.GET, http.HEAD, http.OPTIONS))
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
 				requested := http.NewPutMessage("/method_options2")
 				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed("GET", "HEAD", "OPTIONS")))
+				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed(http.GET, http.HEAD, http.OPTIONS)))
 			})
 		})
 
