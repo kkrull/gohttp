@@ -113,8 +113,8 @@ func (message *requestMessage) MakeResourceRequest(resource Resource) Request {
 		return message.unknownHttpMethod(resource)
 	}
 
-	request := method.MakeRequest(message, resource)
-	if request == nil {
+	request, isSupported := method.MakeRequest(message, resource)
+	if !isSupported {
 		return message.unsupportedMethod(resource)
 	}
 
@@ -133,8 +133,8 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 	supported := []string{OPTIONS}
 	for name, method := range knownMethods {
 		imaginaryRequest := &requestMessage{method: name, target: message.target}
-		request := method.MakeRequest(imaginaryRequest, resource)
-		if request != nil {
+		_, isSupported := method.MakeRequest(imaginaryRequest, resource)
+		if isSupported {
 			supported = append(supported, name)
 		}
 	}
@@ -151,7 +151,7 @@ var knownMethods = map[string]Method{
 }
 
 type Method interface {
-	MakeRequest(requested *requestMessage, resource Resource) Request
+	MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool)
 }
 
 // Handles requests of supported HTTP methods for a resource

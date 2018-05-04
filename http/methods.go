@@ -11,16 +11,16 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
+func (method *getMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
 		return &getRequest{
 			Message:  requested,
 			Resource: supportedResource,
-		}
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type getRequest struct {
@@ -41,13 +41,16 @@ type GetResource interface {
 
 type headMethod struct{}
 
-func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
+func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
-		return &headRequest{Resource: supportedResource, Target: requested.target}
+		return &headRequest{
+			Resource: supportedResource,
+			Target:   requested.target,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type headRequest struct {
@@ -82,13 +85,16 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
+func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
-		return &postRequest{Resource: supportedResource, Target: requested.target}
+		return &postRequest{
+			Resource: supportedResource,
+			Target:   requested.target,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type postRequest struct {
@@ -109,13 +115,16 @@ type PostResource interface {
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) Request {
+func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
-		return &putRequest{Resource: supportedResource, Target: requested.target}
+		return &putRequest{
+			Resource: supportedResource,
+			Target:   requested.target,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type putRequest struct {
