@@ -27,10 +27,12 @@ func PercentDecode(field string) (decoded string, malformed error) {
 }
 
 func splitAfterHexCode(hexCodePlusUnencoded string) (hexCode string, unencoded string) {
-	return hexCodePlusUnencoded[0:2], hexCodePlusUnencoded[2:]
+	return hexCodePlusUnencoded[:2], hexCodePlusUnencoded[2:]
 }
 
 func decode(octetCharacters string) byte {
-	asciiCode, _ := strconv.ParseInt(octetCharacters, 16, 8)
+	const base16 = 16
+	const uintSizeInBits = 8
+	asciiCode, _ := strconv.ParseInt(octetCharacters, base16, uintSizeInBits)
 	return byte(asciiCode)
 }

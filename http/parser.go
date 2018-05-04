@@ -30,8 +30,9 @@ func (parser *parseMethodObject) ReadingRequestLine() (ok *requestMessage, badRe
 }
 
 func (parser *parseMethodObject) parsingRequestLine(requestLine string) (ok *requestMessage, badRequest Response) {
+	const numFieldsInRequestLine = 3
 	fields := strings.Split(requestLine, " ")
-	if len(fields) != 3 {
+	if len(fields) != numFieldsInRequestLine {
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
