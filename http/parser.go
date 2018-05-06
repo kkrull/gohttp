@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
+	"github.com/kkrull/gohttp/msg/servererror"
 )
 
 // Parses an HTTP request message one line at a time.
@@ -36,7 +37,13 @@ func (parser *parseMethodObject) parsingRequestLine(requestLine string) (ok *req
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	return parser.parsingTarget(fields[0], fields[1])
+	method, target := fields[0], fields[1]
+	_, knownMethod := knownMethods[method]
+	if !knownMethod {
+		return nil, &servererror.NotImplemented{Method: method}
+	}
+
+	return parser.parsingTarget(method, target)
 }
 
 func (parser *parseMethodObject) parsingTarget(method, target string) (ok *requestMessage, badRequest Response) {

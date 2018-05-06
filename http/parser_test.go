@@ -5,6 +5,7 @@ import (
 	"bytes"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/servererror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -63,7 +64,17 @@ var _ = Describe("LineRequestParser", func() {
 			})
 		})
 
-		Context("given a well-formed request", func() {
+		Context("given a request with an unknown method", func() {
+			It("returns a NotImplemented error response", func() {
+				//RFC 7231 Section 4.1
+				requestWithFieldsOutOfOrder := "/ GET HTTP/1.1\r\n\r\n"
+				request, err = parser.Parse(makeReader(requestWithFieldsOutOfOrder))
+				Expect(err).To(BeEquivalentTo(&servererror.NotImplemented{Method: "/"}))
+				Expect(err).NotTo(BeNil())
+			})
+		})
+
+		Context("given a well-formed request with a known method", func() {
 			var reader *bufio.Reader
 
 			BeforeEach(func() {
