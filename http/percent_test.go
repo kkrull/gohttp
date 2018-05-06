@@ -25,11 +25,18 @@ var _ = Describe("PercentDecode", func() {
 
 	It("returns an error when % is followed by no characters", func() {
 		_, err := http.PercentDecode("abc%")
-		Expect(err).To(MatchError("% followed by fewer than 2 characters: abc%"))
+		Expect(err).To(BeEquivalentTo(http.UnfinishedPercentEncoding{EnclosingField: "abc%"}))
 	})
 
 	It("returns an error when % is followed by 1 character", func() {
 		_, err := http.PercentDecode("abc%1")
-		Expect(err).To(MatchError("% followed by fewer than 2 characters: abc%1"))
+		Expect(err).To(BeEquivalentTo(http.UnfinishedPercentEncoding{EnclosingField: "abc%1"}))
+	})
+})
+
+var _ = Describe("UnfinishedPercentEncoding", func() {
+	It("describes the error and the offending text", func() {
+		err := &http.UnfinishedPercentEncoding{EnclosingField: "abc%"}
+		Expect(err).To(MatchError("% followed by fewer than 2 characters: abc%"))
 	})
 })

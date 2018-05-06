@@ -15,7 +15,7 @@ func PercentDecode(field string) (decoded string, malformed error) {
 	outputBuffer.WriteString(unencodedPrefix)
 	for _, hexCodePlusUnencoded := range hexCodePrefixedSubstrings {
 		if len(hexCodePlusUnencoded) < 2 {
-			return "", fmt.Errorf("%% followed by fewer than 2 characters: %s", field)
+			return "", UnfinishedPercentEncoding{EnclosingField: field}
 		}
 
 		hexCodeCharacters, unencodedRemainder := splitAfterHexCode(hexCodePlusUnencoded)
@@ -35,4 +35,12 @@ func decode(octetCharacters string) byte {
 	const uintSizeInBits = 8
 	asciiCode, _ := strconv.ParseInt(octetCharacters, base16, uintSizeInBits)
 	return byte(asciiCode)
+}
+
+type UnfinishedPercentEncoding struct {
+	EnclosingField string
+}
+
+func (invalid UnfinishedPercentEncoding) Error() string {
+	return fmt.Sprintf("%% followed by fewer than 2 characters: %s", invalid.EnclosingField)
 }
