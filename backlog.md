@@ -56,3 +56,45 @@ HTTP version
 * Given HTTP/1.2+ -- should it respond with 501 Not Implemented?
   RFC 7231 seems to suggest that it's only meant for an unsupported _method_.
 * Given HTTP/2+ -- it could respond 505 HTTP Version Not Supported
+
+
+## Linting
+
+Enable more linters and drive out the issues.
+
+Here are all the possibilities:
+
+```
+    "deadcode",
+    "dupl",
+    "errcheck",
+    "gas",
+    "goconst",
+    "gocyclo",
+    "gofmt",
+    "goimports",
+    "golint",
+    "gosimple",
+    "gotype",
+    "gotypex",
+    "ineffassign",
+    "interfacer",
+    "lll",
+    "maligned",
+    "megacheck",
+    "misspell",
+    "nakedret",
+    "safesql",
+    "staticcheck",
+    "structcheck",
+    "test",
+    "testify",
+    "unconvert",
+    "unparam",
+    "unused",
+    "varcheck",
+    "vet",
+    "vetshadow"
+```
+
+Start with `errcheck`.

@@ -1,0 +1,10 @@
+{
+  "Enable": [
+    "interfacer",
+    "vetshadow",
+
+    "deadcode",
+    "goconst",
+    "goimports"
+  ]
+}

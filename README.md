@@ -79,6 +79,18 @@ correctly.
 When you want to exit the server, press `Ctrl+C`.
 
 
+## Linting
+
+Install [`gometalinter`](https://github.com/alecthomas/gometalinter)
+
+```bash
+$ go get -u gopkg.in/alecthomas/gometalinter.v2
+```
+
+which - if you set up your path correctly in the earlier steps - places `gometalinter.v2` in your `PATH`.
+Run the linters configured in `.gometalinter.json` with `gometalinter.v2 ./...` in the base of this repository.
+
+
 ## Testing
 
 ```bash
