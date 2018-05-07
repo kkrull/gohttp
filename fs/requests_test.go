@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/kkrull/gohttp/fs"
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,9 +29,9 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 	})
 
 	Describe("#Get", func() {
-		Context("when the resolved target does not exist", func() {
+		Context("when the resolved path does not exist", func() {
 			BeforeEach(func() {
-				controller.Get(responseBuffer, "/missing.txt")
+				controller.Get(responseBuffer, http.NewGetMessage("/missing.txt"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -48,11 +49,11 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the target is a readable text file in the base path", func() {
+		Context("when the path is a readable text file in the base path", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				controller.Get(responseBuffer, "/readable.txt")
+				controller.Get(responseBuffer, http.NewGetMessage("/readable.txt"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
@@ -70,40 +71,40 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the target is a readable file named with a registered extension", func() {
+		Context("when the path is a readable file named with a registered extension", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "image.jpeg")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
 			})
 
 			It("sets Content-Type to the MIME type registered for that extension", func() {
-				controller.Get(responseBuffer, "/image.jpeg")
+				controller.Get(responseBuffer, http.NewGetMessage("/image.jpeg"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("image/jpeg"))
 			})
 		})
 
-		Context("when the target is a readable file without an extension", func() {
+		Context("when the path is a readable file without an extension", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "assumed-text")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
 			})
 
 			It("sets Content-Type to text/plain", func() {
-				controller.Get(responseBuffer, "/assumed-text")
+				controller.Get(responseBuffer, http.NewGetMessage("/assumed-text"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("text/plain"))
 			})
 		})
 
-		Context("when the target is /", func() {
+		Context("when the path is /", func() {
 			BeforeEach(func() {
 				existingFile := path.Join(basePath, "one")
 				Expect(createTextFile(existingFile, "1")).To(Succeed())
 			})
 
 			It("responds with 200 OK", func() {
-				controller.Get(responseBuffer, "/")
+				controller.Get(responseBuffer, http.NewGetMessage("/"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.StatusShouldBe(200, "OK")
 			})
@@ -117,7 +118,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 		)
 
 		BeforeEach(func() {
-			controller.Get(getResponseBuffer, "/missing.txt")
+			controller.Get(getResponseBuffer, http.NewGetMessage("/missing.txt"))
 			getResponse = httptest.ParseResponse(getResponseBuffer)
 
 			controller.Head(responseBuffer, "/missing.txt")

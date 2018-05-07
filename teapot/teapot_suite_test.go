@@ -4,6 +4,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/kkrull/gohttp/http"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -14,22 +15,22 @@ func TestTeapot(t *testing.T) {
 }
 
 type TeapotMock struct {
-	RespondsToTarget string
-	getTarget        string
+	RespondsToPath string
+	getPath        string
 }
 
 func (mock *TeapotMock) Name() string {
 	return "teapot mock"
 }
 
-func (mock *TeapotMock) RespondsTo(target string) bool {
-	return mock.RespondsToTarget == target
+func (mock *TeapotMock) RespondsTo(path string) bool {
+	return mock.RespondsToPath == path
 }
 
-func (mock *TeapotMock) Get(client io.Writer, target string) {
-	mock.getTarget = target
+func (mock *TeapotMock) Get(client io.Writer, req http.RequestMessage) {
+	mock.getPath = req.Path()
 }
 
-func (mock *TeapotMock) GetShouldHaveReceived(target string) {
-	ExpectWithOffset(1, mock.getTarget).To(Equal(target))
+func (mock *TeapotMock) GetShouldHaveReceived(path string) {
+	ExpectWithOffset(1, mock.getPath).To(Equal(path))
 }

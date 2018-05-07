@@ -47,9 +47,10 @@ func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, 
 func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) http.Router {
 	router := http.NewRouter()
 	router.AddRoute(capability.NewRoute())
-	//router.AddRoute(playground.NewParameterRoute())
+	router.AddRoute(playground.NewParameterRoute())
 	router.AddRoute(playground.NewReadOnlyRoute())
 	router.AddRoute(playground.NewReadWriteRoute())
+	router.AddRoute(playground.NewRedirectRoute())
 	router.AddRoute(teapot.NewRoute())
 	router.AddRoute(fs.NewRoute(contentRootPath))
 	return router

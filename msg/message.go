@@ -6,8 +6,13 @@ import (
 	"strconv"
 )
 
-func WriteStatusLine(client io.Writer, status int, reason string) {
-	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status, reason)
+func WriteStatus(client io.Writer, status Status) {
+	fmt.Fprintf(client, "HTTP/1.1 %d %s\r\n", status.Code, status.Reason)
+}
+
+type Status struct {
+	Code   uint
+	Reason string
 }
 
 func WriteContentLengthHeader(client io.Writer, numBytes int) {

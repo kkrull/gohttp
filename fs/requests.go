@@ -18,8 +18,8 @@ func (controller *ReadOnlyFileSystem) Name() string {
 	return "Readonly file system"
 }
 
-func (controller *ReadOnlyFileSystem) Get(client io.Writer, target string) {
-	response := controller.determineResponse(target)
+func (controller *ReadOnlyFileSystem) Get(client io.Writer, req http.RequestMessage) {
+	response := controller.determineResponse(req.Path())
 	response.WriteTo(client)
 }
 
@@ -28,18 +28,18 @@ func (controller *ReadOnlyFileSystem) Head(client io.Writer, target string) {
 	response.WriteHeader(client)
 }
 
-func (controller *ReadOnlyFileSystem) determineResponse(requestedTarget string) http.Response {
-	resolvedTarget := path.Join(controller.BaseDirectory, requestedTarget)
-	info, err := os.Stat(resolvedTarget)
+func (controller *ReadOnlyFileSystem) determineResponse(requestedPath string) http.Response {
+	resolvedPath := path.Join(controller.BaseDirectory, requestedPath)
+	info, err := os.Stat(resolvedPath)
 	if err != nil {
-		return &clienterror.NotFound{Target: requestedTarget}
+		return &clienterror.NotFound{Path: requestedPath}
 	} else if info.IsDir() {
-		files, _ := ioutil.ReadDir(resolvedTarget)
+		files, _ := ioutil.ReadDir(resolvedPath)
 		return &DirectoryListing{
 			Files:      readFileNames(files),
-			HrefPrefix: requestedTarget}
+			HrefPrefix: requestedPath}
 	} else {
-		return &FileContents{Filename: resolvedTarget}
+		return &FileContents{Filename: resolvedPath}
 	}
 }
 

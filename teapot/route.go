@@ -15,16 +15,16 @@ type Route struct {
 	Teapot Teapot
 }
 
-func (route *Route) Route(requested *http.RequestLine) http.Request {
-	if !route.Teapot.RespondsTo(requested.Target) {
+func (route *Route) Route(requested http.RequestMessage) http.Request {
+	if !route.Teapot.RespondsTo(requested.Path()) {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Teapot)
+	return requested.MakeResourceRequest(route.Teapot)
 }
 
 type Teapot interface {
 	Name() string
-	Get(client io.Writer, target string)
-	RespondsTo(target string) bool
+	Get(client io.Writer, req http.RequestMessage)
+	RespondsTo(path string) bool
 }

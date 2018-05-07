@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewReadWriteRoute() *ReadWriteRoute {
@@ -17,17 +18,17 @@ type ReadWriteRoute struct {
 	Resource ReadWriteResource
 }
 
-func (route *ReadWriteRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "/method_options" {
+func (route *ReadWriteRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Path() != "/method_options" {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Resource)
+	return requested.MakeResourceRequest(route.Resource)
 }
 
 type ReadWriteResource interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 	Head(client io.Writer, target string)
 	Post(client io.Writer, target string)
 	Put(client io.Writer, target string)
@@ -40,8 +41,8 @@ func (controller *ReadWriteNopResource) Name() string {
 	return "Read/Write NOP"
 }
 
-func (controller *ReadWriteNopResource) Get(client io.Writer, target string) {
-	controller.Head(client, target)
+func (controller *ReadWriteNopResource) Get(client io.Writer, req http.RequestMessage) {
+	controller.Head(client, req.Path())
 }
 
 func (controller *ReadWriteNopResource) Head(client io.Writer, target string) {
@@ -57,7 +58,7 @@ func (controller *ReadWriteNopResource) Put(client io.Writer, target string) {
 }
 
 func writeOKWithNoBody(client io.Writer) {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteEndOfMessageHeader(client)
 }

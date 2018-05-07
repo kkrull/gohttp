@@ -5,46 +5,53 @@ import (
 	"strings"
 
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 /* GET */
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (method *getMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
-		return &getRequest{Resource: supportedResource, Target: requested.Target}
+		return &getRequest{
+			Message:  requested,
+			Resource: supportedResource,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type getRequest struct {
+	Message  RequestMessage
 	Resource GetResource
-	Target   string
 }
 
 func (request *getRequest) Handle(client io.Writer) error {
-	request.Resource.Get(client, request.Target)
+	request.Resource.Get(client, request.Message)
 	return nil
 }
 
 type GetResource interface {
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req RequestMessage)
 }
 
 /* HEAD */
 
 type headMethod struct{}
 
-func (*headMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
-		return &headRequest{Resource: supportedResource, Target: requested.Target}
+		return &headRequest{
+			Resource: supportedResource,
+			Target:   requested.target,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type headRequest struct {
@@ -68,7 +75,7 @@ type optionsRequest struct {
 }
 
 func (request *optionsRequest) Handle(client io.Writer) error {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
 	msg.WriteEndOfMessageHeader(client)
@@ -79,13 +86,16 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
-		return &postRequest{Resource: supportedResource, Target: requested.Target}
+		return &postRequest{
+			Resource: supportedResource,
+			Target:   requested.target,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type postRequest struct {
@@ -106,13 +116,16 @@ type PostResource interface {
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *RequestLine, resource Resource) Request {
+func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
-		return &putRequest{Resource: supportedResource, Target: requested.Target}
+		return &putRequest{
+			Resource: supportedResource,
+			Target:   requested.target,
+		}, true
 	}
 
-	return nil
+	return nil, false
 }
 
 type putRequest struct {

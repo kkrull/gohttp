@@ -18,11 +18,11 @@ var _ = Describe("MethodNotAllowed", func() {
 	Describe("#Handle", func() {
 		BeforeEach(func() {
 			response.Reset()
-			request = clienterror.MethodNotAllowed("GET", "HEAD")
+			request = clienterror.MethodNotAllowed(http.GET, http.HEAD)
 			request.Handle(response)
 		})
 
 		It("responds 405 Method Not Allowed", httptest.ShouldHaveNoBody(response, 405, "Method Not Allowed"))
-		It("sets Allow to GET and HEAD", httptest.ShouldAllowMethods(response, "GET", "HEAD"))
+		It("sets Allow to GET and HEAD", httptest.ShouldAllowMethods(response, http.GET, http.HEAD))
 	})
 })

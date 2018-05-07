@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	"github.com/kkrull/gohttp/capability"
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,7 +21,7 @@ var _ = Describe("StaticCapabilityServer", func() {
 		BeforeEach(func() {
 			responseBuffer = &bytes.Buffer{}
 			controller = &capability.StaticCapabilityServer{
-				AvailableMethods: []string{"CONNECT", "TRACE"},
+				AvailableMethods: []string{http.CONNECT, http.TRACE},
 			}
 			controller.Options(responseBuffer)
 			response = httptest.ParseResponse(responseBuffer)
@@ -40,14 +41,14 @@ var _ = Describe("StaticCapabilityServer", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				controller = &capability.StaticCapabilityServer{
-					AvailableMethods: []string{"OPTIONS"},
+					AvailableMethods: []string{http.OPTIONS},
 				}
 				controller.Options(responseBuffer)
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
 			It("sets Allow to that one method", func() {
-				response.HeaderShould("Allow", Equal("OPTIONS"))
+				response.HeaderShould("Allow", Equal(http.OPTIONS))
 			})
 		})
 
@@ -55,7 +56,7 @@ var _ = Describe("StaticCapabilityServer", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				controller = &capability.StaticCapabilityServer{
-					AvailableMethods: []string{"CONNECT", "TRACE"},
+					AvailableMethods: []string{http.CONNECT, http.TRACE},
 				}
 				controller.Options(responseBuffer)
 				response = httptest.ParseResponse(responseBuffer)

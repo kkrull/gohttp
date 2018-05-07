@@ -14,17 +14,17 @@ type ReadOnlyRoute struct {
 	Resource ReadOnlyResource
 }
 
-func (route *ReadOnlyRoute) Route(requested *http.RequestLine) http.Request {
-	if requested.Target != "/method_options2" {
+func (route *ReadOnlyRoute) Route(requested http.RequestMessage) http.Request {
+	if requested.Path() != "/method_options2" {
 		return nil
 	}
 
-	return http.MakeResourceRequest(requested, route.Resource)
+	return requested.MakeResourceRequest(route.Resource)
 }
 
 type ReadOnlyResource interface {
 	Name() string
-	Get(client io.Writer, target string)
+	Get(client io.Writer, req http.RequestMessage)
 	Head(client io.Writer, target string)
 }
 
@@ -35,8 +35,8 @@ func (controller *ReadableNopResource) Name() string {
 	return "Readonly NOP"
 }
 
-func (controller *ReadableNopResource) Get(client io.Writer, target string) {
-	controller.Head(client, target)
+func (controller *ReadableNopResource) Get(client io.Writer, req http.RequestMessage) {
+	controller.Head(client, req.Path())
 }
 
 func (controller *ReadableNopResource) Head(client io.Writer, target string) {
