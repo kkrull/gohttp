@@ -1,4 +1,3 @@
-// HTTP 5xx Server Error responses from RFC 7231, Section 6.6
 package servererror
 
 import (
@@ -14,7 +13,7 @@ func (internalError *InternalServerError) WriteTo(client io.Writer) error {
 }
 
 func (internalError *InternalServerError) WriteHeader(client io.Writer) error {
-	msg.WriteStatusLine(client, 500, "Internal Server Error")
+	msg.WriteStatus(client, InternalServerErrorStatus)
 	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }
@@ -28,7 +27,7 @@ func (notImplemented *NotImplemented) WriteTo(client io.Writer) error {
 }
 
 func (notImplemented *NotImplemented) WriteHeader(client io.Writer) error {
-	msg.WriteStatusLine(client, 501, "Not Implemented")
+	msg.WriteStatus(client, NotImplementedStatus)
 	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }

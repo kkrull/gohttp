@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 type FileContents struct {
@@ -21,7 +22,7 @@ func (contents *FileContents) WriteTo(client io.Writer) error {
 }
 
 func (contents *FileContents) WriteHeader(client io.Writer) error {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	contents.writeHeadersDescribingFile(client)
 	msg.WriteEndOfMessageHeader(client)
 	return nil

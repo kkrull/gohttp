@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 /* GET */
@@ -74,7 +75,7 @@ type optionsRequest struct {
 }
 
 func (request *optionsRequest) Handle(client io.Writer) error {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
 	msg.WriteEndOfMessageHeader(client)

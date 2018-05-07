@@ -7,6 +7,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewParameterRoute() *ParameterRoute {
@@ -38,7 +39,7 @@ func (reporter *AssignmentReporter) Name() string {
 }
 
 func (reporter *AssignmentReporter) Get(client io.Writer, req http.RequestMessage) {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentTypeHeader(client, "text/plain")
 
 	body := reporter.makeBody(req)

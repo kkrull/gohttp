@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 // Responds as a teapot that is aware of its own identity
@@ -40,14 +41,15 @@ func (teapot *IdentityTeapot) getCoffee(client io.Writer) {
 }
 
 func writeHeaders(client io.Writer, body string) {
-	msg.WriteStatusLine(client, 418, "I'm a teapot")
+	teapotStatus := msg.Status{Code: 418, Reason: "I'm a teapot"}
+	msg.WriteStatus(client, teapotStatus)
 	msg.WriteContentTypeHeader(client, "text/plain")
 	msg.WriteContentLengthHeader(client, len(body))
 	msg.WriteEndOfMessageHeader(client)
 }
 
 func (teapot *IdentityTeapot) getTea(client io.Writer) {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteEndOfMessageHeader(client)
 }

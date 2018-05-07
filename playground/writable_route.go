@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewReadWriteRoute() *ReadWriteRoute {
@@ -57,7 +58,7 @@ func (controller *ReadWriteNopResource) Put(client io.Writer, target string) {
 }
 
 func writeOKWithNoBody(client io.Writer) {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteEndOfMessageHeader(client)
 }

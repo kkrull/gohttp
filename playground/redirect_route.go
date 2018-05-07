@@ -5,6 +5,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/redirect"
 )
 
 func NewRedirectRoute() http.Route {
@@ -36,7 +37,7 @@ func (*GoBackHomeResource) Name() string {
 }
 
 func (*GoBackHomeResource) Get(client io.Writer, req http.RequestMessage) {
-	msg.WriteStatusLine(client, 302, "Found")
+	msg.WriteStatus(client, redirect.FoundStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Location", "/")
 	msg.WriteEndOfMessageHeader(client)

@@ -1,4 +1,3 @@
-// HTTP 4xx Client Error responses from RFC 7231, Section 6.5
 package clienterror
 
 import (
@@ -17,7 +16,7 @@ func (badRequest *BadRequest) WriteTo(client io.Writer) error {
 }
 
 func (badRequest *BadRequest) WriteHeader(client io.Writer) error {
-	msg.WriteStatusLine(client, 400, "Bad Request")
+	msg.WriteStatus(client, BadRequestStatus)
 	//msg.WriteEndOfMessageHeader(client)
 	return nil
 }
@@ -34,7 +33,7 @@ func (notFound *NotFound) WriteTo(client io.Writer) error {
 }
 
 func (notFound *NotFound) WriteHeader(client io.Writer) error {
-	msg.WriteStatusLine(client, 404, "Not Found")
+	msg.WriteStatus(client, NotFoundStatus)
 	msg.WriteContentTypeHeader(client, "text/plain")
 
 	notFound.body = fmt.Sprintf("Not found: %s", notFound.Path)

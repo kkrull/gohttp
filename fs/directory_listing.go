@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 type DirectoryListing struct {
@@ -22,7 +23,7 @@ func (listing *DirectoryListing) WriteTo(client io.Writer) error {
 }
 
 func (listing *DirectoryListing) WriteHeader(client io.Writer) error {
-	msg.WriteStatusLine(client, 200, "OK")
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentTypeHeader(client, "text/html")
 
 	listing.body = listing.messageListingFiles()
