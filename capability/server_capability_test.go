@@ -21,7 +21,7 @@ var _ = Describe("StaticCapabilityServer", func() {
 		BeforeEach(func() {
 			responseBuffer = &bytes.Buffer{}
 			controller = &capability.StaticCapabilityServer{
-				AvailableMethods: []string{"CONNECT", http.TRACE},
+				AvailableMethods: []string{http.CONNECT, http.TRACE},
 			}
 			controller.Options(responseBuffer)
 			response = httptest.ParseResponse(responseBuffer)
@@ -56,7 +56,7 @@ var _ = Describe("StaticCapabilityServer", func() {
 			BeforeEach(func() {
 				responseBuffer = &bytes.Buffer{}
 				controller = &capability.StaticCapabilityServer{
-					AvailableMethods: []string{"CONNECT", http.TRACE},
+					AvailableMethods: []string{http.CONNECT, http.TRACE},
 				}
 				controller.Options(responseBuffer)
 				response = httptest.ParseResponse(responseBuffer)

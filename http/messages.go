@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	CONNECT string = "CONNECT"
 	GET     string = "GET"
 	HEAD    string = "HEAD"
 	OPTIONS string = "OPTIONS"
