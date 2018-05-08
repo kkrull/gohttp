@@ -3,12 +3,10 @@ package http_test
 import (
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
-	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("RequestLineRouter", func() {
@@ -52,7 +50,3 @@ var _ = Describe("RequestLineRouter", func() {
 		})
 	})
 })
-
-func beABadRequestResponse(why string) types.GomegaMatcher {
-	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})
-}

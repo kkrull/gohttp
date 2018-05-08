@@ -5,8 +5,10 @@ import (
 	"bytes"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("LineRequestParser", func() {
@@ -173,4 +175,8 @@ var _ = Describe("LineRequestParser", func() {
 
 func requestWithTarget(target string) *bufio.Reader {
 	return makeReader("GET %s HTTP/1.1\r\n\r\n", target)
+}
+
+func beABadRequestResponse(why string) types.GomegaMatcher {
+	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})
 }
