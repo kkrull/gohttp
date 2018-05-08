@@ -2,7 +2,7 @@ package http
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"sort"
 	"time"
 
@@ -152,10 +152,10 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 	return supported
 }
 
-func (message *requestMessage) Print(file *os.File) {
-	fmt.Fprintf(file, "%s : %s %s\n", time.Now().Format("2006-01-02 03:04:05 Z07:00"), message.method, message.target)
+func (message *requestMessage) Log(writer io.Writer) {
+	fmt.Fprintf(writer, "%s : %s %s\n", time.Now().Format("2006-01-02 03:04:05 Z07:00"), message.method, message.target)
 	for _, header := range message.headerLines {
-		fmt.Fprintln(file, header)
+		fmt.Fprintln(writer, header)
 	}
 }
 
