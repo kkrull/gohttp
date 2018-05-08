@@ -170,6 +170,17 @@ var _ = Describe("LineRequestParser", func() {
 				}))
 			})
 		})
+
+		Context("given a request with headers", func() {
+			It("parses the headers", func() {
+				message := makeReader("GET / HTTP/1.1\r\nOne: 1\r\nTwo: 2\r\n\r\n")
+				request, _ = parser.Parse(message)
+				Expect(request.HeaderLines()).To(Equal([]string{
+					"One: 1",
+					"Two: 2",
+				}))
+			})
+		})
 	})
 })
 
