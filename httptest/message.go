@@ -2,7 +2,7 @@
 package httptest
 
 import (
-	"bytes"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -10,7 +10,7 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-func ParseResponse(text *bytes.Buffer) *ResponseMessage {
+func ParseResponse(text fmt.Stringer) *ResponseMessage {
 	return &ResponseMessage{Text: text.String()}
 }
 
