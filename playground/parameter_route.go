@@ -28,7 +28,7 @@ func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
 
 type ParameterReporter interface {
 	Name() string
-	Get(client io.Writer, req http.RequestMessage)
+	Get(client io.Writer, message http.RequestMessage)
 }
 
 // Lists query parameters as simple assignment statements
@@ -38,11 +38,11 @@ func (reporter *AssignmentReporter) Name() string {
 	return "Parameter Report"
 }
 
-func (reporter *AssignmentReporter) Get(client io.Writer, req http.RequestMessage) {
+func (reporter *AssignmentReporter) Get(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentTypeHeader(client, "text/plain")
 
-	body := reporter.makeBody(req)
+	body := reporter.makeBody(message)
 	msg.WriteContentLengthHeader(client, body.Len())
 	msg.WriteEndOfMessageHeader(client)
 

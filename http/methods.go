@@ -35,7 +35,7 @@ func (request *getRequest) Handle(client io.Writer) error {
 }
 
 type GetResource interface {
-	Get(client io.Writer, req RequestMessage)
+	Get(client io.Writer, message RequestMessage)
 }
 
 /* HEAD */

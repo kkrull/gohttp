@@ -23,8 +23,8 @@ func (mock *FileSystemResourceMock) Name() string {
 	return "File system mock"
 }
 
-func (mock *FileSystemResourceMock) Get(client io.Writer, req http.RequestMessage) {
-	mock.getPath = req.Path()
+func (mock *FileSystemResourceMock) Get(client io.Writer, message http.RequestMessage) {
+	mock.getPath = message.Path()
 }
 
 func (mock *FileSystemResourceMock) GetShouldHaveReceived(path string) {

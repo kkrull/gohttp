@@ -24,7 +24,7 @@ func (route *ReadOnlyRoute) Route(requested http.RequestMessage) http.Request {
 
 type ReadOnlyResource interface {
 	Name() string
-	Get(client io.Writer, req http.RequestMessage)
+	Get(client io.Writer, message http.RequestMessage)
 	Head(client io.Writer, target string)
 }
 
@@ -35,8 +35,8 @@ func (controller *ReadableNopResource) Name() string {
 	return "Readonly NOP"
 }
 
-func (controller *ReadableNopResource) Get(client io.Writer, req http.RequestMessage) {
-	controller.Head(client, req.Path())
+func (controller *ReadableNopResource) Get(client io.Writer, message http.RequestMessage) {
+	controller.Head(client, message.Path())
 }
 
 func (controller *ReadableNopResource) Head(client io.Writer, target string) {

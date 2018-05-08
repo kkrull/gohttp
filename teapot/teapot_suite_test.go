@@ -27,8 +27,8 @@ func (mock *TeapotMock) RespondsTo(path string) bool {
 	return mock.RespondsToPath == path
 }
 
-func (mock *TeapotMock) Get(client io.Writer, req http.RequestMessage) {
-	mock.getPath = req.Path()
+func (mock *TeapotMock) Get(client io.Writer, message http.RequestMessage) {
+	mock.getPath = message.Path()
 }
 
 func (mock *TeapotMock) GetShouldHaveReceived(path string) {

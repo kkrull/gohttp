@@ -24,13 +24,13 @@ func (teapot *IdentityTeapot) RespondsTo(path string) bool {
 	}
 }
 
-func (teapot *IdentityTeapot) Get(client io.Writer, req http.RequestMessage) {
+func (teapot *IdentityTeapot) Get(client io.Writer, message http.RequestMessage) {
 	var beverageRequestHandlers = map[string]func(writer io.Writer){
 		"/coffee": teapot.getCoffee,
 		"/tea":    teapot.getTea,
 	}
 
-	handler := beverageRequestHandlers[req.Path()]
+	handler := beverageRequestHandlers[message.Path()]
 	handler(client)
 }
 

@@ -36,7 +36,7 @@ func (*GoBackHomeResource) Name() string {
 	return "Relocated Resource"
 }
 
-func (*GoBackHomeResource) Get(client io.Writer, req http.RequestMessage) {
+func (*GoBackHomeResource) Get(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, redirect.FoundStatus)
 	msg.WriteContentLengthHeader(client, 0)
 	msg.WriteHeader(client, "Location", "/")
