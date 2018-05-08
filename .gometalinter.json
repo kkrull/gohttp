@@ -1,11 +1,12 @@
 {
   "Enable": [
-    "interfacer",
-    "unused",
-    "vetshadow",
-
     "deadcode",
     "goconst",
-    "goimports"
+    "goimports",
+    "interfacer",
+    "structcheck",
+    "unused",
+    "varcheck",
+    "vetshadow"
   ]
 }
