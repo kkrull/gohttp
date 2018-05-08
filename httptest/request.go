@@ -1,4 +1,4 @@
-package mock
+package httptest
 
 import (
 	"bufio"
@@ -8,12 +8,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type Request struct {
+type RequestMock struct {
 	HandleReturns  string
 	handleReceived io.Writer
 }
 
-func (mock *Request) Handle(writer io.Writer) error {
+func (mock *RequestMock) Handle(writer io.Writer) error {
 	mock.handleReceived = writer
 	if mock.HandleReturns != "" {
 		return fmt.Errorf(mock.HandleReturns)
@@ -22,6 +22,6 @@ func (mock *Request) Handle(writer io.Writer) error {
 	return nil
 }
 
-func (mock *Request) VerifyHandle(writer *bufio.Writer) {
+func (mock *RequestMock) VerifyHandle(writer *bufio.Writer) {
 	ExpectWithOffset(1, mock.handleReceived).To(BeIdenticalTo(writer))
 }

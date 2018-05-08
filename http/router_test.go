@@ -2,7 +2,7 @@ package http_test
 
 import (
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/mock"
+	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 
@@ -30,7 +30,7 @@ var _ = Describe("RequestLineRouter", func() {
 		Context("given a well-formed request matched by 1 or more Routes", func() {
 			var (
 				unrelatedRoute = &RouteMock{RouteReturns: nil}
-				matchingRoute  = &RouteMock{RouteReturns: &mock.Request{}}
+				matchingRoute  = &RouteMock{RouteReturns: &httptest.RequestMock{}}
 			)
 
 			BeforeEach(func() {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
-	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
@@ -38,7 +37,7 @@ var _ = Describe("ParameterRoute", func() {
 
 		Context("when the path is /parameters", func() {
 			It("routes GET to ParameterReporter#Get with the decoded query parameters", func() {
-				request := &mock.Request{}
+				request := &httptest.RequestMock{}
 				requested := &httptest.RequestMessage{
 					PathReturns:                "/parameters",
 					MakeResourceRequestReturns: request,
