@@ -15,7 +15,7 @@ var _ = Describe("blockingConnectionHandler", func() {
 		var (
 			handler http.ConnectionHandler
 			request *mock.Request
-			router  *mock.Router
+			router  *RouterMock
 
 			requestReader  = anyReader()
 			responseWriter = anyWriter()
@@ -23,7 +23,7 @@ var _ = Describe("blockingConnectionHandler", func() {
 
 		It("parses the request with the Router", func() {
 			request = &mock.Request{}
-			router = &mock.Router{ReturnsRequest: request}
+			router = &RouterMock{ReturnsRequest: request}
 
 			handler = http.NewConnectionHandler(router)
 			handler.Handle(requestReader, responseWriter)
@@ -32,8 +32,8 @@ var _ = Describe("blockingConnectionHandler", func() {
 
 		Context("when there is a routing error", func() {
 			It("writes the routing error response to the response writer", func() {
-				errorResponse := &mock.Response{}
-				router = &mock.Router{ReturnsError: errorResponse}
+				errorResponse := &ResponseMock{}
+				router = &RouterMock{ReturnsError: errorResponse}
 
 				handler = http.NewConnectionHandler(router)
 				handler.Handle(requestReader, responseWriter)
@@ -43,7 +43,7 @@ var _ = Describe("blockingConnectionHandler", func() {
 
 		It("handles the request", func() {
 			request = &mock.Request{}
-			router = &mock.Router{ReturnsRequest: request}
+			router = &RouterMock{ReturnsRequest: request}
 
 			handler = http.NewConnectionHandler(router)
 			handler.Handle(requestReader, responseWriter)
@@ -53,7 +53,7 @@ var _ = Describe("blockingConnectionHandler", func() {
 		Context("when there is an error handling the request", func() {
 			It("responds with InternalServerError", func() {
 				request = &mock.Request{HandleReturns: "bang"}
-				router = &mock.Router{ReturnsRequest: request}
+				router = &RouterMock{ReturnsRequest: request}
 
 				handler = http.NewConnectionHandler(router)
 				handler.Handle(requestReader, responseWriter)

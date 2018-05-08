@@ -29,8 +29,8 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Context("given a well-formed request matched by 1 or more Routes", func() {
 			var (
-				unrelatedRoute = &mock.Route{RouteReturns: nil}
-				matchingRoute  = &mock.Route{RouteReturns: &mock.Request{}}
+				unrelatedRoute = &RouteMock{RouteReturns: nil}
+				matchingRoute  = &RouteMock{RouteReturns: &mock.Request{}}
 			)
 
 			BeforeEach(func() {

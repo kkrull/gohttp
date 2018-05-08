@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/mock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -180,11 +179,11 @@ var _ = Describe("TCPServer", func() {
 	})
 
 	Describe("when running", func() {
-		var handler *mock.Handler
+		var handler *HandlerMock
 
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
-				handler = &mock.Handler{}
+				handler = &HandlerMock{}
 				server = &http.TCPServer{
 					Handler: handler,
 					Host:    "localhost"}
