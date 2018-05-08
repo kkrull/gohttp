@@ -49,64 +49,72 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			})
 		})
 
-		Context("when the path is a readable text file in the base path", func() {
-			BeforeEach(func() {
-				existingFile := path.Join(basePath, "readable.txt")
-				Expect(createTextFile(existingFile, "A")).To(Succeed())
-				controller.Get(responseBuffer, http.NewGetMessage("/readable.txt"))
-				response = httptest.ParseResponse(responseBuffer)
+		Describe("reading a file", func() {
+			Context("when the path is a readable text file in the base path", func() {
+				BeforeEach(func() {
+					existingFile := path.Join(basePath, "readable.txt")
+					Expect(createTextFile(existingFile, "A")).To(Succeed())
+					controller.Get(responseBuffer, http.NewGetMessage("/readable.txt"))
+					response = httptest.ParseResponse(responseBuffer)
+				})
+
+				It("responds with 200 OK", func() {
+					response.StatusShouldBe(200, "OK")
+				})
+				It("sets Content-Length to the number of bytes in the file", func() {
+					response.HeaderShould("Content-Length", Equal("1"))
+				})
+				It("sets Content-Type to text/plain", func() {
+					response.HeaderShould("Content-Type", HavePrefix("text/plain"))
+				})
+				It("writes the contents of the file to the message body", func() {
+					response.BodyShould(Equal("A"))
+				})
 			})
 
-			It("responds with 200 OK", func() {
-				response.StatusShouldBe(200, "OK")
+			Context("when the path is a readable file named with a registered extension", func() {
+				BeforeEach(func() {
+					existingFile := path.Join(basePath, "image.jpeg")
+					Expect(createTextFile(existingFile, "A")).To(Succeed())
+				})
+
+				It("sets Content-Type to the MIME type registered for that extension", func() {
+					controller.Get(responseBuffer, http.NewGetMessage("/image.jpeg"))
+					response = httptest.ParseResponse(responseBuffer)
+					response.HeaderShould("Content-Type", Equal("image/jpeg"))
+				})
 			})
-			It("sets Content-Length to the number of bytes in the file", func() {
-				response.HeaderShould("Content-Length", Equal("1"))
+
+			Context("when the path is a readable file without an extension", func() {
+				BeforeEach(func() {
+					existingFile := path.Join(basePath, "assumed-text")
+					Expect(createTextFile(existingFile, "A")).To(Succeed())
+				})
+
+				It("sets Content-Type to text/plain", func() {
+					controller.Get(responseBuffer, http.NewGetMessage("/assumed-text"))
+					response = httptest.ParseResponse(responseBuffer)
+					response.HeaderShould("Content-Type", Equal("text/plain"))
+				})
 			})
-			It("sets Content-Type to text/plain", func() {
-				response.HeaderShould("Content-Type", HavePrefix("text/plain"))
-			})
-			It("writes the contents of the file to the message body", func() {
-				response.BodyShould(Equal("A"))
+
+			Context("when the request contains a Range header", func() {
+				XIt("returns that part of the file")
 			})
 		})
 
-		Context("when the path is a readable file named with a registered extension", func() {
-			BeforeEach(func() {
-				existingFile := path.Join(basePath, "image.jpeg")
-				Expect(createTextFile(existingFile, "A")).To(Succeed())
-			})
+		Describe("reading a directory", func() {
+			Context("when the path is /", func() {
+				BeforeEach(func() {
+					existingFile := path.Join(basePath, "one")
+					Expect(createTextFile(existingFile, "1")).To(Succeed())
+				})
 
-			It("sets Content-Type to the MIME type registered for that extension", func() {
-				controller.Get(responseBuffer, http.NewGetMessage("/image.jpeg"))
-				response = httptest.ParseResponse(responseBuffer)
-				response.HeaderShould("Content-Type", Equal("image/jpeg"))
-			})
-		})
-
-		Context("when the path is a readable file without an extension", func() {
-			BeforeEach(func() {
-				existingFile := path.Join(basePath, "assumed-text")
-				Expect(createTextFile(existingFile, "A")).To(Succeed())
-			})
-
-			It("sets Content-Type to text/plain", func() {
-				controller.Get(responseBuffer, http.NewGetMessage("/assumed-text"))
-				response = httptest.ParseResponse(responseBuffer)
-				response.HeaderShould("Content-Type", Equal("text/plain"))
-			})
-		})
-
-		Context("when the path is /", func() {
-			BeforeEach(func() {
-				existingFile := path.Join(basePath, "one")
-				Expect(createTextFile(existingFile, "1")).To(Succeed())
-			})
-
-			It("responds with 200 OK", func() {
-				controller.Get(responseBuffer, http.NewGetMessage("/"))
-				response = httptest.ParseResponse(responseBuffer)
-				response.StatusShouldBe(200, "OK")
+				It("responds with 200 OK", func() {
+					controller.Get(responseBuffer, http.NewGetMessage("/"))
+					response = httptest.ParseResponse(responseBuffer)
+					response.StatusShouldBe(200, "OK")
+				})
 			})
 		})
 	})

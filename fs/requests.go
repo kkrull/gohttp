@@ -23,7 +23,7 @@ func (controller *ReadOnlyFileSystem) Get(client io.Writer, req http.RequestMess
 	response.WriteTo(client)
 }
 
-func (controller *ReadOnlyFileSystem) Head(client io.Writer, target string) {
+func (controller *ReadOnlyFileSystem) Head(client io.Writer, target string) { //TODO KDK: Change HEAD target to http.RequestMessage
 	response := controller.determineResponse(target)
 	response.WriteHeader(client)
 }
