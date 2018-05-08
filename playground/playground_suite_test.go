@@ -44,7 +44,7 @@ func (mock *ReadOnlyResourceMock) GetShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadOnlyResourceMock) Head(client io.Writer, target string) {
+func (mock *ReadOnlyResourceMock) Head(client io.Writer, message http.RequestMessage) {
 	mock.headCalled = true
 }
 
@@ -73,7 +73,7 @@ func (mock *ReadWriteResourceMock) GetShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Head(client io.Writer, target string) {
+func (mock *ReadWriteResourceMock) Head(client io.Writer, message http.RequestMessage) {
 	mock.headCalled = true
 }
 

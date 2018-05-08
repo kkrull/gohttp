@@ -29,7 +29,7 @@ func (route *ReadWriteRoute) Route(requested http.RequestMessage) http.Request {
 type ReadWriteResource interface {
 	Name() string
 	Get(client io.Writer, message http.RequestMessage)
-	Head(client io.Writer, target string)
+	Head(client io.Writer, message http.RequestMessage)
 	Post(client io.Writer, target string)
 	Put(client io.Writer, target string)
 }
@@ -42,10 +42,10 @@ func (controller *ReadWriteNopResource) Name() string {
 }
 
 func (controller *ReadWriteNopResource) Get(client io.Writer, message http.RequestMessage) {
-	controller.Head(client, message.Path())
+	controller.Head(client, message)
 }
 
-func (controller *ReadWriteNopResource) Head(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Head(client io.Writer, message http.RequestMessage) {
 	writeOKWithNoBody(client)
 }
 

@@ -31,8 +31,8 @@ func (mock *FileSystemResourceMock) GetShouldHaveReceived(path string) {
 	ExpectWithOffset(1, mock.getPath).To(Equal(path))
 }
 
-func (mock *FileSystemResourceMock) Head(client io.Writer, target string) {
-	mock.headTarget = target
+func (mock *FileSystemResourceMock) Head(client io.Writer, message http.RequestMessage) {
+	mock.headTarget = message.Target()
 }
 
 func (mock *FileSystemResourceMock) HeadShouldHaveReceived(target string) {

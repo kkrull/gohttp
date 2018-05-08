@@ -129,7 +129,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 			controller.Get(getResponseBuffer, http.NewGetMessage("/missing.txt"))
 			getResponse = httptest.ParseResponse(getResponseBuffer)
 
-			controller.Head(responseBuffer, "/missing.txt")
+			controller.Head(responseBuffer, http.NewHeadMessage("/missing.txt"))
 			response = httptest.ParseResponse(responseBuffer)
 		})
 

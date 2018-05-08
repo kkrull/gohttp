@@ -42,12 +42,12 @@ type GetResource interface {
 
 type headMethod struct{}
 
-func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
+func (*headMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {
 		return &headRequest{
+			Message:  message,
 			Resource: supportedResource,
-			Target:   requested.target,
 		}, true
 	}
 
@@ -55,17 +55,17 @@ func (*headMethod) MakeRequest(requested *requestMessage, resource Resource) (re
 }
 
 type headRequest struct {
+	Message  RequestMessage
 	Resource HeadResource
-	Target   string
 }
 
 func (request *headRequest) Handle(client io.Writer) error {
-	request.Resource.Head(client, request.Target)
+	request.Resource.Head(client, request.Message)
 	return nil
 }
 
 type HeadResource interface {
-	Head(client io.Writer, target string)
+	Head(client io.Writer, message RequestMessage)
 }
 
 /* OPTIONS */

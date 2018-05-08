@@ -25,7 +25,7 @@ func (route *ReadOnlyRoute) Route(requested http.RequestMessage) http.Request {
 type ReadOnlyResource interface {
 	Name() string
 	Get(client io.Writer, message http.RequestMessage)
-	Head(client io.Writer, target string)
+	Head(client io.Writer, message http.RequestMessage)
 }
 
 // Handles various read requests, but doesn't actually do anything
@@ -36,9 +36,9 @@ func (controller *ReadableNopResource) Name() string {
 }
 
 func (controller *ReadableNopResource) Get(client io.Writer, message http.RequestMessage) {
-	controller.Head(client, message.Path())
+	controller.Head(client, message)
 }
 
-func (controller *ReadableNopResource) Head(client io.Writer, target string) {
+func (controller *ReadableNopResource) Head(client io.Writer, message http.RequestMessage) {
 	writeOKWithNoBody(client)
 }
