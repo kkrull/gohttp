@@ -1,10 +1,6 @@
 package http_test
 
 import (
-	"bufio"
-	"bytes"
-	"fmt"
-
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/msg/clienterror"
@@ -56,11 +52,6 @@ var _ = Describe("RequestLineRouter", func() {
 		})
 	})
 })
-
-func makeReader(template string, values ...interface{}) *bufio.Reader {
-	text := fmt.Sprintf(template, values...)
-	return bufio.NewReader(bytes.NewBufferString(text))
-}
 
 func beABadRequestResponse(why string) types.GomegaMatcher {
 	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})

@@ -2,7 +2,6 @@ package http
 
 import (
 	"bufio"
-	"os"
 )
 
 func NewRouter() *RequestLineRouter {
@@ -37,7 +36,6 @@ func (router RequestLineRouter) RouteRequest(reader *bufio.Reader) (ok Request, 
 }
 
 func (router RequestLineRouter) routeRequest(requested *requestMessage) (ok Request, notImplemented Response) {
-	requested.Print(os.Stdout)
 	for _, route := range router.routes {
 		request := route.Route(requested)
 		if request != nil {
