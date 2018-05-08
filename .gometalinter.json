@@ -1,6 +1,7 @@
 {
   "Enable": [
     "interfacer",
+    "unused",
     "vetshadow",
 
     "deadcode",
