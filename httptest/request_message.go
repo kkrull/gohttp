@@ -7,9 +7,10 @@ import (
 )
 
 type RequestMessage struct {
-	MethodReturns string
-	PathReturns   string
-	TargetReturns string
+	MethodReturns      string
+	PathReturns        string
+	TargetReturns      string
+	HeaderLinesReturns []string
 
 	MakeResourceRequestReturns  http.Request
 	makeResourceRequestReceived http.Resource
@@ -35,6 +36,10 @@ func (message *RequestMessage) AddQueryParameter(name string, value string) {
 
 func (message *RequestMessage) QueryParameters() []http.QueryParameter {
 	return message.queryParameters
+}
+
+func (message *RequestMessage) HeaderLines() []string {
+	return message.HeaderLinesReturns
 }
 
 func (message *RequestMessage) MakeResourceRequest(resource http.Resource) http.Request {

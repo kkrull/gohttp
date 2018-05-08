@@ -1,10 +1,7 @@
 package http
 
 import (
-	"fmt"
-	"io"
 	"sort"
-	"time"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
@@ -98,6 +95,10 @@ func (message *requestMessage) QueryParameters() []QueryParameter {
 	return message.queryParameters
 }
 
+func (message *requestMessage) HeaderLines() []string {
+	return message.headerLines
+}
+
 func (message *requestMessage) Target() string {
 	return message.target
 }
@@ -150,13 +151,6 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 
 	sort.Strings(supported)
 	return supported
-}
-
-func (message *requestMessage) Log(writer io.Writer) {
-	fmt.Fprintf(writer, "%s : %s %s\n", time.Now().Format("2006-01-02 03:04:05 Z07:00"), message.method, message.target)
-	for _, header := range message.headerLines {
-		fmt.Fprintln(writer, header)
-	}
 }
 
 var knownMethods = map[string]Method{

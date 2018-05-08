@@ -66,6 +66,7 @@ type RequestMessage interface {
 	Target() string
 	Path() string
 	QueryParameters() []QueryParameter
+	HeaderLines() []string
 
 	MakeResourceRequest(resource Resource) Request
 }
