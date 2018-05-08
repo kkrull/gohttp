@@ -30,12 +30,28 @@ func (mock *HandlerMock) Handle(requestReader *bufio.Reader, responseWriter io.W
 }
 
 func (mock *HandlerMock) ShouldHandleConnection() {
-	Expect(mock.handleRequestReader).NotTo(BeNil())
-	Expect(mock.handleResponseWriter).NotTo(BeNil())
+	ExpectWithOffset(1, mock.handleRequestReader).NotTo(BeNil())
+	ExpectWithOffset(1, mock.handleResponseWriter).NotTo(BeNil())
 }
 
 func (mock *HandlerMock) Routes() []http.Route {
 	return nil
+}
+
+/* RequestLoggerMock */
+
+type RequestLoggerMock struct {
+	parsedReceived http.RequestMessage
+}
+
+func (mock *RequestLoggerMock) Parsed(message http.RequestMessage) {
+	mock.parsedReceived = message
+}
+
+func (mock *RequestLoggerMock) ParsedShouldHaveReceived(method, target string) {
+	ExpectWithOffset(1, mock.parsedReceived).NotTo(BeNil())
+	ExpectWithOffset(1, mock.parsedReceived.Method()).To(Equal(method))
+	ExpectWithOffset(1, mock.parsedReceived.Target()).To(Equal(target))
 }
 
 /* ResponseMock */
@@ -109,7 +125,7 @@ func appendByte(allButLast []byte, last byte) []byte {
 }
 
 func (mock RouterMock) VerifyReceived(reader *bufio.Reader) {
-	Expect(mock.receivedReader).To(BeIdenticalTo(reader))
+	ExpectWithOffset(1, mock.receivedReader).To(BeIdenticalTo(reader))
 }
 
 /* Helpers */

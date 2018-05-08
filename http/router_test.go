@@ -9,13 +9,29 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+var _ = Describe("::NewRouter", func() {
+	It("configures no logging for requests, by default", func() {
+		router := http.NewRouter()
+		router.RouteRequest(makeReader("GET / HTTP/1.1\r\n\r\n"))
+	})
+})
+
 var _ = Describe("RequestLineRouter", func() {
 	Describe("#RouteRequest", func() {
 		var (
 			router  *http.RequestLineRouter
+			logger  *RequestLoggerMock
 			request http.Request
 			err     http.Response
 		)
+
+		It("logs the parsed request", func() {
+			router = http.NewRouter()
+			logger = &RequestLoggerMock{}
+			router.LogRequests(logger)
+			request, err = router.RouteRequest(makeReader("GET / HTTP/1.1\r\n\r\n"))
+			logger.ParsedShouldHaveReceived(http.GET, "/")
+		})
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
