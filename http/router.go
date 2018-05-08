@@ -69,6 +69,7 @@ type RequestMessage interface {
 	HeaderLines() []string
 
 	MakeResourceRequest(resource Resource) Request
+	HeaderValues(field string) (values []string)
 }
 
 type Route interface {

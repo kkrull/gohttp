@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
@@ -72,7 +73,7 @@ type requestMessage struct {
 	path            string
 	target          string
 	queryParameters []QueryParameter
-	headerLines     []string
+	headers         []header
 }
 
 func (message *requestMessage) Method() string {
@@ -95,16 +96,34 @@ func (message *requestMessage) QueryParameters() []QueryParameter {
 	return message.queryParameters
 }
 
-func (message *requestMessage) HeaderLines() []string {
-	return message.headerLines
-}
-
 func (message *requestMessage) Target() string {
 	return message.target
 }
 
-func (message *requestMessage) AddHeader(line string) {
-	message.headerLines = append(message.headerLines, line)
+func (message *requestMessage) HeaderLines() []string {
+	lines := make([]string, len(message.headers))
+	for i, header := range message.headers {
+		lines[i] = header.String()
+	}
+
+	return lines
+}
+
+func (message *requestMessage) HeaderValues(field string) []string {
+	values := make([]string, 0)
+	for _, header := range message.headers {
+		if header.Field != field {
+			continue
+		}
+
+		values = append(values, header.Value)
+	}
+
+	return values
+}
+
+func (message *requestMessage) AddHeader(field, value string) {
+	message.headers = append(message.headers, header{Field: field, Value: value})
 }
 
 func (message *requestMessage) NotImplemented() Response {
@@ -162,6 +181,15 @@ var knownMethods = map[string]Method{
 
 type Method interface {
 	MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool)
+}
+
+type header struct {
+	Field string
+	Value string
+}
+
+func (header *header) String() string {
+	return fmt.Sprintf("%s: %s", header.Field, header.Value)
 }
 
 // Handles requests of supported HTTP methods for a resource

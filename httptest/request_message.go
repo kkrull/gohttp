@@ -42,6 +42,10 @@ func (message *RequestMessage) HeaderLines() []string {
 	return message.HeaderLinesReturns
 }
 
+func (message *RequestMessage) HeaderValues(field string) (values []string) {
+	return nil
+}
+
 func (message *RequestMessage) MakeResourceRequest(resource http.Resource) http.Request {
 	message.makeResourceRequestReceived = resource
 	return message.MakeResourceRequestReturns

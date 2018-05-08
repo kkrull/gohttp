@@ -172,13 +172,22 @@ var _ = Describe("LineRequestParser", func() {
 		})
 
 		Context("given a request with headers", func() {
-			It("parses the headers", func() {
-				message := makeReader("GET / HTTP/1.1\r\nOne: 1\r\nTwo: 2\r\n\r\n")
+			BeforeEach(func() {
+				message := makeReader("GET / HTTP/1.1\r\nOne: 1\r\nDouble: text/html\r\nDouble: text/plain\r\n\r\n")
 				request, _ = parser.Parse(message)
+			})
+
+			It("parses the headers as lines", func() {
 				Expect(request.HeaderLines()).To(Equal([]string{
 					"One: 1",
-					"Two: 2",
+					"Double: text/html",
+					"Double: text/plain",
 				}))
+			})
+			It("parses the headers as fields with values", func() {
+				Expect(request.HeaderValues("Not Given")).To(BeEmpty())
+				Expect(request.HeaderValues("One")).To(Equal([]string{"1"}))
+				Expect(request.HeaderValues("Double")).To(Equal([]string{"text/html", "text/plain"}))
 			})
 		})
 	})

@@ -44,7 +44,7 @@ do
       exit 1
     fi
 
-    gomegaimports.v2 ./...
+    gometalinter.v2 ./...
     if (( $? != 0 ))
     then
       echo "pre-push: lint errors"
