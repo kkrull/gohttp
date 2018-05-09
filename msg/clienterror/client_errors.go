@@ -26,6 +26,10 @@ type NotFound struct {
 	body string
 }
 
+func (notFound *NotFound) Name() string {
+	return "A resource that can not be found"
+}
+
 func (notFound *NotFound) WriteTo(client io.Writer) error {
 	notFound.WriteHeader(client)
 	msg.WriteBody(client, notFound.body)

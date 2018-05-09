@@ -69,6 +69,10 @@ var _ = Describe("InterruptFactory", func() {
 		})
 	})
 
+	Describe("ResourceFactory methods", func() {
+		XIt("implements ResourceFactory")
+	})
+
 	Describe("TCPServer", func() {
 		var (
 			server      cmd.Server

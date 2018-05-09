@@ -9,15 +9,15 @@ import (
 )
 
 type RequestMessage struct {
-	MethodReturns      string
-	PathReturns        string
-	TargetReturns      string
+	MethodReturns string
+	PathReturns   string
+	TargetReturns string
 
 	MakeResourceRequestReturns  http.Request
 	makeResourceRequestReceived http.Resource
 
 	queryParameters []http.QueryParameter
-	headers []header
+	headers         []header
 }
 
 func (message *RequestMessage) Method() string {

@@ -21,8 +21,8 @@ var _ = Describe("TextLogger", func() {
 			logger = http.TextLogger{Writer: output}
 
 			requestMessage := &httptest.RequestMessage{
-				MethodReturns:      "GET",
-				TargetReturns:      "/foo",
+				MethodReturns: "GET",
+				TargetReturns: "/foo",
 			}
 			requestMessage.AddHeader("Content-Type", "text/plain")
 

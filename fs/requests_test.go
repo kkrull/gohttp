@@ -105,7 +105,7 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 					requestMessage := &httptest.RequestMessage{
 						MethodReturns: "GET",
 						TargetReturns: "/readable.txt",
-						PathReturns: "/readable.txt",
+						PathReturns:   "/readable.txt",
 					}
 					requestMessage.AddHeader("Range", "0-1")
 

@@ -16,6 +16,10 @@ type DirectoryListing struct {
 	body       *bytes.Buffer
 }
 
+func (listing *DirectoryListing) Name() string {
+	return "Directory Listing"
+}
+
 func (listing *DirectoryListing) WriteTo(client io.Writer) error {
 	listing.WriteHeader(client)
 	msg.WriteBody(client, listing.body.String())

@@ -2,6 +2,9 @@ package fs
 
 import (
 	"io"
+	"io/ioutil"
+	"os"
+	"path"
 
 	"github.com/kkrull/gohttp/http"
 )
@@ -11,6 +14,35 @@ func NewRoute(contentRootPath string) http.Route {
 		ContentRootPath: contentRootPath,
 		Resource:        &ReadOnlyFileSystem{BaseDirectory: contentRootPath},
 	}
+}
+
+type NewFileSystemRoute struct {
+	ContentRootPath string
+	Factory         ResourceFactory
+}
+
+func (route NewFileSystemRoute) Route(requested http.RequestMessage) http.Request {
+	resource := route.resolveResource(requested)
+	return requested.MakeResourceRequest(resource)
+}
+
+func (route NewFileSystemRoute) resolveResource(requested http.RequestMessage) http.Resource {
+	resolvedPath := path.Join(route.ContentRootPath, requested.Path())
+	info, err := os.Stat(resolvedPath)
+	if err != nil {
+		return route.Factory.NotFoundResource(requested)
+	} else if info.IsDir() {
+		files, _ := ioutil.ReadDir(resolvedPath)
+		return route.Factory.DirectoryListingResource(requested, readFileNames(files))
+	} else {
+		return route.Factory.ExistingFileResource(requested, resolvedPath)
+	}
+}
+
+type ResourceFactory interface {
+	DirectoryListingResource(message http.RequestMessage, files []string) http.Resource
+	ExistingFileResource(message http.RequestMessage, path string) http.Resource
+	NotFoundResource(message http.RequestMessage) http.Resource
 }
 
 type FileSystemRoute struct {
