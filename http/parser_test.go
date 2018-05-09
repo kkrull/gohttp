@@ -5,8 +5,10 @@ import (
 	"bytes"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("LineRequestParser", func() {
@@ -168,9 +170,33 @@ var _ = Describe("LineRequestParser", func() {
 				}))
 			})
 		})
+
+		Context("given a request with headers", func() {
+			BeforeEach(func() {
+				message := makeReader("GET / HTTP/1.1\r\nOne: 1\r\nDouble: text/html\r\nDouble: text/plain\r\n\r\n")
+				request, _ = parser.Parse(message)
+			})
+
+			It("parses the headers as lines", func() {
+				Expect(request.HeaderLines()).To(Equal([]string{
+					"One: 1",
+					"Double: text/html",
+					"Double: text/plain",
+				}))
+			})
+			It("parses the headers as fields with values", func() {
+				Expect(request.HeaderValues("Not Given")).To(BeEmpty())
+				Expect(request.HeaderValues("One")).To(Equal([]string{"1"}))
+				Expect(request.HeaderValues("Double")).To(Equal([]string{"text/html", "text/plain"}))
+			})
+		})
 	})
 })
 
 func requestWithTarget(target string) *bufio.Reader {
 	return makeReader("GET %s HTTP/1.1\r\n\r\n", target)
+}
+
+func beABadRequestResponse(why string) types.GomegaMatcher {
+	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})
 }

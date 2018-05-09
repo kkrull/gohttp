@@ -5,7 +5,6 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
-	"github.com/kkrull/gohttp/mock"
 	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/playground"
 	. "github.com/onsi/ginkgo"
@@ -40,7 +39,7 @@ var _ = Describe("RedirectRoute", func() {
 			It("routes GET to RelocatedResource#Get", func() {
 				requestMessage := &httptest.RequestMessage{
 					PathReturns:                "/redirect",
-					MakeResourceRequestReturns: &mock.Request{},
+					MakeResourceRequestReturns: &httptest.RequestMock{},
 				}
 
 				Expect(router.Route(requestMessage)).To(BeIdenticalTo(requestMessage.MakeResourceRequestReturns))

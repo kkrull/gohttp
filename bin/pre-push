@@ -43,6 +43,13 @@ do
       git status
       exit 1
     fi
+
+    gometalinter.v2 ./...
+    if (( $? != 0 ))
+    then
+      echo "pre-push: lint errors"
+      exit 1
+    fi
   fi
 done
 

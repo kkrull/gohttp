@@ -7,12 +7,14 @@ import (
 func NewRouter() *RequestLineRouter {
 	return &RequestLineRouter{
 		Parser: &LineRequestParser{},
+		logger: noLogger{},
 	}
 }
 
 // Routes requests based solely upon the first line in the request
 type RequestLineRouter struct {
 	Parser RequestParser
+	logger RequestLogger
 	routes []Route
 }
 
@@ -26,12 +28,17 @@ func (router *RequestLineRouter) Routes() []Route {
 	return routes
 }
 
+func (router *RequestLineRouter) LogRequests(logger RequestLogger) {
+	router.logger = logger
+}
+
 func (router RequestLineRouter) RouteRequest(reader *bufio.Reader) (ok Request, err Response) {
 	requested, err := router.Parser.Parse(reader)
 	if err != nil {
 		return nil, err
 	}
 
+	router.logger.Parsed(requested)
 	return router.routeRequest(requested)
 }
 
@@ -50,13 +57,19 @@ type RequestParser interface {
 	Parse(reader *bufio.Reader) (ok *requestMessage, err Response)
 }
 
+type RequestLogger interface {
+	Parsed(message RequestMessage)
+}
+
 type RequestMessage interface {
 	Method() string
 	Target() string
 	Path() string
 	QueryParameters() []QueryParameter
+	HeaderLines() []string
 
 	MakeResourceRequest(resource Resource) Request
+	HeaderValues(field string) (values []string)
 }
 
 type Route interface {

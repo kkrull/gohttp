@@ -1,27 +1,37 @@
 package http_test
 
 import (
-	"bufio"
-	"bytes"
-	"fmt"
-
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/mock"
-	"github.com/kkrull/gohttp/msg/clienterror"
+	"github.com/kkrull/gohttp/httptest"
 	"github.com/kkrull/gohttp/msg/servererror"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/types"
 )
+
+var _ = Describe("::NewRouter", func() {
+	It("configures no logging for requests, by default", func() {
+		router := http.NewRouter()
+		router.RouteRequest(makeReader("GET / HTTP/1.1\r\n\r\n"))
+	})
+})
 
 var _ = Describe("RequestLineRouter", func() {
 	Describe("#RouteRequest", func() {
 		var (
 			router  *http.RequestLineRouter
+			logger  *RequestLoggerMock
 			request http.Request
 			err     http.Response
 		)
+
+		It("logs the parsed request", func() {
+			router = http.NewRouter()
+			logger = &RequestLoggerMock{}
+			router.LogRequests(logger)
+			request, err = router.RouteRequest(makeReader("GET / HTTP/1.1\r\n\r\n"))
+			logger.ParsedShouldHaveReceived(http.GET, "/")
+		})
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {
@@ -33,8 +43,8 @@ var _ = Describe("RequestLineRouter", func() {
 
 		Context("given a well-formed request matched by 1 or more Routes", func() {
 			var (
-				unrelatedRoute = &mock.Route{RouteReturns: nil}
-				matchingRoute  = &mock.Route{RouteReturns: &mock.Request{}}
+				unrelatedRoute = &RouteMock{RouteReturns: nil}
+				matchingRoute  = &RouteMock{RouteReturns: &httptest.RequestMock{}}
 			)
 
 			BeforeEach(func() {
@@ -56,12 +66,3 @@ var _ = Describe("RequestLineRouter", func() {
 		})
 	})
 })
-
-func makeReader(template string, values ...interface{}) *bufio.Reader {
-	text := fmt.Sprintf(template, values...)
-	return bufio.NewReader(bytes.NewBufferString(text))
-}
-
-func beABadRequestResponse(why string) types.GomegaMatcher {
-	return BeEquivalentTo(&clienterror.BadRequest{DisplayText: why})
-}
