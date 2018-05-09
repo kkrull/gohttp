@@ -2,7 +2,6 @@ package fs_test
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path"
 
@@ -171,27 +170,3 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 		})
 	})
 })
-
-func makeEmptyTestDirectory(testName string, fileMode os.FileMode) string {
-	testPath := path.Join(".test", testName)
-	Expect(os.RemoveAll(testPath)).To(Succeed())
-	Expect(os.MkdirAll(testPath, fileMode)).To(Succeed())
-	return testPath
-}
-
-func createTextFile(filename string, contents string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	byteContents := bytes.NewBufferString(contents).Bytes()
-	bytesWritten, err := file.Write(byteContents)
-	if err != nil {
-		return err
-	} else if bytesWritten != len(byteContents) {
-		return fmt.Errorf("expected to write %d bytes to %s, but only wrote %d", len(byteContents), filename, bytesWritten)
-	}
-
-	return nil
-}

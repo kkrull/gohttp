@@ -1,7 +1,11 @@
 package fs_test
 
 import (
+	"bytes"
+	"fmt"
 	"io"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/kkrull/gohttp/http"
@@ -100,4 +104,30 @@ func (mock *ResourceFactoryMock) NotFoundResourceReturns(notFound http.Resource)
 func (mock *ResourceFactoryMock) NotFoundShouldHaveReceived(path string) {
 	ExpectWithOffset(1, mock.notFoundReceived).NotTo(BeNil())
 	ExpectWithOffset(1, mock.notFoundReceived.Path()).To(Equal(path))
+}
+
+/* Helpers */
+
+func makeEmptyTestDirectory(testName string, fileMode os.FileMode) string {
+	testPath := path.Join(".test", testName)
+	Expect(os.RemoveAll(testPath)).To(Succeed())
+	Expect(os.MkdirAll(testPath, fileMode)).To(Succeed())
+	return testPath
+}
+
+func createTextFile(filename string, contents string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	byteContents := bytes.NewBufferString(contents).Bytes()
+	bytesWritten, err := file.Write(byteContents)
+	if err != nil {
+		return err
+	} else if bytesWritten != len(byteContents) {
+		return fmt.Errorf("expected to write %d bytes to %s, but only wrote %d", len(byteContents), filename, bytesWritten)
+	}
+
+	return nil
 }
