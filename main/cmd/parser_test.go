@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"syscall"
@@ -19,12 +18,10 @@ var _ = Describe("CliCommandParser", func() {
 			interrupts chan os.Signal
 
 			returned cmd.CliCommand
-			stderr   *bytes.Buffer
 		)
 
 		BeforeEach(func() {
 			interrupts = make(chan os.Signal, 1)
-			stderr = &bytes.Buffer{}
 		})
 
 		Context("given --help", func() {

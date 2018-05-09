@@ -18,15 +18,10 @@ import (
 var _ = Describe("RequestLineRouter", func() {
 	Describe("#RouteRequest", func() {
 		var (
-			router        *http.RequestLineRouter
-			request       http.Request
-			err           http.Response
-			matchAllRoute *mock.Route
+			router  *http.RequestLineRouter
+			request http.Request
+			err     http.Response
 		)
-
-		BeforeEach(func() {
-			matchAllRoute = &mock.Route{RouteReturns: &mock.Request{}}
-		})
 
 		Context("given a well-formed request not matched by any Route", func() {
 			It("returns a NotImplemented response", func() {

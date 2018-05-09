@@ -1,0 +1,12 @@
+{
+  "Enable": [
+    "deadcode",
+    "goconst",
+    "goimports",
+    "interfacer",
+    "structcheck",
+    "unused",
+    "varcheck",
+    "vetshadow"
+  ]
+}

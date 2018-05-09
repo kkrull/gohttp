@@ -1,13 +1,13 @@
 package httptest
 
 import (
-	"bytes"
+	"fmt"
 
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 )
 
-func ShouldAllowMethods(response *bytes.Buffer, methods ...string) func() {
+func ShouldAllowMethods(response fmt.Stringer, methods ...string) func() {
 	return func() {
 		responseMessage := ParseResponse(response)
 		responseMessage.HeaderShould("Allow", containSubstrings(methods))
@@ -23,7 +23,7 @@ func containSubstrings(values []string) types.GomegaMatcher {
 	return SatisfyAll(valueMatchers...)
 }
 
-func ShouldHaveNoBody(response *bytes.Buffer, status int, reason string) func() {
+func ShouldHaveNoBody(response fmt.Stringer, status int, reason string) func() {
 	return func() {
 		responseMessage := ParseResponse(response)
 		responseMessage.ShouldBeWellFormed()

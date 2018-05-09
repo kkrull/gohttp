@@ -31,11 +31,6 @@ Missing ways to cause I/O errors with
 * `os.File`
 
 
-Other items:
-
-* Is `Target` needed in each controller?  Is it just used to route to the right controller?
-
-
 ## Naming
 
 - `Controller` might be better referred to as a `Resource` that supports (HTTP) methods.
