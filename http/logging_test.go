@@ -23,8 +23,8 @@ var _ = Describe("TextLogger", func() {
 			requestMessage := &httptest.RequestMessage{
 				MethodReturns:      "GET",
 				TargetReturns:      "/foo",
-				HeaderLinesReturns: []string{"Content-Type: text/plain"},
 			}
+			requestMessage.AddHeader("Content-Type", "text/plain")
 
 			logger.Parsed(requestMessage)
 		})

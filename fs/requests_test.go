@@ -98,8 +98,33 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 				})
 			})
 
-			Context("when the request contains a Range header", func() {
-				XIt("returns that part of the file")
+			XContext("when the request contains a Range header for a range that exists in the requested file", func() {
+				BeforeEach(func() {
+					existingFile := path.Join(basePath, "readable.txt")
+					Expect(createTextFile(existingFile, "ABC")).To(Succeed())
+					requestMessage := &httptest.RequestMessage{
+						MethodReturns: "GET",
+						TargetReturns: "/readable.txt",
+						PathReturns: "/readable.txt",
+					}
+					requestMessage.AddHeader("Range", "0-1")
+
+					controller.Get(responseBuffer, requestMessage)
+					response = httptest.ParseResponse(responseBuffer)
+				})
+
+				It("responds with 200 OK", func() {
+					response.StatusShouldBe(206, "Partial Content")
+				})
+				It("sets Content-Length to the number of bytes in the file", func() {
+					response.HeaderShould("Content-Length", Equal("2"))
+				})
+				It("sets Content-Range to the resolved location in and total size of the file, in bytes", func() {
+					response.HeaderShould("Content-Range", Equal("bytes 0-1/3"))
+				})
+				It("writes the contents of the file to the message body", func() {
+					response.BodyShould(Equal("AB"))
+				})
 			})
 		})
 
