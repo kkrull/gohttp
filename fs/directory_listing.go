@@ -22,28 +22,17 @@ func (listing *DirectoryListing) Name() string {
 }
 
 func (listing *DirectoryListing) Get(client io.Writer, message http.RequestMessage) {
-	listing.WriteHeader(client)
+	listing.Head(client, message)
 	msg.WriteBody(client, listing.body.String())
 }
 
 func (listing *DirectoryListing) Head(client io.Writer, message http.RequestMessage) {
-	listing.WriteHeader(client)
-}
-
-func (listing *DirectoryListing) WriteTo(client io.Writer) error { //TODO KDK: Get rid of old methods
-	listing.WriteHeader(client)
-	msg.WriteBody(client, listing.body.String())
-	return nil
-}
-
-func (listing *DirectoryListing) WriteHeader(client io.Writer) error {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentTypeHeader(client, "text/html")
 
 	listing.body = listing.messageListingFiles()
 	msg.WriteContentLengthHeader(client, listing.body.Len())
 	msg.WriteEndOfMessageHeader(client)
-	return nil
 }
 
 func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {

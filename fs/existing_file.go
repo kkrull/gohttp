@@ -31,19 +31,6 @@ func (contents *ExistingFile) Head(client io.Writer, message http.RequestMessage
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (contents *ExistingFile) WriteTo(client io.Writer) error { //TODO KDK: Get rid of old methods
-	contents.WriteHeader(client)
-	contents.writeBody(client)
-	return nil
-}
-
-func (contents *ExistingFile) WriteHeader(client io.Writer) error {
-	msg.WriteStatus(client, success.OKStatus)
-	contents.writeHeadersDescribingFile(client)
-	msg.WriteEndOfMessageHeader(client)
-	return nil
-}
-
 func (contents ExistingFile) writeHeadersDescribingFile(client io.Writer) {
 	msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(contents.Filename))
 	info, _ := os.Stat(contents.Filename)

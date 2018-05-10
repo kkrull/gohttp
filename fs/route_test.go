@@ -15,17 +15,17 @@ var _ = Describe("::NewRoute", func() {
 	It("returns a route to files and directories on the local file system", func() {
 		route := fs.NewRoute("/public")
 		Expect(route).To(BeEquivalentTo(
-			&fs.NewFileSystemRoute{
+			&fs.FileSystemRoute{
 				ContentRootPath: "/public",
-				Factory: &fs.LocalResources{},
+				Factory:         &fs.LocalResources{},
 			}))
 	})
 })
 
-var _ = Describe("NewFileSystemRoute", func() {
+var _ = Describe("FileSystemRoute", func() {
 	Describe("#Route", func() {
 		var (
-			route    *fs.NewFileSystemRoute
+			route    *fs.FileSystemRoute
 			factory  *ResourceFactoryMock
 			resource *FileSystemResourceMock
 
@@ -37,8 +37,8 @@ var _ = Describe("NewFileSystemRoute", func() {
 			factory = &ResourceFactoryMock{}
 			resource = &FileSystemResourceMock{}
 			responseBuffer.Reset()
-			route = &fs.NewFileSystemRoute{
-				ContentRootPath: makeEmptyTestDirectory("NewFileSystemRoute", os.ModePerm),
+			route = &fs.FileSystemRoute{
+				ContentRootPath: makeEmptyTestDirectory("FileSystemRoute", os.ModePerm),
 				Factory:         factory,
 			}
 		})
