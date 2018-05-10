@@ -54,7 +54,6 @@ var _ = Describe("NewFileSystemRoute", func() {
 				factory.NonExistingResourceShouldHaveReceived("/missing.txt")
 				resource.GetShouldHaveReceived("/missing.txt")
 			})
-			XIt("NotFound implements Get and Head")
 
 			It("routes to ExistingFile when the requested path is a file inside the base directory", func() {
 				existingFile := path.Join(route.ContentRootPath, "readable.txt")
@@ -67,7 +66,6 @@ var _ = Describe("NewFileSystemRoute", func() {
 				factory.ExistingFileShouldHaveReceived("/readable.txt", existingFile)
 				resource.GetShouldHaveReceived("/readable.txt")
 			})
-			XIt("ExistingFile implements Get and Head")
 
 			It("routes to DirectoryListing when the requested path is a directory inside the base directory", func() {
 				Expect(createTextFile(path.Join(route.ContentRootPath, "A"), "A")).To(Succeed())
@@ -80,7 +78,6 @@ var _ = Describe("NewFileSystemRoute", func() {
 				factory.DirectoryListingShouldHaveReceived("/", []string{"A", "B"})
 				resource.GetShouldHaveReceived("/")
 			})
-			XIt("DirectoryListing implements Get and Head")
 		})
 	})
 })

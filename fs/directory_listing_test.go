@@ -11,6 +11,8 @@ import (
 )
 
 var _ = Describe("DirectoryListing", func() {
+	XIt("DirectoryListing implements Get and Head")
+
 	Describe("#WriteTo", func() {
 		var (
 			listing http.Response

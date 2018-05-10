@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
 )
@@ -15,7 +16,22 @@ type ExistingFile struct {
 	Filename string
 }
 
-func (contents *ExistingFile) WriteTo(client io.Writer) error {
+func (contents *ExistingFile) Name() string {
+	return "Existing file"
+}
+
+func (contents *ExistingFile) Get(client io.Writer, message http.RequestMessage) {
+	contents.Head(client, message)
+	contents.writeBody(client)
+}
+
+func (contents *ExistingFile) Head(client io.Writer, message http.RequestMessage) {
+	msg.WriteStatus(client, success.OKStatus)
+	contents.writeHeadersDescribingFile(client)
+	msg.WriteEndOfMessageHeader(client)
+}
+
+func (contents *ExistingFile) WriteTo(client io.Writer) error { //TODO KDK: Get rid of old methods
 	contents.WriteHeader(client)
 	contents.writeBody(client)
 	return nil
