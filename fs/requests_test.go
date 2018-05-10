@@ -28,26 +28,6 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 	})
 
 	Describe("#Get", func() {
-		Context("when the resolved path does not exist", func() {
-			BeforeEach(func() {
-				controller.Get(responseBuffer, http.NewGetMessage("/missing.txt"))
-				response = httptest.ParseResponse(responseBuffer)
-			})
-
-			It("Responds with 404 Not Found", func() {
-				response.StatusShouldBe(404, "Not Found")
-			})
-			It("sets Content-Length to the length of the response", func() {
-				response.HeaderShould("Content-Length", Equal("23"))
-			})
-			It("sets Content-Type to text/plain", func() {
-				response.HeaderShould("Content-Type", Equal("text/plain"))
-			})
-			It("writes an error message to the message body", func() {
-				response.BodyShould(Equal("Not found: /missing.txt"))
-			})
-		})
-
 		Describe("reading a file", func() {
 			Context("when the path is a readable text file in the base path", func() {
 				BeforeEach(func() {
@@ -140,33 +120,6 @@ var _ = Describe("ReadOnlyFileSystem", func() {
 					response.StatusShouldBe(200, "OK")
 				})
 			})
-		})
-	})
-
-	Describe("#Head", func() {
-		var (
-			getResponseBuffer = &bytes.Buffer{}
-			getResponse       *httptest.ResponseMessage
-		)
-
-		BeforeEach(func() {
-			controller.Get(getResponseBuffer, http.NewGetMessage("/missing.txt"))
-			getResponse = httptest.ParseResponse(getResponseBuffer)
-
-			controller.Head(responseBuffer, http.NewHeadMessage("/missing.txt"))
-			response = httptest.ParseResponse(responseBuffer)
-		})
-
-		It("responds with the same status as #Get would have", func() {
-			getResponse.StatusShouldBe(404, "Not Found")
-			response.StatusShouldBe(404, "Not Found")
-		})
-		It("responds with the same headers as #Get would have", func() {
-			response.HeaderShould("Content-Type", Equal("text/plain"))
-			response.HeaderShould("Content-Length", Equal("23"))
-		})
-		It("does not write a response body", func() {
-			response.BodyShould(BeEmpty())
 		})
 	})
 })
