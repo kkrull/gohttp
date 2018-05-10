@@ -30,7 +30,7 @@ func (route NewFileSystemRoute) resolveResource(requested http.RequestMessage) h
 	resolvedPath := path.Join(route.ContentRootPath, requested.Path())
 	info, err := os.Stat(resolvedPath)
 	if err != nil {
-		return route.Factory.NotFoundResource(requested)
+		return route.Factory.NonExistingResource(requested)
 	} else if info.IsDir() {
 		files, _ := ioutil.ReadDir(resolvedPath)
 		return route.Factory.DirectoryListingResource(requested, readFileNames(files))
@@ -42,7 +42,7 @@ func (route NewFileSystemRoute) resolveResource(requested http.RequestMessage) h
 type ResourceFactory interface {
 	DirectoryListingResource(message http.RequestMessage, files []string) http.Resource
 	ExistingFileResource(message http.RequestMessage, path string) http.Resource
-	NotFoundResource(message http.RequestMessage) http.Resource
+	NonExistingResource(message http.RequestMessage) http.Resource
 }
 
 type FileSystemRoute struct {
