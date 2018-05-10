@@ -116,7 +116,6 @@ var _ = Describe("ExistingFile", func() {
 			})
 		})
 
-		XIt("parses byte ranges in other formats -- drill down into a lower level piece")
 	})
 
 	Describe("#Head", func() {
