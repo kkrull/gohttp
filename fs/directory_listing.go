@@ -6,6 +6,7 @@ import (
 	"io"
 	"path"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
 )
@@ -20,7 +21,16 @@ func (listing *DirectoryListing) Name() string {
 	return "Directory Listing"
 }
 
-func (listing *DirectoryListing) WriteTo(client io.Writer) error {
+func (listing *DirectoryListing) Get(client io.Writer, message http.RequestMessage) {
+	listing.WriteHeader(client)
+	msg.WriteBody(client, listing.body.String())
+}
+
+func (listing *DirectoryListing) Head(client io.Writer, message http.RequestMessage) {
+	listing.WriteHeader(client)
+}
+
+func (listing *DirectoryListing) WriteTo(client io.Writer) error { //TODO KDK: Get rid of old methods
 	listing.WriteHeader(client)
 	msg.WriteBody(client, listing.body.String())
 	return nil
