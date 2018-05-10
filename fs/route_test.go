@@ -15,13 +15,11 @@ var _ = Describe("::NewRoute", func() {
 	It("returns a route to files and directories on the local file system", func() {
 		route := fs.NewRoute("/public")
 		Expect(route).To(BeEquivalentTo(
-			&fs.FileSystemRoute{
+			&fs.NewFileSystemRoute{
 				ContentRootPath: "/public",
-				Resource:        &fs.ReadOnlyFileSystem{BaseDirectory: "/public"},
+				Factory: &fs.LocalResources{},
 			}))
 	})
-
-	XIt("returns the new route implementation with a factory")
 })
 
 var _ = Describe("NewFileSystemRoute", func() {

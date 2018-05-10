@@ -10,9 +10,9 @@ import (
 )
 
 func NewRoute(contentRootPath string) http.Route {
-	return &FileSystemRoute{
+	return &NewFileSystemRoute{
 		ContentRootPath: contentRootPath,
-		Resource:        &ReadOnlyFileSystem{BaseDirectory: contentRootPath},
+		Factory:         &LocalResources{},
 	}
 }
 
