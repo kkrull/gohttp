@@ -39,7 +39,7 @@ func (controller *ReadOnlyFileSystem) determineResponse(requestedPath string) ht
 			Files:      readFileNames(files),
 			HrefPrefix: requestedPath}
 	} else {
-		return &FileContents{Filename: resolvedPath}
+		return &ExistingFile{Filename: resolvedPath}
 	}
 }
 
