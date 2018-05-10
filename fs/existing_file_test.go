@@ -80,7 +80,7 @@ var _ = Describe("ExistingFile", func() {
 			})
 		})
 
-		XContext("when the request contains a Range header for a range that exists in the requested file", func() {
+		Context("when the request contains a Range header for a range that exists in the requested file", func() {
 			BeforeEach(func() {
 				existingFile = path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "ABC")).To(Succeed())
@@ -89,17 +89,23 @@ var _ = Describe("ExistingFile", func() {
 					TargetReturns: "/readable.txt",
 					PathReturns:   "/readable.txt",
 				}
-				requestMessage.AddHeader("Range", "0-1")
+				requestMessage.AddHeader("Range", "bytes=0-1")
 
 				resource = &fs.ExistingFile{Filename: existingFile}
 				resource.Get(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
+			It("responds with a well-formed message", func() {
+				response.ShouldBeWellFormed()
+			})
 			It("responds with 200 OK", func() {
 				response.StatusShouldBe(206, "Partial Content")
 			})
-			It("sets Content-Length to the number of bytes in the file", func() {
+			It("sets Content-Type to the MIME type registered for that extension", func() {
+				response.HeaderShould("Content-Type", HavePrefix("text/plain"))
+			})
+			It("sets Content-Length to the number of bytes in the selected range(s)", func() {
 				response.HeaderShould("Content-Length", Equal("2"))
 			})
 			It("sets Content-Range to the resolved location in and total size of the file, in bytes", func() {
@@ -109,6 +115,8 @@ var _ = Describe("ExistingFile", func() {
 				response.BodyShould(Equal("AB"))
 			})
 		})
+
+		XIt("parses byte ranges in other formats -- drill down into a lower level piece")
 	})
 
 	Describe("#Head", func() {
