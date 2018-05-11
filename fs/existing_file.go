@@ -3,7 +3,6 @@ package fs
 import (
 	"io"
 	"mime"
-	"os"
 	"path"
 
 	"github.com/kkrull/gohttp/http"
@@ -53,9 +52,4 @@ func contentTypeFromFileExtension(filename string) string {
 	}
 
 	return mime.TypeByExtension(extension)
-}
-
-func (existingFile *ExistingFile) writeWholeFile(client io.Writer) {
-	file, _ := os.Open(existingFile.Filename)
-	msg.CopyToBody(client, file)
 }
