@@ -5,11 +5,9 @@ import (
 	"mime"
 	"os"
 	"path"
-	"strconv"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
-	"github.com/kkrull/gohttp/msg/success"
 )
 
 type ExistingFile struct {
@@ -22,40 +20,39 @@ func (existingFile *ExistingFile) Name() string {
 
 func (existingFile *ExistingFile) Get(client io.Writer, message http.RequestMessage) {
 	existingFile.Head(client, message)
-	contentRange := existingFile.optionalByteRange(message)
-	if contentRange == nil {
-		existingFile.writeWholeFile(client)
-	} else {
-		contentRange.Copy(existingFile.Filename, client)
-	}
+	contentRange := existingFile.makeSliceOfTargetFile(message)
+	contentRange.WriteBody(client)
 }
 
 func (existingFile *ExistingFile) Head(client io.Writer, message http.RequestMessage) {
-	contentRange := existingFile.optionalByteRange(message)
-	if contentRange == nil {
-		msg.WriteStatus(client, success.OKStatus)
-		info, _ := os.Stat(existingFile.Filename)
-		msg.WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
-	} else {
-		msg.WriteStatus(client, success.PartialContentStatus)
-		msg.WriteHeader(client, "Content-Length", strconv.Itoa(contentRange.Length()))
-		msg.WriteHeader(client, "Content-Range", contentRange.ContentRange())
-	}
-
+	contentRange := existingFile.makeSliceOfTargetFile(message)
+	contentRange.WriteStatus(client)
+	contentRange.WriteContentSizeHeaders(client)
 	msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(existingFile.Filename))
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (existingFile *ExistingFile) optionalByteRange(message http.RequestMessage) *byteRange {
+func (existingFile *ExistingFile) makeSliceOfTargetFile(message http.RequestMessage) FileSlice {
 	rangeHeaders := message.HeaderValues("Range")
 	if len(rangeHeaders) != 1 {
-		return nil
+		info, _ := os.Stat(existingFile.Filename)
+		file, _ := os.Open(existingFile.Filename)
+		totalSize := info.Size()
+		return &WholeFile{
+			file:        file,
+			sizeInBytes: totalSize,
+		}
 	}
 
-	info, _ := os.Stat(existingFile.Filename)
-	contentRanges := ParseByteRanges(rangeHeaders[0], info.Size())
+	contentRanges := SingleByteRangeSlice(rangeHeaders[0], existingFile.Filename)
 	if len(contentRanges) != 1 {
-		return nil
+		info, _ := os.Stat(existingFile.Filename)
+		file, _ := os.Open(existingFile.Filename)
+		totalSize := info.Size()
+		return &WholeFile{
+			file:        file,
+			sizeInBytes: totalSize,
+		}
 	}
 
 	return contentRanges[0]
