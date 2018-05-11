@@ -139,6 +139,29 @@ var _ = Describe("ExistingFile", func() {
 				response.HeaderShould("Content-Length", Equal("4"))
 			})
 		})
+
+		Context("when the request contains a Range header with 2 or more byte ranges in it", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readable.txt")
+				Expect(createTextFile(existingFile, "ABCD")).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns: "GET",
+					TargetReturns: "/readable.txt",
+					PathReturns:   "/readable.txt",
+				}
+				requestMessage.AddHeader("Range", "bytes=0-1,2-3")
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Get(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds as if it were a request for the whole file – that's way too complicated to handle right now", func() {
+				response.StatusShouldBe(200, "OK")
+				response.HeaderShould("Content-Length", Equal("4"))
+			})
+		})
 	})
 
 	Describe("#Head", func() {

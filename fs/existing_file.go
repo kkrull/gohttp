@@ -22,35 +22,43 @@ func (existingFile *ExistingFile) Name() string {
 
 func (existingFile *ExistingFile) Get(client io.Writer, message http.RequestMessage) {
 	existingFile.Head(client, message)
-	rangeHeaders := message.HeaderValues("Range")
-	if len(rangeHeaders) == 1 {
-		info, _ := os.Stat(existingFile.Filename)
-		contentRanges := ParseByteRanges(rangeHeaders[0], info.Size())
-		contentRanges[0].Copy(existingFile.Filename, client)
-	} else {
+	contentRange := existingFile.optionalByteRange(message)
+	if contentRange == nil {
 		existingFile.writeWholeFile(client)
+	} else {
+		contentRange.Copy(existingFile.Filename, client)
 	}
 }
 
 func (existingFile *ExistingFile) Head(client io.Writer, message http.RequestMessage) {
-	rangeHeaders := message.HeaderValues("Range")
-	if len(rangeHeaders) == 1 {
-		info, _ := os.Stat(existingFile.Filename)
-		msg.WriteStatus(client, success.PartialContentStatus)
-		msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(existingFile.Filename))
-
-		contentRanges := ParseByteRanges(rangeHeaders[0], info.Size())
-		contentRange := contentRanges[0]
-		msg.WriteHeader(client, "Content-Length", strconv.Itoa(contentRange.Length()))
-		msg.WriteHeader(client, "Content-Range", contentRange.ContentRange())
-		msg.WriteEndOfMessageHeader(client)
-	} else {
+	contentRange := existingFile.optionalByteRange(message)
+	if contentRange == nil {
 		msg.WriteStatus(client, success.OKStatus)
-		msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(existingFile.Filename))
 		info, _ := os.Stat(existingFile.Filename)
 		msg.WriteHeader(client, "Content-Length", strconv.FormatInt(info.Size(), 10))
-		msg.WriteEndOfMessageHeader(client)
+	} else {
+		msg.WriteStatus(client, success.PartialContentStatus)
+		msg.WriteHeader(client, "Content-Length", strconv.Itoa(contentRange.Length()))
+		msg.WriteHeader(client, "Content-Range", contentRange.ContentRange())
 	}
+
+	msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(existingFile.Filename))
+	msg.WriteEndOfMessageHeader(client)
+}
+
+func (existingFile *ExistingFile) optionalByteRange(message http.RequestMessage) *byteRange {
+	rangeHeaders := message.HeaderValues("Range")
+	if len(rangeHeaders) != 1 {
+		return nil
+	}
+
+	info, _ := os.Stat(existingFile.Filename)
+	contentRanges := ParseByteRanges(rangeHeaders[0], info.Size())
+	if len(contentRanges) != 1 {
+		return nil
+	}
+
+	return contentRanges[0]
 }
 
 func contentTypeFromFileExtension(filename string) string {
