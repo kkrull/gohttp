@@ -28,7 +28,7 @@ var _ = Describe("ExistingFile", func() {
 	})
 
 	Describe("#Get", func() {
-		Context("when the path is a readable text file in the base path", func() {
+		Context("when the path is a readable file in the base path, and there are no Range headers", func() {
 			BeforeEach(func() {
 				existingFile = path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
@@ -80,7 +80,7 @@ var _ = Describe("ExistingFile", func() {
 			})
 		})
 
-		Context("when the request contains a Range header for a range that exists in the requested file", func() {
+		Context("when the request contains a single Range header with single byte range that exists in the requested file", func() {
 			BeforeEach(func() {
 				existingFile = path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "ABC")).To(Succeed())
@@ -116,6 +116,29 @@ var _ = Describe("ExistingFile", func() {
 			})
 		})
 
+		Context("when the request contains 2 or more Range headers", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readable.txt")
+				Expect(createTextFile(existingFile, "ABCD")).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns: "GET",
+					TargetReturns: "/readable.txt",
+					PathReturns:   "/readable.txt",
+				}
+				requestMessage.AddHeader("Range", "bytes=0-1")
+				requestMessage.AddHeader("Range", "bytes=2-3")
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Get(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds as if it were a request for the whole file – that's way too complicated to handle right now", func() {
+				response.StatusShouldBe(200, "OK")
+				response.HeaderShould("Content-Length", Equal("4"))
+			})
+		})
 	})
 
 	Describe("#Head", func() {
