@@ -11,19 +11,15 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func SingleByteRangeSlice(byteRangeSpecifier string, filename string) []FileSlice {
-	info, _ := os.Stat(filename)
-	file, _ := os.Open(filename)
-	totalSize := info.Size()
+func ParseByteRangeSlices(byteRangeSpecifier string, filename string) []FileSlice {
 	rangePattern, _ := regexp.Compile("^bytes=(\\d+)[-](\\d+)$")
 	if matches := rangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.Atoi(matches[1])
 		highIndex, _ := strconv.Atoi(matches[2])
 		return []FileSlice{&PartialSlice{
-			file:            file,
-			fileSizeInBytes: totalSize,
-			firstByteIndex:  lowIndex,
-			lastByteIndex:   highIndex,
+			path:           filename,
+			firstByteIndex: lowIndex,
+			lastByteIndex:  highIndex,
 		}}
 	}
 
@@ -31,10 +27,9 @@ func SingleByteRangeSlice(byteRangeSpecifier string, filename string) []FileSlic
 }
 
 type PartialSlice struct {
-	file            *os.File
-	fileSizeInBytes int64
-	firstByteIndex  int
-	lastByteIndex   int
+	path           string
+	firstByteIndex int
+	lastByteIndex  int
 }
 
 func (slice *PartialSlice) WriteStatus(writer io.Writer) {
@@ -42,32 +37,36 @@ func (slice *PartialSlice) WriteStatus(writer io.Writer) {
 }
 
 func (slice *PartialSlice) WriteContentSizeHeaders(writer io.Writer) {
-	msg.WriteHeader(writer, "Content-Length", strconv.Itoa(slice.Length()))
-	msg.WriteHeader(writer, "Content-Range", slice.ContentRange())
+	msg.WriteHeader(writer, "Content-Length", strconv.Itoa(slice.len()))
+	msg.WriteHeader(writer, "Content-Range", slice.contentRange())
 }
 
 func (slice *PartialSlice) WriteBody(writer io.Writer) {
+	file, _ := os.Open(slice.path)
+	defer file.Close()
+
 	offset := int64(slice.firstByteIndex)
-	copyLength := int64(slice.Length())
-	slice.file.Seek(offset, 0)
-	io.CopyN(writer, slice.file, copyLength)
+	copyLength := int64(slice.len())
+	file.Seek(offset, 0)
+	io.CopyN(writer, file, copyLength)
 }
 
-func (slice *PartialSlice) ContentRange() string {
+func (slice *PartialSlice) contentRange() string {
+	info, _ := os.Stat(slice.path)
+	totalSize := info.Size()
 	return fmt.Sprintf("bytes %d-%d/%d",
 		slice.firstByteIndex,
 		slice.lastByteIndex,
-		slice.fileSizeInBytes,
+		totalSize,
 	)
 }
 
-func (slice *PartialSlice) Length() int {
+func (slice *PartialSlice) len() int {
 	return slice.lastByteIndex - slice.firstByteIndex + 1
 }
 
 type WholeFile struct {
-	file        *os.File
-	sizeInBytes int64
+	path string
 }
 
 func (slice *WholeFile) WriteStatus(writer io.Writer) {
@@ -75,11 +74,14 @@ func (slice *WholeFile) WriteStatus(writer io.Writer) {
 }
 
 func (slice *WholeFile) WriteContentSizeHeaders(writer io.Writer) {
-	msg.WriteHeader(writer, "Content-Length", strconv.FormatInt(slice.sizeInBytes, 10))
+	info, _ := os.Stat(slice.path)
+	msg.WriteHeader(writer, "Content-Length", strconv.FormatInt(info.Size(), 10))
 }
 
 func (slice *WholeFile) WriteBody(writer io.Writer) {
-	msg.CopyToBody(writer, slice.file)
+	file, _ := os.Open(slice.path)
+	defer file.Close()
+	msg.CopyToBody(writer, file)
 }
 
 type FileSlice interface {

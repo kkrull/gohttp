@@ -35,24 +35,12 @@ func (existingFile *ExistingFile) Head(client io.Writer, message http.RequestMes
 func (existingFile *ExistingFile) makeSliceOfTargetFile(message http.RequestMessage) FileSlice {
 	rangeHeaders := message.HeaderValues("Range")
 	if len(rangeHeaders) != 1 {
-		info, _ := os.Stat(existingFile.Filename)
-		file, _ := os.Open(existingFile.Filename)
-		totalSize := info.Size()
-		return &WholeFile{
-			file:        file,
-			sizeInBytes: totalSize,
-		}
+		return &WholeFile{path: existingFile.Filename}
 	}
 
-	contentRanges := SingleByteRangeSlice(rangeHeaders[0], existingFile.Filename)
+	contentRanges := ParseByteRangeSlices(rangeHeaders[0], existingFile.Filename)
 	if len(contentRanges) != 1 {
-		info, _ := os.Stat(existingFile.Filename)
-		file, _ := os.Open(existingFile.Filename)
-		totalSize := info.Size()
-		return &WholeFile{
-			file:        file,
-			sizeInBytes: totalSize,
-		}
+		return &WholeFile{path: existingFile.Filename}
 	}
 
 	return contentRanges[0]
