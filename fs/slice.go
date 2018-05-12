@@ -17,14 +17,26 @@ const (
 )
 
 func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
-	rangePattern, _ := regexp.Compile("^bytes=(\\d+)[-](\\d+)$")
-	if matches := rangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
+	var (
+		explicitRangePattern = regexp.MustCompile("^bytes=(\\d+)[-](\\d+)$")
+		startingIndexPattern = regexp.MustCompile("^bytes=(\\d+)-$")
+	)
+
+	if matches := explicitRangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: lowIndex,
 			LastByteIndex:  highIndex,
+		}
+	} else if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
+		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
+		size, _ := sizeInBytes(filename)
+		return &PartialSlice{
+			Path:           filename,
+			FirstByteIndex: lowIndex,
+			LastByteIndex:  size - 1,
 		}
 	}
 
@@ -55,11 +67,11 @@ func (slice *PartialSlice) WriteBody(writer io.Writer) {
 }
 
 func (slice *PartialSlice) contentRange() string {
-	info, _ := os.Stat(slice.Path)
+	size, _ := sizeInBytes(slice.Path)
 	return fmt.Sprintf("bytes %d-%d/%d",
 		slice.FirstByteIndex,
 		slice.LastByteIndex,
-		info.Size(),
+		size,
 	)
 }
 
@@ -68,7 +80,7 @@ func (slice *PartialSlice) len() int64 {
 }
 
 type WholeFile struct {
-	path string
+	Path string
 }
 
 func (slice *WholeFile) WriteStatus(writer io.Writer) {
@@ -76,12 +88,12 @@ func (slice *WholeFile) WriteStatus(writer io.Writer) {
 }
 
 func (slice *WholeFile) WriteContentSizeHeaders(writer io.Writer) {
-	info, _ := os.Stat(slice.path)
-	msg.WriteHeader(writer, "Content-Length", strconv.FormatInt(info.Size(), base10))
+	size, _ := sizeInBytes(slice.Path)
+	msg.WriteHeader(writer, "Content-Length", strconv.FormatInt(size, base10))
 }
 
 func (slice *WholeFile) WriteBody(writer io.Writer) {
-	file, _ := os.Open(slice.path)
+	file, _ := os.Open(slice.Path)
 	defer file.Close()
 	msg.CopyToBody(writer, file)
 }
@@ -90,4 +102,13 @@ type FileSlice interface {
 	WriteStatus(writer io.Writer)
 	WriteContentSizeHeaders(writer io.Writer)
 	WriteBody(writer io.Writer)
+}
+
+func sizeInBytes(filename string) (int64, error) {
+	info, err := os.Stat(filename)
+	if err != nil {
+		return 0, err
+	}
+
+	return info.Size(), nil
 }

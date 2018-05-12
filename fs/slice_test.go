@@ -24,7 +24,7 @@ var _ = Describe("ParseByteRangeSlice", func() {
 
 	Context("given a file of size n bytes", func() {
 		Context("given 'bytes=x-y', where y < n and x <= y", func() {
-			It("returns PartialSlice from x to y, inclusive", func() {
+			It("returns a PartialSlice from x to y, inclusive", func() {
 				slice = fs.ParseByteRangeSlice("bytes=0-1", file)
 				Expect(slice).To(BeEquivalentTo(&fs.PartialSlice{
 					Path:           file,
@@ -34,7 +34,17 @@ var _ = Describe("ParseByteRangeSlice", func() {
 			})
 		})
 
-		XIt("x- is a suffix range from x to the end")
+		Context("given 'bytes=x-', where x < n", func() {
+			It("returns a PartialSlice from x to the end of the file", func() {
+				slice = fs.ParseByteRangeSlice("bytes=2-", file)
+				Expect(slice).To(BeEquivalentTo(&fs.PartialSlice{
+					Path:           file,
+					FirstByteIndex: 2,
+					LastByteIndex:  3,
+				}))
+			})
+		})
+
 		XIt("-y is a suffix range of the last y bytes")
 
 		XIt("a range that starts in the file and runs off the end stops at the end")
