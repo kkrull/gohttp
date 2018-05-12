@@ -22,17 +22,17 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		startingIndexPattern = regexp.MustCompile("^bytes=(\\d+)-$")
 	)
 
+	size, _ := sizeInBytes(filename)
 	if matches := explicitRangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: lowIndex,
-			LastByteIndex:  highIndex,
+			LastByteIndex:  min(size, highIndex),
 		}
 	} else if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
-		size, _ := sizeInBytes(filename)
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: lowIndex,
@@ -41,6 +41,14 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 	}
 
 	return nil
+}
+
+func min(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+
+	return b
 }
 
 type PartialSlice struct {
