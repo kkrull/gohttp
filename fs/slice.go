@@ -27,6 +27,13 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 	if matches := explicitRangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
+		if lowIndex >= size {
+			return &OutOfRangeSlice{
+				Path:     filename,
+				NumBytes: size,
+			}
+		}
+
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: lowIndex,
@@ -34,6 +41,13 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		}
 	} else if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
+		if lowIndex >= size {
+			return &OutOfRangeSlice{
+				Path:     filename,
+				NumBytes: size,
+			}
+		}
+
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: lowIndex,
@@ -41,6 +55,10 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		}
 	} else if matches := suffixLengthPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		length, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
+		if length >= size {
+			return &WholeFile{Path: filename}
+		}
+		
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: size - length,
@@ -51,12 +69,21 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 	return nil
 }
 
-func min(a, b int64) int64 {
-	if a < b {
-		return a
-	}
+type OutOfRangeSlice struct {
+	Path     string
+	NumBytes int64
+}
 
-	return b
+func (*OutOfRangeSlice) WriteStatus(writer io.Writer) {
+	panic("implement me")
+}
+
+func (*OutOfRangeSlice) WriteContentSizeHeaders(writer io.Writer) {
+	panic("implement me")
+}
+
+func (*OutOfRangeSlice) WriteBody(writer io.Writer) {
+	panic("implement me")
 }
 
 type PartialSlice struct {
@@ -118,6 +145,14 @@ type FileSlice interface {
 	WriteStatus(writer io.Writer)
 	WriteContentSizeHeaders(writer io.Writer)
 	WriteBody(writer io.Writer)
+}
+
+func min(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+
+	return b
 }
 
 func sizeInBytes(filename string) (int64, error) {
