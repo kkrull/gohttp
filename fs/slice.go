@@ -17,7 +17,7 @@ const (
 	bitsInInt64 = 64
 )
 
-func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType string) FileSlice {
+func ParseByteRange(byteRangeSpecifier string, filename string, contentType string) FileSlice {
 	size, _ := sizeInBytes(filename)
 	factory := &SliceFactory{
 		Filename:    filename,
@@ -41,14 +41,8 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType
 	var suffixLengthPattern = regexp.MustCompile("^bytes=-(\\d+)$")
 	if matches := suffixLengthPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		length, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
-		if length >= size {
-			return &WholeFile{
-				Path:        filename,
-				ContentType: contentType,
-			}
-		}
-
-		return factory.SliceCovering(size-length, size-1)
+		lowIndex := max(0, size-length)
+		return factory.SliceCovering(lowIndex, size-1)
 	}
 
 	return &UnsupportedSlice{
@@ -157,11 +151,12 @@ func (slice *WholeFile) WriteBody(writer io.Writer) {
 	msg.CopyToBody(writer, file)
 }
 
-// A view of all/part of a file
-type FileSlice interface {
-	WriteStatus(writer io.Writer)
-	WriteContentHeaders(writer io.Writer)
-	WriteBody(writer io.Writer)
+func max(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+
+	return b
 }
 
 func sizeInBytes(filename string) (int64, error) {

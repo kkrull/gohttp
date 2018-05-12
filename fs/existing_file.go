@@ -36,19 +36,11 @@ func (existingFile *ExistingFile) makeSliceOfTargetFile(message http.RequestMess
 	if len(rangeHeaders) != 1 {
 		return &WholeFile{
 			ContentType: contentType,
-			Path: existingFile.Filename,
+			Path:        existingFile.Filename,
 		}
 	}
 
-	slice := ParseByteRangeSlice(rangeHeaders[0], existingFile.Filename, contentType)
-	if slice == nil {
-		return &WholeFile{
-			ContentType: contentType,
-			Path: existingFile.Filename,
-		}
-	}
-
-	return slice
+	return ParseByteRange(rangeHeaders[0], existingFile.Filename, contentType)
 }
 
 func contentTypeFromFileExtension(filename string) string {
@@ -58,4 +50,11 @@ func contentTypeFromFileExtension(filename string) string {
 	}
 
 	return mime.TypeByExtension(extension)
+}
+
+// A view of all/part of a file
+type FileSlice interface {
+	WriteStatus(writer io.Writer)
+	WriteContentHeaders(writer io.Writer)
+	WriteBody(writer io.Writer)
 }
