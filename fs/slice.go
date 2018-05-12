@@ -22,9 +22,9 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
 		return &PartialSlice{
-			path:           filename,
-			firstByteIndex: lowIndex,
-			lastByteIndex:  highIndex,
+			Path:           filename,
+			FirstByteIndex: lowIndex,
+			LastByteIndex:  highIndex,
 		}
 	}
 
@@ -32,9 +32,9 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 }
 
 type PartialSlice struct {
-	path           string
-	firstByteIndex int64
-	lastByteIndex  int64
+	Path           string
+	FirstByteIndex int64
+	LastByteIndex  int64
 }
 
 func (slice *PartialSlice) WriteStatus(writer io.Writer) {
@@ -47,24 +47,24 @@ func (slice *PartialSlice) WriteContentSizeHeaders(writer io.Writer) {
 }
 
 func (slice *PartialSlice) WriteBody(writer io.Writer) {
-	file, _ := os.Open(slice.path)
+	file, _ := os.Open(slice.Path)
 	defer file.Close()
 
-	file.Seek(slice.firstByteIndex, 0)
+	file.Seek(slice.FirstByteIndex, 0)
 	io.CopyN(writer, file, slice.len())
 }
 
 func (slice *PartialSlice) contentRange() string {
-	info, _ := os.Stat(slice.path)
+	info, _ := os.Stat(slice.Path)
 	return fmt.Sprintf("bytes %d-%d/%d",
-		slice.firstByteIndex,
-		slice.lastByteIndex,
+		slice.FirstByteIndex,
+		slice.LastByteIndex,
 		info.Size(),
 	)
 }
 
 func (slice *PartialSlice) len() int64 {
-	return slice.lastByteIndex - slice.firstByteIndex + 1
+	return slice.LastByteIndex - slice.FirstByteIndex + 1
 }
 
 type WholeFile struct {
