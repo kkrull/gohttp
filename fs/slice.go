@@ -44,7 +44,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType
 			Path:           filename,
 			ContentType:    contentType,
 			FirstByteIndex: lowIndex,
-			LastByteIndex:  min(size, highIndex),
+			LastByteIndex:  highIndex,
 		}
 	} else if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
@@ -136,12 +136,9 @@ func (slice *UnsupportedSlice) WriteStatus(writer io.Writer) {
 func (slice *UnsupportedSlice) WriteContentHeaders(writer io.Writer) {
 	msg.WriteContentLengthHeader(writer, 0)
 	msg.WriteHeader(writer, "Content-Range", fmt.Sprintf("bytes */%d", slice.NumBytes))
-	//msg.WriteContentTypeHeader(writer, "text/plain")
 }
 
-func (slice *UnsupportedSlice) WriteBody(writer io.Writer) {
-	//msg.WriteBody(writer, "Invalid range")
-}
+func (slice *UnsupportedSlice) WriteBody(writer io.Writer) { /* do nothing */ }
 
 // A slice consisting of the entire file
 type WholeFile struct {
@@ -170,14 +167,6 @@ type FileSlice interface {
 	WriteStatus(writer io.Writer)
 	WriteContentHeaders(writer io.Writer)
 	WriteBody(writer io.Writer)
-}
-
-func min(a, b int64) int64 {
-	if a < b {
-		return a
-	}
-
-	return b
 }
 
 func sizeInBytes(filename string) (int64, error) {
