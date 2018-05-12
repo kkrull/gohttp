@@ -19,27 +19,33 @@ func (existingFile *ExistingFile) Name() string {
 
 func (existingFile *ExistingFile) Get(client io.Writer, message http.RequestMessage) {
 	existingFile.Head(client, message)
-	contentRange := existingFile.makeSliceOfTargetFile(message)
-	contentRange.WriteBody(client)
+	slice := existingFile.makeSliceOfTargetFile(message)
+	slice.WriteBody(client)
 }
 
 func (existingFile *ExistingFile) Head(client io.Writer, message http.RequestMessage) {
-	contentRange := existingFile.makeSliceOfTargetFile(message)
-	contentRange.WriteStatus(client)
-	contentRange.WriteContentSizeHeaders(client)
-	msg.WriteContentTypeHeader(client, contentTypeFromFileExtension(existingFile.Filename))
+	slice := existingFile.makeSliceOfTargetFile(message)
+	slice.WriteStatus(client)
+	slice.WriteContentHeaders(client)
 	msg.WriteEndOfMessageHeader(client)
 }
 
 func (existingFile *ExistingFile) makeSliceOfTargetFile(message http.RequestMessage) FileSlice {
+	contentType := contentTypeFromFileExtension(existingFile.Filename)
 	rangeHeaders := message.HeaderValues("Range")
 	if len(rangeHeaders) != 1 {
-		return &WholeFile{Path: existingFile.Filename}
+		return &WholeFile{
+			ContentType: contentType,
+			Path: existingFile.Filename,
+		}
 	}
 
-	slice := ParseByteRangeSlice(rangeHeaders[0], existingFile.Filename)
+	slice := ParseByteRangeSlice(rangeHeaders[0], existingFile.Filename, contentType)
 	if slice == nil {
-		return &WholeFile{Path: existingFile.Filename}
+		return &WholeFile{
+			ContentType: contentType,
+			Path: existingFile.Filename,
+		}
 	}
 
 	return slice

@@ -17,7 +17,7 @@ const (
 	bitsInInt64 = 64
 )
 
-func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
+func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType string) FileSlice {
 	var (
 		explicitRangePattern = regexp.MustCompile("^bytes=(\\d+)[-](\\d+)$")
 		startingIndexPattern = regexp.MustCompile("^bytes=(\\d+)-$")
@@ -37,6 +37,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 
 		return &PartialSlice{
 			Path:           filename,
+			ContentType:    contentType,
 			FirstByteIndex: lowIndex,
 			LastByteIndex:  min(size, highIndex),
 		}
@@ -51,17 +52,22 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 
 		return &PartialSlice{
 			Path:           filename,
+			ContentType:    contentType,
 			FirstByteIndex: lowIndex,
 			LastByteIndex:  size - 1,
 		}
 	} else if matches := suffixLengthPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		length, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		if length >= size {
-			return &WholeFile{Path: filename}
+			return &WholeFile{
+				Path:        filename,
+				ContentType: contentType,
+			}
 		}
 
 		return &PartialSlice{
 			Path:           filename,
+			ContentType:    contentType,
 			FirstByteIndex: size - length,
 			LastByteIndex:  size - 1,
 		}
@@ -76,6 +82,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 // A slice of part of a file
 type PartialSlice struct {
 	Path           string
+	ContentType    string
 	FirstByteIndex int64
 	LastByteIndex  int64
 }
@@ -84,9 +91,10 @@ func (slice *PartialSlice) WriteStatus(writer io.Writer) {
 	msg.WriteStatus(writer, success.PartialContentStatus)
 }
 
-func (slice *PartialSlice) WriteContentSizeHeaders(writer io.Writer) {
+func (slice *PartialSlice) WriteContentHeaders(writer io.Writer) {
 	msg.WriteHeader(writer, "Content-Length", strconv.FormatInt(slice.len(), base10))
 	msg.WriteHeader(writer, "Content-Range", slice.contentRange())
+	msg.WriteContentTypeHeader(writer, slice.ContentType)
 }
 
 func (slice *PartialSlice) WriteBody(writer io.Writer) {
@@ -120,25 +128,28 @@ func (slice *UnsupportedSlice) WriteStatus(writer io.Writer) {
 	msg.WriteStatus(writer, clienterror.RangeNotSatisfiableStatus)
 }
 
-func (slice *UnsupportedSlice) WriteContentSizeHeaders(writer io.Writer) {
+func (slice *UnsupportedSlice) WriteContentHeaders(writer io.Writer) {
 	msg.WriteContentLengthHeader(writer, 0)
 	msg.WriteHeader(writer, "Content-Range", fmt.Sprintf("bytes */%d", slice.NumBytes))
+	//	msg.WriteContentTypeHeader(writer, slice.ContentType)
 }
 
 func (slice *UnsupportedSlice) WriteBody(writer io.Writer) { /* do nothing */ }
 
 // A slice consisting of the entire file
 type WholeFile struct {
-	Path string
+	Path        string
+	ContentType string
 }
 
 func (slice *WholeFile) WriteStatus(writer io.Writer) {
 	msg.WriteStatus(writer, success.OKStatus)
 }
 
-func (slice *WholeFile) WriteContentSizeHeaders(writer io.Writer) {
+func (slice *WholeFile) WriteContentHeaders(writer io.Writer) {
 	size, _ := sizeInBytes(slice.Path)
 	msg.WriteHeader(writer, "Content-Length", strconv.FormatInt(size, base10))
+	msg.WriteContentTypeHeader(writer, slice.ContentType)
 }
 
 func (slice *WholeFile) WriteBody(writer io.Writer) {
@@ -150,7 +161,7 @@ func (slice *WholeFile) WriteBody(writer io.Writer) {
 // A view of all/part of a file
 type FileSlice interface {
 	WriteStatus(writer io.Writer)
-	WriteContentSizeHeaders(writer io.Writer)
+	WriteContentHeaders(writer io.Writer)
 	WriteBody(writer io.Writer)
 }
 
