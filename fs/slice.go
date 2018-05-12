@@ -20,6 +20,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 	var (
 		explicitRangePattern = regexp.MustCompile("^bytes=(\\d+)[-](\\d+)$")
 		startingIndexPattern = regexp.MustCompile("^bytes=(\\d+)-$")
+		suffixLengthPattern  = regexp.MustCompile("^bytes=-(\\d+)$")
 	)
 
 	size, _ := sizeInBytes(filename)
@@ -36,6 +37,13 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: lowIndex,
+			LastByteIndex:  size - 1,
+		}
+	} else if matches := suffixLengthPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
+		length, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
+		return &PartialSlice{
+			Path:           filename,
+			FirstByteIndex: size - length,
 			LastByteIndex:  size - 1,
 		}
 	}
