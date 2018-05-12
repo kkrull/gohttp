@@ -18,50 +18,28 @@ const (
 )
 
 func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType string) FileSlice {
-	var (
-		explicitRangePattern = regexp.MustCompile("^bytes=(\\d+)[-](\\d+)$")
-		startingIndexPattern = regexp.MustCompile("^bytes=(\\d+)-$")
-		suffixLengthPattern  = regexp.MustCompile("^bytes=-(\\d+)$")
-	)
-
 	size, _ := sizeInBytes(filename)
+	factory := &SliceFactory{
+		Filename:    filename,
+		ContentType: contentType,
+		Size:        size,
+	}
+
+	var explicitRangePattern = regexp.MustCompile("^bytes=(\\d+)[-](\\d+)$")
 	if matches := explicitRangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
-		if lowIndex >= size {
-			return &UnsupportedSlice{
-				Path:     filename,
-				NumBytes: size,
-			}
-		} else if highIndex >= size {
-			return &UnsupportedSlice{
-				Path:     filename,
-				NumBytes: size,
-			}
-		}
+		return factory.SliceCovering(lowIndex, highIndex)
+	}
 
-		return &PartialSlice{
-			Path:           filename,
-			ContentType:    contentType,
-			FirstByteIndex: lowIndex,
-			LastByteIndex:  highIndex,
-		}
-	} else if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
+	var startingIndexPattern = regexp.MustCompile("^bytes=(\\d+)-$")
+	if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
-		if lowIndex >= size {
-			return &UnsupportedSlice{
-				Path:     filename,
-				NumBytes: size,
-			}
-		}
+		return factory.SliceCovering(lowIndex, size-1)
+	}
 
-		return &PartialSlice{
-			Path:           filename,
-			ContentType:    contentType,
-			FirstByteIndex: lowIndex,
-			LastByteIndex:  size - 1,
-		}
-	} else if matches := suffixLengthPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
+	var suffixLengthPattern = regexp.MustCompile("^bytes=-(\\d+)$")
+	if matches := suffixLengthPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		length, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		if length >= size {
 			return &WholeFile{
@@ -70,17 +48,34 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType
 			}
 		}
 
-		return &PartialSlice{
-			Path:           filename,
-			ContentType:    contentType,
-			FirstByteIndex: size - length,
-			LastByteIndex:  size - 1,
-		}
+		return factory.SliceCovering(size-length, size-1)
 	}
 
 	return &UnsupportedSlice{
 		Path:     filename,
 		NumBytes: size,
+	}
+}
+
+type SliceFactory struct {
+	Filename    string
+	ContentType string
+	Size        int64
+}
+
+func (factory *SliceFactory) SliceCovering(lowIndex, highIndex int64) FileSlice {
+	if lowIndex >= factory.Size || highIndex >= factory.Size {
+		return &UnsupportedSlice{
+			Path:     factory.Filename,
+			NumBytes: factory.Size,
+		}
+	}
+
+	return &PartialSlice{
+		Path:           factory.Filename,
+		ContentType:    factory.ContentType,
+		FirstByteIndex: lowIndex,
+		LastByteIndex:  highIndex,
 	}
 }
 
