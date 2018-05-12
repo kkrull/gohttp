@@ -74,6 +74,7 @@ type requestMessage struct {
 	target          string
 	queryParameters []QueryParameter
 	headers         []header
+	body            []byte
 }
 
 func (message *requestMessage) Method() string {
@@ -124,6 +125,14 @@ func (message *requestMessage) HeaderValues(field string) []string {
 
 func (message *requestMessage) AddHeader(field, value string) {
 	message.headers = append(message.headers, header{Field: field, Value: value})
+}
+
+func (message *requestMessage) Body() []byte {
+	return message.body
+}
+
+func (message *requestMessage) SetBody(body []byte) {
+	message.body = body
 }
 
 func (message *requestMessage) NotImplemented() Response {
