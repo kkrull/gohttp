@@ -33,6 +33,11 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string, contentType
 				Path:     filename,
 				NumBytes: size,
 			}
+		} else if highIndex >= size {
+			return &UnsupportedSlice{
+				Path:     filename,
+				NumBytes: size,
+			}
 		}
 
 		return &PartialSlice{
@@ -131,10 +136,12 @@ func (slice *UnsupportedSlice) WriteStatus(writer io.Writer) {
 func (slice *UnsupportedSlice) WriteContentHeaders(writer io.Writer) {
 	msg.WriteContentLengthHeader(writer, 0)
 	msg.WriteHeader(writer, "Content-Range", fmt.Sprintf("bytes */%d", slice.NumBytes))
-	//	msg.WriteContentTypeHeader(writer, slice.ContentType)
+	//msg.WriteContentTypeHeader(writer, "text/plain")
 }
 
-func (slice *UnsupportedSlice) WriteBody(writer io.Writer) { /* do nothing */ }
+func (slice *UnsupportedSlice) WriteBody(writer io.Writer) {
+	//msg.WriteBody(writer, "Invalid range")
+}
 
 // A slice consisting of the entire file
 type WholeFile struct {

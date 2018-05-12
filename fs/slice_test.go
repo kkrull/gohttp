@@ -34,13 +34,11 @@ var _ = Describe("ParseByteRangeSlice", func() {
 				}))
 			})
 
-			It("returns a PartialSlice from x to the end of the file, when the range starts within the file and goes past the end", func() {
+			It("returns an UnsupportedSlice, when the range starts within the file and goes past the end", func() {
 				slice = fs.ParseByteRangeSlice("bytes=2-5", file, "text/plain")
-				Expect(slice).To(BeEquivalentTo(&fs.PartialSlice{
-					ContentType:    "text/plain",
-					Path:           file,
-					FirstByteIndex: 2,
-					LastByteIndex:  4,
+				Expect(slice).To(BeEquivalentTo(&fs.UnsupportedSlice{
+					Path:     file,
+					NumBytes: 4,
 				}))
 			})
 
