@@ -37,12 +37,12 @@ func (existingFile *ExistingFile) makeSliceOfTargetFile(message http.RequestMess
 		return &WholeFile{path: existingFile.Filename}
 	}
 
-	contentRanges := ParseByteRangeSlices(rangeHeaders[0], existingFile.Filename)
-	if len(contentRanges) != 1 {
+	slice := ParseByteRangeSlice(rangeHeaders[0], existingFile.Filename)
+	if slice == nil {
 		return &WholeFile{path: existingFile.Filename}
 	}
 
-	return contentRanges[0]
+	return slice
 }
 
 func contentTypeFromFileExtension(filename string) string {

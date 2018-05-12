@@ -16,16 +16,16 @@ const (
 	bitsInInt64 = 64
 )
 
-func ParseByteRangeSlices(byteRangeSpecifier string, filename string) []FileSlice {
+func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 	rangePattern, _ := regexp.Compile("^bytes=(\\d+)[-](\\d+)$")
 	if matches := rangePattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
-		return []FileSlice{&PartialSlice{
+		return &PartialSlice{
 			path:           filename,
 			firstByteIndex: lowIndex,
 			lastByteIndex:  highIndex,
-		}}
+		}
 	}
 
 	return nil

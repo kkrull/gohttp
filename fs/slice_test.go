@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-var _ = Describe("ParseByteRangeSlices", func() {
+var _ = Describe("ParseByteRangeSlice", func() {
 	XIt("x-y is a regular range from x to y")
 	XIt("x- is a suffix range from x to the end")
 	XIt("-y is a suffix range of the last y bytes")
