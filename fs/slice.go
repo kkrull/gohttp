@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/success"
 )
 
@@ -28,7 +29,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		highIndex, _ := strconv.ParseInt(matches[2], base10, bitsInInt64)
 		if lowIndex >= size {
-			return &OutOfRangeSlice{
+			return &UnsupportedSlice{
 				Path:     filename,
 				NumBytes: size,
 			}
@@ -42,7 +43,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 	} else if matches := startingIndexPattern.FindStringSubmatch(byteRangeSpecifier); matches != nil {
 		lowIndex, _ := strconv.ParseInt(matches[1], base10, bitsInInt64)
 		if lowIndex >= size {
-			return &OutOfRangeSlice{
+			return &UnsupportedSlice{
 				Path:     filename,
 				NumBytes: size,
 			}
@@ -58,7 +59,7 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		if length >= size {
 			return &WholeFile{Path: filename}
 		}
-		
+
 		return &PartialSlice{
 			Path:           filename,
 			FirstByteIndex: size - length,
@@ -66,26 +67,13 @@ func ParseByteRangeSlice(byteRangeSpecifier string, filename string) FileSlice {
 		}
 	}
 
-	return nil
+	return &UnsupportedSlice{
+		Path:     filename,
+		NumBytes: size,
+	}
 }
 
-type OutOfRangeSlice struct {
-	Path     string
-	NumBytes int64
-}
-
-func (*OutOfRangeSlice) WriteStatus(writer io.Writer) {
-	panic("implement me")
-}
-
-func (*OutOfRangeSlice) WriteContentSizeHeaders(writer io.Writer) {
-	panic("implement me")
-}
-
-func (*OutOfRangeSlice) WriteBody(writer io.Writer) {
-	panic("implement me")
-}
-
+// A slice of part of a file
 type PartialSlice struct {
 	Path           string
 	FirstByteIndex int64
@@ -122,6 +110,24 @@ func (slice *PartialSlice) len() int64 {
 	return slice.LastByteIndex - slice.FirstByteIndex + 1
 }
 
+// An attempt to slice that is not supported
+type UnsupportedSlice struct {
+	Path     string
+	NumBytes int64
+}
+
+func (slice *UnsupportedSlice) WriteStatus(writer io.Writer) {
+	msg.WriteStatus(writer, clienterror.RangeNotSatisfiableStatus)
+}
+
+func (slice *UnsupportedSlice) WriteContentSizeHeaders(writer io.Writer) {
+	msg.WriteContentLengthHeader(writer, 0)
+	msg.WriteHeader(writer, "Content-Range", fmt.Sprintf("bytes */%d", slice.NumBytes))
+}
+
+func (slice *UnsupportedSlice) WriteBody(writer io.Writer) { /* do nothing */ }
+
+// A slice consisting of the entire file
 type WholeFile struct {
 	Path string
 }
@@ -141,6 +147,7 @@ func (slice *WholeFile) WriteBody(writer io.Writer) {
 	msg.CopyToBody(writer, file)
 }
 
+// A view of all/part of a file
 type FileSlice interface {
 	WriteStatus(writer io.Writer)
 	WriteContentSizeHeaders(writer io.Writer)

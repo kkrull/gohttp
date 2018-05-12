@@ -42,9 +42,9 @@ var _ = Describe("ParseByteRangeSlice", func() {
 				}))
 			})
 
-			It("returns an OutOfRangeSlice, when the entire range is past the end of the file", func() {
+			It("returns an UnsupportedSlice, when the entire range is past the end of the file", func() {
 				slice = fs.ParseByteRangeSlice("bytes=5-6", file)
-				Expect(slice).To(BeEquivalentTo(&fs.OutOfRangeSlice{
+				Expect(slice).To(BeEquivalentTo(&fs.UnsupportedSlice{
 					Path:     file,
 					NumBytes: 4,
 				}))
@@ -61,9 +61,9 @@ var _ = Describe("ParseByteRangeSlice", func() {
 				}))
 			})
 
-			It("returns an OutOfRangeSlice, when the first index is past the end of the file", func() {
+			It("returns an UnsupportedSlice, when the first index is past the end of the file", func() {
 				slice = fs.ParseByteRangeSlice("bytes=5-", file)
-				Expect(slice).To(BeEquivalentTo(&fs.OutOfRangeSlice{
+				Expect(slice).To(BeEquivalentTo(&fs.UnsupportedSlice{
 					Path:     file,
 					NumBytes: 4,
 				}))
@@ -88,6 +88,14 @@ var _ = Describe("ParseByteRangeSlice", func() {
 			})
 		})
 
-		XIt("2 or more ranges is a 416 -- at least for this implementation")
+		Context("given 2 or more bytes ranges in the same bytes=... expression", func() {
+			It("returns UnsupportedSlice, because that is way too complicated to handle right now", func() {
+				slice = fs.ParseByteRangeSlice("bytes=0-1,2-3", file)
+				Expect(slice).To(BeEquivalentTo(&fs.UnsupportedSlice{
+					Path:     file,
+					NumBytes: 4,
+				}))
+			})
+		})
 	})
 })

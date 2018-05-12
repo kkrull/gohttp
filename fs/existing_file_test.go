@@ -157,9 +157,20 @@ var _ = Describe("ExistingFile", func() {
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
-			It("responds as if it were a request for the whole file – that's way too complicated to handle right now", func() {
-				response.StatusShouldBe(200, "OK")
-				response.HeaderShould("Content-Length", Equal("4"))
+			It("gives a well-formed response", func() {
+				response.ShouldBeWellFormed()
+			})
+			It("responds 416 Range Not Satisfiable", func() {
+				response.StatusShouldBe(416, "Range Not Satisfiable")
+			})
+			It("sets Content-Range to */ followed by the size of the file in bytes", func() {
+				response.HeaderShould("Content-Range", Equal("bytes */4"))
+			})
+			It("sets Content-Length to 0", func() {
+				response.HeaderShould("Content-Length", Equal("0"))
+			})
+			It("has no body", func() {
+				response.BodyShould(BeEmpty())
 			})
 		})
 	})
