@@ -12,11 +12,11 @@ import (
 
 type getMethod struct{}
 
-func (method *getMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
+func (method *getMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(GetResource)
 	if ok {
 		return &getRequest{
-			Message:  requested,
+			Message:  message,
 			Resource: supportedResource,
 		}, true
 	}
@@ -86,12 +86,12 @@ func (request *optionsRequest) Handle(client io.Writer) error {
 
 type postMethod struct{}
 
-func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
+func (*postMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(PostResource)
 	if ok {
 		return &postRequest{
+			Message:  message,
 			Resource: supportedResource,
-			Target:   requested.target,
 		}, true
 	}
 
@@ -99,29 +99,29 @@ func (*postMethod) MakeRequest(requested *requestMessage, resource Resource) (re
 }
 
 type postRequest struct {
+	Message  RequestMessage
 	Resource PostResource
-	Target   string
 }
 
 func (request *postRequest) Handle(client io.Writer) error {
-	request.Resource.Post(client, request.Target)
+	request.Resource.Post(client, request.Message)
 	return nil
 }
 
 type PostResource interface {
-	Post(client io.Writer, target string)
+	Post(client io.Writer, message RequestMessage)
 }
 
 /* PUT */
 
 type putMethod struct{}
 
-func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) (request Request, isSupported bool) {
+func (*putMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(PutResource)
 	if ok {
 		return &putRequest{
+			Message:  message,
 			Resource: supportedResource,
-			Target:   requested.target,
 		}, true
 	}
 
@@ -129,15 +129,15 @@ func (*putMethod) MakeRequest(requested *requestMessage, resource Resource) (req
 }
 
 type putRequest struct {
+	Message  RequestMessage
 	Resource PutResource
-	Target   string
 }
 
 func (request *putRequest) Handle(client io.Writer) error {
-	request.Resource.Put(client, request.Target)
+	request.Resource.Put(client, request.Message)
 	return nil
 }
 
 type PutResource interface {
-	Put(client io.Writer, target string)
+	Put(client io.Writer, message RequestMessage)
 }

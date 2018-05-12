@@ -44,6 +44,14 @@ func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 	}
 }
 
+func NewPostMessage(path string) RequestMessage {
+	return &requestMessage{
+		method: POST,
+		target: path,
+		path:   path,
+	}
+}
+
 func NewPutMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: PUT,

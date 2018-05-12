@@ -30,8 +30,8 @@ type ReadWriteResource interface {
 	Name() string
 	Get(client io.Writer, message http.RequestMessage)
 	Head(client io.Writer, message http.RequestMessage)
-	Post(client io.Writer, target string)
-	Put(client io.Writer, target string)
+	Post(client io.Writer, message http.RequestMessage)
+	Put(client io.Writer, message http.RequestMessage)
 }
 
 // Handles various read/write requests, but doesn't actually do anything
@@ -49,11 +49,11 @@ func (controller *ReadWriteNopResource) Head(client io.Writer, message http.Requ
 	writeOKWithNoBody(client)
 }
 
-func (controller *ReadWriteNopResource) Post(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Post(client io.Writer, message http.RequestMessage) {
 	writeOKWithNoBody(client)
 }
 
-func (controller *ReadWriteNopResource) Put(client io.Writer, target string) {
+func (controller *ReadWriteNopResource) Put(client io.Writer, message http.RequestMessage) {
 	writeOKWithNoBody(client)
 }
 

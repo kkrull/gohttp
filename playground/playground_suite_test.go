@@ -81,7 +81,7 @@ func (mock *ReadWriteResourceMock) HeadShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.headCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Post(client io.Writer, target string) {
+func (mock *ReadWriteResourceMock) Post(client io.Writer, message http.RequestMessage) {
 	mock.postCalled = true
 }
 
@@ -89,7 +89,7 @@ func (mock *ReadWriteResourceMock) PostShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.postCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Put(client io.Writer, target string) {
+func (mock *ReadWriteResourceMock) Put(client io.Writer, message http.RequestMessage) {
 	mock.putCalled = true
 }
 
