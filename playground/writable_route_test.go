@@ -105,7 +105,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Head", func() {
 		BeforeEach(func() {
-			controller.Head(response, "/")
+			controller.Head(response, http.NewHeadMessage("/"))
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))

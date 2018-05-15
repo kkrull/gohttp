@@ -1,7 +1,6 @@
 package clienterror
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/kkrull/gohttp/msg"
@@ -18,26 +17,5 @@ func (badRequest *BadRequest) WriteTo(client io.Writer) error {
 func (badRequest *BadRequest) WriteHeader(client io.Writer) error {
 	msg.WriteStatus(client, BadRequestStatus)
 	//msg.WriteEndOfMessageHeader(client)
-	return nil
-}
-
-type NotFound struct {
-	Path string
-	body string
-}
-
-func (notFound *NotFound) WriteTo(client io.Writer) error {
-	notFound.WriteHeader(client)
-	msg.WriteBody(client, notFound.body)
-	return nil
-}
-
-func (notFound *NotFound) WriteHeader(client io.Writer) error {
-	msg.WriteStatus(client, NotFoundStatus)
-	msg.WriteContentTypeHeader(client, "text/plain")
-
-	notFound.body = fmt.Sprintf("Not found: %s", notFound.Path)
-	msg.WriteContentLengthHeader(client, len(notFound.body))
-	msg.WriteEndOfMessageHeader(client)
 	return nil
 }

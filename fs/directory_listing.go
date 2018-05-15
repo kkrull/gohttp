@@ -6,6 +6,7 @@ import (
 	"io"
 	"path"
 
+	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
 )
@@ -16,20 +17,22 @@ type DirectoryListing struct {
 	body       *bytes.Buffer
 }
 
-func (listing *DirectoryListing) WriteTo(client io.Writer) error {
-	listing.WriteHeader(client)
-	msg.WriteBody(client, listing.body.String())
-	return nil
+func (listing *DirectoryListing) Name() string {
+	return "Directory Listing"
 }
 
-func (listing *DirectoryListing) WriteHeader(client io.Writer) error {
+func (listing *DirectoryListing) Get(client io.Writer, message http.RequestMessage) {
+	listing.Head(client, message)
+	msg.WriteBody(client, listing.body.String())
+}
+
+func (listing *DirectoryListing) Head(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentTypeHeader(client, "text/html")
 
 	listing.body = listing.messageListingFiles()
 	msg.WriteContentLengthHeader(client, listing.body.Len())
 	msg.WriteEndOfMessageHeader(client)
-	return nil
 }
 
 func (listing DirectoryListing) messageListingFiles() *bytes.Buffer {

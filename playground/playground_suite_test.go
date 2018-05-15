@@ -23,7 +23,7 @@ func (mock *ParameterReporterMock) Name() string {
 	return "Parameter Reporter Mock"
 }
 
-func (mock *ParameterReporterMock) Get(client io.Writer, req http.RequestMessage) {}
+func (mock *ParameterReporterMock) Get(client io.Writer, message http.RequestMessage) {}
 
 /* ReadOnlyResourceMock */
 
@@ -36,7 +36,7 @@ func (mock *ReadOnlyResourceMock) Name() string {
 	return "Readonly Mock"
 }
 
-func (mock *ReadOnlyResourceMock) Get(client io.Writer, req http.RequestMessage) {
+func (mock *ReadOnlyResourceMock) Get(client io.Writer, message http.RequestMessage) {
 	mock.getCalled = true
 }
 
@@ -44,7 +44,7 @@ func (mock *ReadOnlyResourceMock) GetShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadOnlyResourceMock) Head(client io.Writer, target string) {
+func (mock *ReadOnlyResourceMock) Head(client io.Writer, message http.RequestMessage) {
 	mock.headCalled = true
 }
 
@@ -65,7 +65,7 @@ func (mock *ReadWriteResourceMock) Name() string {
 	return "Read/Write Mock"
 }
 
-func (mock *ReadWriteResourceMock) Get(client io.Writer, req http.RequestMessage) {
+func (mock *ReadWriteResourceMock) Get(client io.Writer, message http.RequestMessage) {
 	mock.getCalled = true
 }
 
@@ -73,7 +73,7 @@ func (mock *ReadWriteResourceMock) GetShouldHaveBeenCalled() {
 	ExpectWithOffset(1, mock.getCalled).To(BeTrue())
 }
 
-func (mock *ReadWriteResourceMock) Head(client io.Writer, target string) {
+func (mock *ReadWriteResourceMock) Head(client io.Writer, message http.RequestMessage) {
 	mock.headCalled = true
 }
 
