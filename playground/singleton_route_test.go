@@ -108,46 +108,44 @@ var _ = Describe("SingletonResource", func() {
 			})
 		})
 
-		Context("when content has been written", func() {
-			Context("when the requested path is <path>/data", func() {
-				BeforeEach(func() {
-					postedDataPath := post(singleton, "/singleton", "field=value")
-					singleton.Get(response, &httptest.RequestMessage{
-						MethodReturns: http.GET,
-						PathReturns:   postedDataPath,
-					})
-					responseMessage = httptest.ParseResponse(response)
-				})
+		Context("when the requested path is something other than the previously-responded Location", func() {
+			BeforeEach(func() {
+				request = &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   "/singleton/missing",
+				}
 
-				It("responds 200 OK", func() {
-					responseMessage.ShouldBeWellFormed()
-					responseMessage.StatusShouldBe(200, "OK")
-				})
-				It("sets Content-Type to text/plain", func() {
-					responseMessage.HeaderShould("Content-Type", Equal("text/plain"))
-				})
-				It("sets Content-Length to the length of the response", func() {
-					responseMessage.HeaderShould("Content-Length", Equal("11"))
-				})
-				It("writes the current data to the body", func() {
-					responseMessage.BodyShould(Equal("field=value"))
-				})
+				singleton.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
 			})
 
-			Context("when the requested path is anything else", func() {
-				BeforeEach(func() {
-					request = &httptest.RequestMessage{
-						MethodReturns: http.GET,
-						PathReturns:   "/singleton/missing",
-					}
+			It("responds 404 Not Found", func() {
+				responseMessage.StatusShouldBe(404, "Not Found")
+			})
+		})
 
-					singleton.Get(response, request)
-					responseMessage = httptest.ParseResponse(response)
+		Context("when the requested path is the previously-responded Location", func() {
+			BeforeEach(func() {
+				postedDataPath := post(singleton, "/singleton", "field=value")
+				singleton.Get(response, &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   postedDataPath,
 				})
+				responseMessage = httptest.ParseResponse(response)
+			})
 
-				It("responds 404 Not Found", func() {
-					responseMessage.StatusShouldBe(404, "Not Found")
-				})
+			It("responds 200 OK", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(200, "OK")
+			})
+			It("sets Content-Type to text/plain", func() {
+				responseMessage.HeaderShould("Content-Type", Equal("text/plain"))
+			})
+			It("sets Content-Length to the length of the response", func() {
+				responseMessage.HeaderShould("Content-Length", Equal("11"))
+			})
+			It("writes the current data to the body", func() {
+				responseMessage.BodyShould(Equal("field=value"))
 			})
 		})
 	})
