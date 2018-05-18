@@ -16,7 +16,7 @@ type TextLogger struct {
 }
 
 func (logger TextLogger) Parsed(message RequestMessage) {
-	fmt.Fprintf(logger.Writer, "%s : %s %s\n",
+	fmt.Fprintf(logger.Writer, "\n%s : %s %s\n",
 		time.Now().Format("2006-01-02 03:04:05 Z07:00"),
 		message.Method(),
 		message.Target())

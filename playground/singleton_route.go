@@ -40,11 +40,11 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
-	if singleton.data == nil {
+	if singleton.data == nil || message.Path() != singleton.dataPath() {
 		msg.WriteStatus(client, clienterror.NotFoundStatus)
 		msg.WriteContentTypeHeader(client, "text/plain")
 
-		body := fmt.Sprintf("Not found: %s", singleton.dataUrl())
+		body := fmt.Sprintf("Not found: %s", singleton.dataPath())
 		msg.WriteContentLengthHeader(client, len(body))
 		msg.WriteEndOfMessageHeader(client)
 
@@ -62,10 +62,10 @@ func (singleton *SingletonResource) Post(client io.Writer, message http.RequestM
 	singleton.data = message.Body()
 
 	msg.WriteStatus(client, success.CreatedStatus)
-	msg.WriteHeader(client, "Location", singleton.dataUrl())
+	msg.WriteHeader(client, "Location", singleton.dataPath())
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (singleton *SingletonResource) dataUrl() string {
+func (singleton *SingletonResource) dataPath() string {
 	return strings.Join([]string{singleton.Path, "data"}, "/")
 }

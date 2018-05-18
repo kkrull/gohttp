@@ -110,9 +110,13 @@ var _ = Describe("SingletonResource", func() {
 
 		Context("when the requested path is something other than the previously-responded Location", func() {
 			BeforeEach(func() {
+				postedLocation := post(singleton, "/singleton", "field=value")
+
+				getPath := "/singleton/missing"
+				Expect(getPath).NotTo(Equal(postedLocation))
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
-					PathReturns:   "/singleton/missing",
+					PathReturns:   getPath,
 				}
 
 				singleton.Get(response, request)
