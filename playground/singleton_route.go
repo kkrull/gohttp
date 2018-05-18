@@ -44,7 +44,7 @@ func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMe
 		msg.WriteStatus(client, clienterror.NotFoundStatus)
 		msg.WriteContentTypeHeader(client, "text/plain")
 
-		body := fmt.Sprintf("Not found: %s", singleton.dataPath())
+		body := fmt.Sprintf("Not found: %s", message.Path())
 		msg.WriteContentLengthHeader(client, len(body))
 		msg.WriteEndOfMessageHeader(client)
 

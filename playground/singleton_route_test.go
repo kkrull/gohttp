@@ -126,6 +126,9 @@ var _ = Describe("SingletonResource", func() {
 			It("responds 404 Not Found", func() {
 				responseMessage.StatusShouldBe(404, "Not Found")
 			})
+			It("writes an error message to the message body", func() {
+				responseMessage.BodyShould(Equal("Not found: /singleton/missing"))
+			})
 		})
 
 		Context("when the requested path is the previously-responded Location", func() {
