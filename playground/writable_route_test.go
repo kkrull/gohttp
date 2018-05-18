@@ -113,7 +113,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Post", func() {
 		BeforeEach(func() {
-			controller.Post(response, "/")
+			controller.Post(response, http.NewPostMessage("/"))
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
@@ -121,7 +121,7 @@ var _ = Describe("ReadWriteNopResource", func() {
 
 	Describe("#Put", func() {
 		BeforeEach(func() {
-			controller.Put(response, "/")
+			controller.Put(response, http.NewPutMessage("/"))
 		})
 
 		It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))

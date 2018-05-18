@@ -77,7 +77,7 @@ var _ = Describe("ParameterRoute", func() {
 var _ = Describe("AssignmentReporter", func() {
 	Describe("#Get", func() {
 		var (
-			controller      *playground.AssignmentReporter
+			reporter        *playground.AssignmentReporter
 			request         *httptest.RequestMessage
 			responseMessage *httptest.ResponseMessage
 
@@ -90,13 +90,13 @@ var _ = Describe("AssignmentReporter", func() {
 
 		Context("given any number of query parameters", func() {
 			BeforeEach(func() {
-				controller = &playground.AssignmentReporter{}
+				reporter = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
 					PathReturns:   "/parameters",
 				}
 
-				controller.Get(response, request)
+				reporter.Get(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 
@@ -111,13 +111,13 @@ var _ = Describe("AssignmentReporter", func() {
 
 		Context("given a request with no query parameters", func() {
 			BeforeEach(func() {
-				controller = &playground.AssignmentReporter{}
+				reporter = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
 					PathReturns:   "/parameters",
 				}
 
-				controller.Get(response, request)
+				reporter.Get(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 
@@ -131,14 +131,14 @@ var _ = Describe("AssignmentReporter", func() {
 
 		Context("given a request with 1 or more query parameters", func() {
 			BeforeEach(func() {
-				controller = &playground.AssignmentReporter{}
+				reporter = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
 					PathReturns:   "/parameters",
 				}
 				request.AddQueryParameter("foo", "bar")
 
-				controller.Get(response, request)
+				reporter.Get(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 

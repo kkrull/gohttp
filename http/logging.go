@@ -23,4 +23,6 @@ func (logger TextLogger) Parsed(message RequestMessage) {
 	for _, header := range message.HeaderLines() {
 		fmt.Fprintln(logger.Writer, header)
 	}
+	fmt.Fprintln(logger.Writer)
+	fmt.Fprintf(logger.Writer, "%s", message.Body())
 }

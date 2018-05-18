@@ -66,10 +66,12 @@ type RequestMessage interface {
 	Target() string
 	Path() string
 	QueryParameters() []QueryParameter
+
 	HeaderLines() []string
+	HeaderValues(field string) (values []string)
+	Body() []byte
 
 	MakeResourceRequest(resource Resource) Request
-	HeaderValues(field string) (values []string)
 }
 
 type Route interface {

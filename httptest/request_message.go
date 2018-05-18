@@ -18,6 +18,7 @@ type RequestMessage struct {
 
 	queryParameters []http.QueryParameter
 	headers         []header
+	body            []byte
 }
 
 func (message *RequestMessage) Method() string {
@@ -60,6 +61,10 @@ func (message *RequestMessage) HeaderValues(field string) (values []string) {
 	}
 
 	return values
+}
+
+func (message *RequestMessage) Body() []byte {
+	return message.body
 }
 
 func (message *RequestMessage) MakeResourceRequest(resource http.Resource) http.Request {

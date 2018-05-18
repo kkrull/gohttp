@@ -2,6 +2,7 @@ package http
 
 import (
 	"bufio"
+	"strconv"
 	"strings"
 
 	"github.com/kkrull/gohttp/msg/clienterror"
@@ -77,11 +78,32 @@ func (parser *parseMethodObject) readingHeaders(requested *requestMessage) (ok *
 		if err != nil {
 			return nil, err
 		} else if isBlankLineBetweenHeadersAndBody(line) {
-			return requested, nil
+			return parser.readingBody(requested)
 		} else {
 			headerParts := strings.Split(line, ":")
 			requested.AddHeader(headerParts[0], strings.Trim(headerParts[1], " "))
 		}
+	}
+}
+
+const (
+	base10      = 10
+	bitsInInt64 = 64
+)
+
+func (parser *parseMethodObject) readingBody(requested *requestMessage) (ok *requestMessage, badRequest Response) {
+	contentLengths := requested.HeaderValues("Content-Length")
+	switch len(contentLengths) {
+	case 0:
+		return requested, nil
+	case 1:
+		contentLength, _ := strconv.ParseInt(contentLengths[0], base10, bitsInInt64)
+		body := make([]byte, contentLength)
+		_, _ = parser.reader.Read(body)
+		requested.SetBody(body)
+		return requested, nil
+	default:
+		return nil, &clienterror.BadRequest{DisplayText: "2 or more Content-Length headers"}
 	}
 }
 

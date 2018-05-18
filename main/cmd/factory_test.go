@@ -91,6 +91,14 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute())))
 		})
 
+		It("has a playground route for a form at /form", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewFormRoute("/form"))))
+		})
+
+		It("has a playground route for a form at /put-target", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewFormRoute("/put-target"))))
+		})
+
 		It("has a playground route for parameter decoding", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewParameterRoute())))
 		})

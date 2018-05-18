@@ -88,6 +88,37 @@ var _ = Describe("LineRequestParser", func() {
 			})
 		})
 
+		Context("given a request with a Content-Length header", func() {
+			var reader *bufio.Reader
+
+			BeforeEach(func() {
+				buffer := bytes.NewBufferString("POST /foo HTTP/1.1\r\nContent-Length: 4\r\n\r\nABCD")
+				reader = bufio.NewReader(buffer)
+				request, err = parser.Parse(reader)
+			})
+
+			It("parses the request-line", func() {
+				Expect(request.Method()).To(Equal(http.POST))
+				Expect(request.Target()).To(Equal("/foo"))
+			})
+
+			It("parses the headers", func() {
+				Expect(request.HeaderValues("Content-Length")).To(Equal([]string{"4"}))
+			})
+
+			It("parses the body", func() {
+				Expect(request.Body()).To(Equal([]byte{65, 66, 67, 68}))
+			})
+
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+
+			It("reads the whole request", func() {
+				Expect(reader.Buffered()).To(Equal(0))
+			})
+		})
+
 		Context("given a target with no query or fragment", func() {
 			BeforeEach(func() {
 				request, _ = parser.Parse(requestWithTarget("/widget"))
