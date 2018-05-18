@@ -16,8 +16,8 @@ var _ = Describe("::NewWriteOKRoute", func() {
 		route := playground.NewWriteOKRoute("/oracle")
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.WriteOKRoute{
-			Path: "/oracle",
-			Form: &playground.WriteOKResource{},
+			Path:     "/oracle",
+			Resource: &playground.WriteOKResource{},
 		}))
 	})
 })

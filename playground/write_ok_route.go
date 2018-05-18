@@ -10,14 +10,14 @@ import (
 
 func NewWriteOKRoute(path string) *WriteOKRoute {
 	return &WriteOKRoute{
-		Path: path,
-		Form: &WriteOKResource{},
+		Path:     path,
+		Resource: &WriteOKResource{},
 	}
 }
 
 type WriteOKRoute struct {
-	Path string
-	Form *WriteOKResource
+	Path     string
+	Resource *WriteOKResource
 }
 
 func (route *WriteOKRoute) Route(requested http.RequestMessage) http.Request {
@@ -25,7 +25,7 @@ func (route *WriteOKRoute) Route(requested http.RequestMessage) http.Request {
 		return nil
 	}
 
-	return requested.MakeResourceRequest(route.Form)
+	return requested.MakeResourceRequest(route.Resource)
 }
 
 // A resource where it's OK to write
