@@ -16,13 +16,12 @@ var _ = Describe("::NewSingletonRoute", func() {
 		route := playground.NewSingletonRoute("/singleton")
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.SingletonRoute{
-			Path:      "/singleton",
-			Singleton: &playground.SingletonResource{},
+			Singleton: &playground.SingletonResource{Path: "/singleton"},
 		}))
 	})
 })
 
-var _ = Describe("SingletonResource", func() {
+var _ = Describe("SingletonRoute", func() {
 	Describe("#Route", func() {
 		const givenPath = "/reverie"
 
@@ -33,7 +32,7 @@ var _ = Describe("SingletonResource", func() {
 
 		BeforeEach(func() {
 			router = &playground.SingletonRoute{
-				Path: givenPath,
+				Singleton: &playground.SingletonResource{Path: givenPath},
 			}
 
 			response.Reset()
@@ -51,7 +50,6 @@ var _ = Describe("SingletonResource", func() {
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
-				//It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -64,6 +62,43 @@ var _ = Describe("SingletonResource", func() {
 		It("returns nil for any other path", func() {
 			requested := http.NewGetMessage("/")
 			Expect(router.Route(requested)).To(BeNil())
+		})
+	})
+})
+
+var _ = Describe("SingletonResource", func() {
+	var (
+		singleton       *playground.SingletonResource
+		request         *httptest.RequestMessage
+		responseMessage *httptest.ResponseMessage
+
+		response = &bytes.Buffer{}
+	)
+
+	BeforeEach(func() {
+		response.Reset()
+	})
+
+	Describe("#Post", func() {
+		Context("given any data in the body", func() {
+			BeforeEach(func() {
+				singleton = &playground.SingletonResource{Path: "/singleton"}
+				request = &httptest.RequestMessage{
+					MethodReturns: http.POST,
+					PathReturns:   "/singleton",
+				}
+
+				singleton.Post(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("responds 201 Created", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(201, "Created")
+			})
+			It("sets Location to <path>/data", func() {
+				responseMessage.HeaderShould("Location", Equal("/singleton/data"))
+			})
 		})
 	})
 })

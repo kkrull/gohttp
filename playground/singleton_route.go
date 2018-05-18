@@ -2,24 +2,25 @@ package playground
 
 import (
 	"io"
+	"strings"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewSingletonRoute(path string) *SingletonRoute {
 	return &SingletonRoute{
-		Path:      path,
-		Singleton: &SingletonResource{},
+		Singleton: &SingletonResource{Path: path},
 	}
 }
 
 type SingletonRoute struct {
-	Path      string
 	Singleton *SingletonResource
 }
 
 func (route *SingletonRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Path() != route.Path {
+	if requested.Path() != route.Singleton.Path {
 		return nil
 	}
 
@@ -27,6 +28,7 @@ func (route *SingletonRoute) Route(requested http.RequestMessage) http.Request {
 }
 
 type SingletonResource struct {
+	Path string
 }
 
 func (singleton *SingletonResource) Name() string {
@@ -34,4 +36,10 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
+	msg.WriteStatus(client, success.CreatedStatus)
+
+	url := strings.Join([]string{singleton.Path, "data"}, "/")
+	msg.WriteHeader(client, "Location", url)
+	
+	msg.WriteEndOfMessageHeader(client)
 }
