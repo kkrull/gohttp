@@ -8,19 +8,19 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewFormRoute(path string) *FormRoute {
-	return &FormRoute{
+func NewWriteOKRoute(path string) *WriteOKRoute {
+	return &WriteOKRoute{
 		Path: path,
-		Form: &SingletonForm{},
+		Form: &WriteOKResource{},
 	}
 }
 
-type FormRoute struct {
+type WriteOKRoute struct {
 	Path string
-	Form *SingletonForm
+	Form *WriteOKResource
 }
 
-func (route *FormRoute) Route(requested http.RequestMessage) http.Request {
+func (route *WriteOKRoute) Route(requested http.RequestMessage) http.Request {
 	if requested.Path() != route.Path {
 		return nil
 	}
@@ -28,18 +28,19 @@ func (route *FormRoute) Route(requested http.RequestMessage) http.Request {
 	return requested.MakeResourceRequest(route.Form)
 }
 
-type SingletonForm struct{}
+// A resource where it's OK to write
+type WriteOKResource struct{}
 
-func (*SingletonForm) Name() string {
-	return "Singleton form"
+func (*WriteOKResource) Name() string {
+	return "Write OK"
 }
 
-func (form *SingletonForm) Post(client io.Writer, message http.RequestMessage) {
+func (resource *WriteOKResource) Post(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (form *SingletonForm) Put(client io.Writer, message http.RequestMessage) {
+func (resource *WriteOKResource) Put(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteEndOfMessageHeader(client)
 }
