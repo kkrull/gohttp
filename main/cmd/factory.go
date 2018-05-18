@@ -47,6 +47,7 @@ func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, 
 func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) http.Router {
 	router := http.NewRouter()
 	router.AddRoute(capability.NewRoute())
+	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 	router.AddRoute(playground.NewWriteOKRoute("/form"))
 	router.AddRoute(playground.NewWriteOKRoute("/put-target"))
 	router.AddRoute(playground.NewParameterRoute())
