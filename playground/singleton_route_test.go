@@ -50,7 +50,7 @@ var _ = Describe("SingletonResource", func() {
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
-				//It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
+				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
 				//It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 			})
 

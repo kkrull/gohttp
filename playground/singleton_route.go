@@ -1,6 +1,10 @@
 package playground
 
-import "github.com/kkrull/gohttp/http"
+import (
+	"io"
+
+	"github.com/kkrull/gohttp/http"
+)
 
 func NewSingletonRoute(path string) *SingletonRoute {
 	return &SingletonRoute{
@@ -27,4 +31,7 @@ type SingletonResource struct {
 
 func (singleton *SingletonResource) Name() string {
 	return "Singleton"
+}
+
+func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
 }
