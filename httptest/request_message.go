@@ -1,6 +1,7 @@
 package httptest
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/kkrull/gohttp/http"
@@ -65,6 +66,11 @@ func (message *RequestMessage) HeaderValues(field string) (values []string) {
 
 func (message *RequestMessage) Body() []byte {
 	return message.body
+}
+
+func (message *RequestMessage) SetStringBody(body string) {
+	buffer := bytes.NewBufferString(body)
+	message.body = buffer.Bytes()
 }
 
 func (message *RequestMessage) MakeResourceRequest(resource http.Resource) http.Request {

@@ -1,6 +1,7 @@
 package playground
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
@@ -31,6 +32,7 @@ func (route *SingletonRoute) Route(requested http.RequestMessage) http.Request {
 
 type SingletonResource struct {
 	Path string
+	data []byte
 }
 
 func (singleton *SingletonResource) Name() string {
@@ -38,17 +40,27 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
-	msg.WriteStatus(client, clienterror.NotFoundStatus)
-	msg.WriteContentTypeHeader(client, "text/plain")
+	if singleton.data == nil {
+		msg.WriteStatus(client, clienterror.NotFoundStatus)
+		msg.WriteContentTypeHeader(client, "text/plain")
 
-	body := fmt.Sprintf("Not found: %s", singleton.dataUrl())
-	msg.WriteContentLengthHeader(client, len(body))
-	msg.WriteEndOfMessageHeader(client)
+		body := fmt.Sprintf("Not found: %s", singleton.dataUrl())
+		msg.WriteContentLengthHeader(client, len(body))
+		msg.WriteEndOfMessageHeader(client)
 
-	msg.WriteBody(client, body)
+		msg.WriteBody(client, body)
+	} else {
+		msg.WriteStatus(client, success.OKStatus)
+		msg.WriteContentTypeHeader(client, "text/plain")
+		msg.WriteContentLengthHeader(client, len(singleton.data))
+		msg.WriteEndOfMessageHeader(client)
+		msg.CopyToBody(client, bytes.NewReader(singleton.data))
+	}
 }
 
 func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
+	singleton.data = message.Body()
+
 	msg.WriteStatus(client, success.CreatedStatus)
 	msg.WriteHeader(client, "Location", singleton.dataUrl())
 	msg.WriteEndOfMessageHeader(client)
