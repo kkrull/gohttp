@@ -1,11 +1,13 @@
 package playground
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/success"
 )
 
@@ -35,11 +37,23 @@ func (singleton *SingletonResource) Name() string {
 	return "Singleton"
 }
 
+func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
+	msg.WriteStatus(client, clienterror.NotFoundStatus)
+	msg.WriteContentTypeHeader(client, "text/plain")
+
+	body := fmt.Sprintf("Not found: %s", singleton.dataUrl())
+	msg.WriteContentLengthHeader(client, len(body))
+	msg.WriteEndOfMessageHeader(client)
+
+	msg.WriteBody(client, body)
+}
+
 func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, success.CreatedStatus)
-
-	url := strings.Join([]string{singleton.Path, "data"}, "/")
-	msg.WriteHeader(client, "Location", url)
-	
+	msg.WriteHeader(client, "Location", singleton.dataUrl())
 	msg.WriteEndOfMessageHeader(client)
+}
+
+func (singleton *SingletonResource) dataUrl() string {
+	return strings.Join([]string{singleton.Path, "data"}, "/")
 }

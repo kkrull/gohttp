@@ -49,6 +49,7 @@ var _ = Describe("SingletonRoute", func() {
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
+				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
 			})
 
@@ -77,6 +78,35 @@ var _ = Describe("SingletonResource", func() {
 
 	BeforeEach(func() {
 		response.Reset()
+	})
+
+	Describe("#Get", func() {
+		Context("when no content has been written", func() {
+			BeforeEach(func() {
+				singleton = &playground.SingletonResource{Path: "/singleton"}
+				request = &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   "/singleton/data",
+				}
+
+				singleton.Get(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("responds 404 Not Found", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(404, "Not Found")
+			})
+			It("sets Content-Type to text/plain", func() {
+				responseMessage.HeaderShould("Content-Type", Equal("text/plain"))
+			})
+			It("sets Content-Length to the length of the response", func() {
+				responseMessage.HeaderShould("Content-Length", Equal("26"))
+			})
+			It("writes an error message to the message body", func() {
+				responseMessage.BodyShould(Equal("Not found: /singleton/data"))
+			})
+		})
 	})
 
 	Describe("#Post", func() {
