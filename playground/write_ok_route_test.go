@@ -37,7 +37,6 @@ var _ = Describe("WriteOKRoute", func() {
 		})
 
 		Context("when the path is exactly equal to the given path", func() {
-
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
 					requested := http.NewOptionsMessage(givenPath)
