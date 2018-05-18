@@ -59,3 +59,37 @@ var _ = Describe("FormRoute", func() {
 		})
 	})
 })
+
+var _ = Describe("SingletonForm", func() {
+	Describe("#Post", func() {
+		var (
+			form            *playground.SingletonForm
+			request         *httptest.RequestMessage
+			responseMessage *httptest.ResponseMessage
+
+			response = &bytes.Buffer{}
+		)
+
+		BeforeEach(func() {
+			response.Reset()
+		})
+
+		Context("given any data in the body", func() {
+			BeforeEach(func() {
+				form = &playground.SingletonForm{}
+				request = &httptest.RequestMessage{
+					MethodReturns: http.POST,
+					PathReturns:   "/form",
+				}
+
+				form.Post(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("responds 200 OK", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(200, "OK")
+			})
+		})
+	})
+})

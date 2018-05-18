@@ -4,6 +4,8 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewFormRoute() *FormRoute {
@@ -30,5 +32,7 @@ func (*SingletonForm) Name() string {
 	return "Singleton form"
 }
 
-func (*SingletonForm) Post(client io.Writer, message http.RequestMessage) {
+func (form *SingletonForm) Post(client io.Writer, message http.RequestMessage) {
+	msg.WriteStatus(client, success.OKStatus)
+	msg.WriteEndOfMessageHeader(client)
 }
