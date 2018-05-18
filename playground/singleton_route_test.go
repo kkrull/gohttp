@@ -111,17 +111,10 @@ var _ = Describe("SingletonResource", func() {
 		Context("when content has been written", func() {
 			Context("when the requested path is <path>/data", func() {
 				BeforeEach(func() {
-					postRequest := &httptest.RequestMessage{
-						MethodReturns: http.POST,
-						PathReturns: "/singleton",
-					}
-					postRequest.SetStringBody("field=value")
-					singleton.Post(response, postRequest)
-
-					response.Reset()
+					postedDataPath := post(singleton, "/singleton", "field=value")
 					singleton.Get(response, &httptest.RequestMessage{
 						MethodReturns: http.GET,
-						PathReturns:   "/singleton/data",
+						PathReturns:   postedDataPath,
 					})
 					responseMessage = httptest.ParseResponse(response)
 				})
@@ -181,3 +174,16 @@ var _ = Describe("SingletonResource", func() {
 		})
 	})
 })
+
+func post(resource http.PostResource, path string, body string) string {
+	request := &httptest.RequestMessage{
+		MethodReturns: http.POST,
+		PathReturns:   path,
+	}
+	request.SetStringBody(body)
+
+	response := &bytes.Buffer{}
+	resource.Post(response, request)
+	responseMessage := httptest.ParseResponse(response)
+	return responseMessage.HeaderValue("Location")
+}
