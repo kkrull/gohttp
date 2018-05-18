@@ -47,7 +47,9 @@ var _ = Describe("FormRoute", func() {
 				})
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
-				It("allows POST", httptest.ShouldAllowMethods(response, http.POST, http.OPTIONS))
+				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
+				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
+				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -65,19 +67,19 @@ var _ = Describe("FormRoute", func() {
 })
 
 var _ = Describe("SingletonForm", func() {
+	var (
+		form            *playground.SingletonForm
+		request         *httptest.RequestMessage
+		responseMessage *httptest.ResponseMessage
+
+		response = &bytes.Buffer{}
+	)
+
+	BeforeEach(func() {
+		response.Reset()
+	})
+
 	Describe("#Post", func() {
-		var (
-			form            *playground.SingletonForm
-			request         *httptest.RequestMessage
-			responseMessage *httptest.ResponseMessage
-
-			response = &bytes.Buffer{}
-		)
-
-		BeforeEach(func() {
-			response.Reset()
-		})
-
 		Context("given any data in the body", func() {
 			BeforeEach(func() {
 				form = &playground.SingletonForm{}
@@ -87,6 +89,26 @@ var _ = Describe("SingletonForm", func() {
 				}
 
 				form.Post(response, request)
+				responseMessage = httptest.ParseResponse(response)
+			})
+
+			It("responds 200 OK", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(200, "OK")
+			})
+		})
+	})
+
+	Describe("#Put", func() {
+		Context("given any data in the body", func() {
+			BeforeEach(func() {
+				form = &playground.SingletonForm{}
+				request = &httptest.RequestMessage{
+					MethodReturns: http.PUT,
+					PathReturns:   "/form",
+				}
+
+				form.Put(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 

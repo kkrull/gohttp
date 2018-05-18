@@ -38,3 +38,8 @@ func (form *SingletonForm) Post(client io.Writer, message http.RequestMessage) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteEndOfMessageHeader(client)
 }
+
+func (form *SingletonForm) Put(client io.Writer, message http.RequestMessage) {
+	msg.WriteStatus(client, success.OKStatus)
+	msg.WriteEndOfMessageHeader(client)
+}
