@@ -23,7 +23,10 @@ var _ = Describe("::NewSingletonRoute", func() {
 
 var _ = Describe("SingletonRoute", func() {
 	Describe("#Route", func() {
-		const givenPath = "/reverie"
+		const (
+			collectionPath = "/reverie"
+			resourcePath   = "/reverie/data"
+		)
 
 		var (
 			router   http.Route
@@ -32,16 +35,16 @@ var _ = Describe("SingletonRoute", func() {
 
 		BeforeEach(func() {
 			router = &playground.SingletonRoute{
-				Singleton: &playground.SingletonResource{Path: givenPath},
+				Singleton: &playground.SingletonResource{Path: collectionPath},
 			}
 
 			response.Reset()
 		})
 
-		Context("when the path is the configured path", func() {
+		Context("when the path starts with the configured path", func() {
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage(givenPath)
+					requested := http.NewOptionsMessage(resourcePath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -54,7 +57,7 @@ var _ = Describe("SingletonRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := http.NewTraceMessage(givenPath)
+				requested := http.NewTraceMessage(resourcePath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
