@@ -8,18 +8,20 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewFormRoute() *FormRoute {
+func NewFormRoute(path string) *FormRoute {
 	return &FormRoute{
+		Path: path,
 		Form: &SingletonForm{},
 	}
 }
 
 type FormRoute struct {
+	Path string
 	Form *SingletonForm
 }
 
 func (route *FormRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Path() != "/form" {
+	if requested.Path() != route.Path {
 		return nil
 	}
 

@@ -12,10 +12,11 @@ import (
 )
 
 var _ = Describe("::NewFormRoute", func() {
-	It("returns a FormRoute", func() {
-		route := playground.NewFormRoute()
+	It("returns a FormRoute at the given path", func() {
+		route := playground.NewFormRoute("/oracle")
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.FormRoute{
+			Path: "/oracle",
 			Form: &playground.SingletonForm{},
 		}))
 	})
@@ -23,20 +24,23 @@ var _ = Describe("::NewFormRoute", func() {
 
 var _ = Describe("FormRoute", func() {
 	Describe("#Route", func() {
+		const givenPath = "/sweetness"
+
 		var (
 			router   http.Route
 			response = &bytes.Buffer{}
 		)
 
 		BeforeEach(func() {
-			router = &playground.FormRoute{}
+			router = &playground.FormRoute{Path: givenPath}
 			response.Reset()
 		})
 
-		Context("when the path is /form", func() {
+		Context("when the path is exactly equal to the given path", func() {
+
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage("/form")
+					requested := http.NewOptionsMessage(givenPath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -47,7 +51,7 @@ var _ = Describe("FormRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := http.NewTraceMessage("/form")
+				requested := http.NewTraceMessage(givenPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
