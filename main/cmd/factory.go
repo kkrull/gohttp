@@ -48,6 +48,7 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	router := http.NewRouter()
 	router.AddRoute(capability.NewRoute())
 	router.AddRoute(playground.NewFormRoute("/form"))
+	router.AddRoute(playground.NewFormRoute("/put-target"))
 	router.AddRoute(playground.NewParameterRoute())
 	router.AddRoute(playground.NewReadOnlyRoute())
 	router.AddRoute(playground.NewReadWriteRoute())
