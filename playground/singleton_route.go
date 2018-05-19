@@ -56,6 +56,28 @@ func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMe
 	}
 }
 
+func (singleton *SingletonResource) Options(client io.Writer, message http.RequestMessage) {
+	if message.Path() == singleton.CollectionPath {
+		msg.WriteStatus(client, success.OKStatus)
+		msg.WriteContentLengthHeader(client, 0)
+		msg.WriteHeader(client, "Allow", strings.Join(collectionMethods, ","))
+		msg.WriteEndOfMessageHeader(client)
+		return
+	} else if singleton.isRequestForData(message) {
+		msg.WriteStatus(client, success.OKStatus)
+		msg.WriteContentLengthHeader(client, 0)
+		msg.WriteHeader(client, "Allow", strings.Join(dataMethods, ","))
+		msg.WriteEndOfMessageHeader(client)
+		return
+	} else {
+		msg.WriteStatus(client, success.OKStatus)
+		msg.WriteContentLengthHeader(client, 0)
+		msg.WriteHeader(client, "Allow", strings.Join([]string{http.OPTIONS}, ","))
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+}
+
 func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
 	singleton.setData(message.Body())
 	msg.WriteStatus(client, success.CreatedStatus)
@@ -90,4 +112,5 @@ func (singleton *SingletonResource) dataPath() string {
 
 var (
 	collectionMethods = []string{http.OPTIONS, http.POST}
+	dataMethods       = []string{http.OPTIONS, http.DELETE, http.GET, http.PUT}
 )

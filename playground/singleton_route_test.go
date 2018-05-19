@@ -54,9 +54,9 @@ var _ = Describe("SingletonRoute", func() {
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
-				XIt("disallows GET", httptest.ShouldNotAllowMethod(response, http.GET))
+				It("disallows GET", httptest.ShouldNotAllowMethod(response, http.GET))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
-				XIt("disallows DELETE", httptest.ShouldNotAllowMethod(response, http.DELETE))
+				It("disallows DELETE", httptest.ShouldNotAllowMethod(response, http.DELETE))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -78,7 +78,7 @@ var _ = Describe("SingletonRoute", func() {
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
-				XIt("disallows POST", httptest.ShouldNotAllowMethod(response, http.POST))
+				It("disallows POST", httptest.ShouldNotAllowMethod(response, http.POST))
 				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 				It("allows DELETE", httptest.ShouldAllowMethods(response, http.DELETE))
 			})
@@ -88,6 +88,18 @@ var _ = Describe("SingletonRoute", func() {
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
+		})
+
+		Context("when the method is OPTIONS and it's any other path", func() {
+			BeforeEach(func() {
+				requested := http.NewOptionsMessage(invalidDataPath)
+				routedRequest := router.Route(requested)
+				Expect(routedRequest).NotTo(BeNil())
+				routedRequest.Handle(response)
+			})
+
+			It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
+			It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 		})
 
 		It("passes on any other path by returning nil", func() {
