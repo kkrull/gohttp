@@ -157,23 +157,19 @@ func (message *requestMessage) NotImplemented() Response {
 }
 
 func (message *requestMessage) MakeResourceRequest(resource Resource) Request {
-	if message.method == OPTIONS {
-		return &optionsRequest{
-			SupportedMethods: message.supportedMethods(resource),
-		}
-	}
-
 	method := knownMethods[message.method]
 	if method == nil {
 		return message.unknownHttpMethod(resource)
 	}
 
-	request, isSupported := method.MakeRequest(message, resource)
-	if !isSupported {
-		return message.unsupportedMethod(resource)
+	request, isImplementedByResource := method.MakeRequest(message, resource)
+	if isImplementedByResource {
+		return request
+	} else if message.method == OPTIONS {
+		return &staticOptionsRequest{SupportedMethods: message.supportedMethods(resource)}
 	}
 
-	return request
+	return message.unsupportedMethod(resource)
 }
 
 func (message *requestMessage) unknownHttpMethod(resource Resource) Request {
@@ -199,11 +195,12 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 }
 
 var knownMethods = map[string]Method{
-	DELETE: &deleteMethod{},
-	GET:    &getMethod{},
-	HEAD:   &headMethod{},
-	POST:   &postMethod{},
-	PUT:    &putMethod{},
+	DELETE:  &deleteMethod{},
+	GET:     &getMethod{},
+	HEAD:    &headMethod{},
+	OPTIONS: &optionsMethod{},
+	POST:    &postMethod{},
+	PUT:     &putMethod{},
 }
 
 type Method interface {
