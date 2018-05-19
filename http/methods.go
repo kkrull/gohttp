@@ -2,7 +2,6 @@ package http
 
 import (
 	"io"
-	"strings"
 
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
@@ -136,10 +135,7 @@ type staticOptionsRequest struct {
 }
 
 func (request *staticOptionsRequest) Handle(client io.Writer) error {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteContentLengthHeader(client, 0)
-	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
-	msg.WriteEndOfMessageHeader(client)
+	msg.RespondWithAllowHeader(client, success.OKStatus, request.SupportedMethods)
 	return nil
 }
 

@@ -2,7 +2,6 @@ package capability
 
 import (
 	"io"
-	"strings"
 
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
@@ -14,8 +13,5 @@ type StaticCapabilityServer struct {
 }
 
 func (controller *StaticCapabilityServer) Options(client io.Writer) {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteHeader(client, "Allow", strings.Join(controller.AvailableMethods, ","))
-	msg.WriteContentLengthHeader(client, 0)
-	msg.WriteEndOfMessageHeader(client)
+	msg.RespondWithAllowHeader(client, success.OKStatus, controller.AvailableMethods)
 }

@@ -57,24 +57,17 @@ func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMe
 }
 
 func (singleton *SingletonResource) Options(client io.Writer, message http.RequestMessage) {
-	if message.Path() == singleton.CollectionPath {
-		msg.WriteStatus(client, success.OKStatus)
-		msg.WriteContentLengthHeader(client, 0)
-		msg.WriteHeader(client, "Allow", strings.Join(collectionMethods, ","))
-		msg.WriteEndOfMessageHeader(client)
-		return
-	} else if singleton.isRequestForData(message) {
-		msg.WriteStatus(client, success.OKStatus)
-		msg.WriteContentLengthHeader(client, 0)
-		msg.WriteHeader(client, "Allow", strings.Join(dataMethods, ","))
-		msg.WriteEndOfMessageHeader(client)
-		return
-	} else {
-		msg.WriteStatus(client, success.OKStatus)
-		msg.WriteContentLengthHeader(client, 0)
-		msg.WriteHeader(client, "Allow", strings.Join([]string{http.OPTIONS}, ","))
-		msg.WriteEndOfMessageHeader(client)
-		return
+	msg.RespondWithAllowHeader(client, success.OKStatus, singleton.allowedMethods(message.Path()))
+}
+
+func (singleton *SingletonResource) allowedMethods(path string) []string {
+	switch path {
+	case singleton.CollectionPath:
+		return collectionMethods
+	case singleton.dataPath():
+		return dataMethods
+	default:
+		return []string{http.OPTIONS}
 	}
 }
 
