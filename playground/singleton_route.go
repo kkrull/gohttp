@@ -1,8 +1,6 @@
 package playground
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"strings"
 
@@ -40,21 +38,12 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
-	if singleton.data == nil || message.Path() != singleton.dataPath() {
-		msg.WriteStatus(client, clienterror.NotFoundStatus)
-		msg.WriteContentTypeHeader(client, "text/plain")
-
-		body := fmt.Sprintf("Not found: %s", message.Path())
-		msg.WriteContentLengthHeader(client, len(body))
-		msg.WriteEndOfMessageHeader(client)
-
-		msg.WriteBody(client, body)
+	if singleton.data == nil {
+		clienterror.RespondNotFound(client, message.Path())
+	} else if message.Path() != singleton.dataPath() {
+		clienterror.RespondNotFound(client, message.Path())
 	} else {
-		msg.WriteStatus(client, success.OKStatus)
-		msg.WriteContentTypeHeader(client, "text/plain")
-		msg.WriteContentLengthHeader(client, len(singleton.data))
-		msg.WriteEndOfMessageHeader(client)
-		msg.CopyToBody(client, bytes.NewReader(singleton.data))
+		msg.RespondInPlainText(client, success.OKStatus, singleton.data)
 	}
 }
 

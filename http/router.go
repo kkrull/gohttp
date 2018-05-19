@@ -2,13 +2,12 @@ package http
 
 import (
 	"bufio"
-	"os"
 )
 
 func NewRouter() *RequestLineRouter {
 	return &RequestLineRouter{
 		Parser: &LineRequestParser{},
-		logger: TextLogger{os.Stdout},
+		logger: noLogger{},
 	}
 }
 
