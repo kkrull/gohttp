@@ -14,7 +14,7 @@ import (
 
 func NewSingletonRoute(path string) *SingletonRoute {
 	return &SingletonRoute{
-		Singleton: &SingletonResource{Path: path},
+		Singleton: &SingletonResource{CollectionPath: path},
 	}
 }
 
@@ -23,7 +23,7 @@ type SingletonRoute struct {
 }
 
 func (route *SingletonRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Path() != route.Singleton.Path { //TODO KDK: Check the path PREFIX
+	if !strings.HasPrefix(requested.Path(), route.Singleton.CollectionPath) {
 		return nil
 	}
 
@@ -31,8 +31,8 @@ func (route *SingletonRoute) Route(requested http.RequestMessage) http.Request {
 }
 
 type SingletonResource struct {
-	Path string
-	data []byte
+	CollectionPath string
+	data           []byte
 }
 
 func (singleton *SingletonResource) Name() string {
@@ -40,9 +40,7 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
-	fmt.Printf("%v\n", message)
 	if singleton.data == nil || message.Path() != singleton.dataPath() {
-		fmt.Printf("NOT FOUND\n")
 		msg.WriteStatus(client, clienterror.NotFoundStatus)
 		msg.WriteContentTypeHeader(client, "text/plain")
 
@@ -52,7 +50,6 @@ func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMe
 
 		msg.WriteBody(client, body)
 	} else {
-		fmt.Printf("OK\n")
 		msg.WriteStatus(client, success.OKStatus)
 		msg.WriteContentTypeHeader(client, "text/plain")
 		msg.WriteContentLengthHeader(client, len(singleton.data))
@@ -70,5 +67,5 @@ func (singleton *SingletonResource) Post(client io.Writer, message http.RequestM
 }
 
 func (singleton *SingletonResource) dataPath() string {
-	return strings.Join([]string{singleton.Path, "data"}, "/")
+	return strings.Join([]string{singleton.CollectionPath, "data"}, "/")
 }

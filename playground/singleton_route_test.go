@@ -16,7 +16,7 @@ var _ = Describe("::NewSingletonRoute", func() {
 		route := playground.NewSingletonRoute("/singleton")
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.SingletonRoute{
-			Singleton: &playground.SingletonResource{Path: "/singleton"},
+			Singleton: &playground.SingletonResource{CollectionPath: "/singleton"},
 		}))
 	})
 })
@@ -25,7 +25,7 @@ var _ = Describe("SingletonRoute", func() {
 	Describe("#Route", func() {
 		const (
 			collectionPath = "/reverie"
-			resourcePath   = "/reverie/data"
+			dataPath       = "/reverie/data"
 		)
 
 		var (
@@ -35,16 +35,16 @@ var _ = Describe("SingletonRoute", func() {
 
 		BeforeEach(func() {
 			router = &playground.SingletonRoute{
-				Singleton: &playground.SingletonResource{Path: collectionPath},
+				Singleton: &playground.SingletonResource{CollectionPath: collectionPath},
 			}
 
 			response.Reset()
 		})
 
-		Context("when the path starts with the configured path", func() {
+		Context("when the path is the configured path", func() {
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage(resourcePath)
+					requested := http.NewOptionsMessage(collectionPath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -57,7 +57,29 @@ var _ = Describe("SingletonRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := http.NewTraceMessage(resourcePath)
+				requested := http.NewTraceMessage(collectionPath)
+				routedRequest := router.Route(requested)
+				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
+			})
+		})
+
+		Context("when the path starts with the configured prefix", func() {
+			Context("when the method is OPTIONS", func() {
+				BeforeEach(func() {
+					requested := http.NewOptionsMessage(dataPath)
+					routedRequest := router.Route(requested)
+					Expect(routedRequest).NotTo(BeNil())
+					routedRequest.Handle(response)
+				})
+
+				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
+				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
+				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
+				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
+			})
+
+			It("replies Method Not Allowed on any other method", func() {
+				requested := http.NewTraceMessage(dataPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
@@ -80,7 +102,7 @@ var _ = Describe("SingletonResource", func() {
 	)
 
 	BeforeEach(func() {
-		singleton = &playground.SingletonResource{Path: "/singleton"}
+		singleton = &playground.SingletonResource{CollectionPath: "/singleton"}
 		response.Reset()
 	})
 
@@ -183,7 +205,7 @@ var _ = Describe("SingletonResource", func() {
 	})
 })
 
-func post(resource http.PostResource, path string, body string) string {
+func post(resource http.PostResource, path string, body string) (location string) {
 	request := &httptest.RequestMessage{
 		MethodReturns: http.POST,
 		PathReturns:   path,
