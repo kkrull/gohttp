@@ -2,6 +2,7 @@ package playground_test
 
 import (
 	"bytes"
+	"io"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
@@ -234,31 +235,41 @@ var _ = Describe("SingletonResource", func() {
 })
 
 func get(resource http.GetResource, path string) *httptest.ResponseMessage {
-	response := &bytes.Buffer{}
-	resource.Get(response, http.NewGetMessage(path))
-	return httptest.ParseResponse(response)
+	return invokeResourceMethod(resource.Get, http.NewGetMessage(path))
 }
 
 func post(resource http.PostResource, path string, body string) *httptest.ResponseMessage {
+	return invokeResourceMethod(resource.Post, postRequest(path, body))
+}
+
+func postRequest(path string, body string) *httptest.RequestMessage {
 	request := &httptest.RequestMessage{
 		MethodReturns: http.POST,
 		PathReturns:   path,
 	}
-	request.SetStringBody(body)
 
-	response := &bytes.Buffer{}
-	resource.Post(response, request)
-	return httptest.ParseResponse(response)
+	request.SetStringBody(body)
+	return request
 }
 
 func put(resource http.PutResource, path string, body string) *httptest.ResponseMessage {
+	return invokeResourceMethod(resource.Put, putRequest(path, body))
+}
+
+func putRequest(path string, body string) *httptest.RequestMessage {
 	request := &httptest.RequestMessage{
 		MethodReturns: http.PUT,
 		PathReturns:   path,
 	}
-	request.SetStringBody(body)
 
+	request.SetStringBody(body)
+	return request
+}
+
+func invokeResourceMethod(invokeMethod httpResourceMethod, request http.RequestMessage) *httptest.ResponseMessage {
 	response := &bytes.Buffer{}
-	resource.Put(response, request)
+	invokeMethod(response, request)
 	return httptest.ParseResponse(response)
 }
+
+type httpResourceMethod = func(io.Writer, http.RequestMessage)
