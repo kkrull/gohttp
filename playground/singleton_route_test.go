@@ -245,13 +245,37 @@ var _ = Describe("SingletonResource", func() {
 		})
 
 		Context("when posting data directly to the data path", func() {
-			XIt("responds 405 Method Not Allowed")
+			BeforeEach(func() {
+				responseMessage = invokeResourceMethod(singleton.Post, postRequest(dataPath, "42"))
+			})
+
+			It("responds 405 Method Not Allowed", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(405, "Method Not Allowed")
+			})
+			It("allows the methods allowed for the data", func() {
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.OPTIONS))
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.DELETE))
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.GET))
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.PUT))
+			})
 		})
 	})
 
 	Describe("#Put", func() {
 		Context("when putting data to the collection path", func() {
-			XIt("responds 405 Method Not Allowed")
+			BeforeEach(func() {
+				responseMessage = invokeResourceMethod(singleton.Put, postRequest(collectionPath, "42"))
+			})
+
+			It("responds 405 Method Not Allowed", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(405, "Method Not Allowed")
+			})
+			It("allows the methods allowed for the collection", func() {
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.OPTIONS))
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.POST))
+			})
 		})
 
 		Context("when putting data directly to the data path", func() {

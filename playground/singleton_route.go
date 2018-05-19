@@ -60,27 +60,26 @@ func (singleton *SingletonResource) Options(client io.Writer, message http.Reque
 	msg.RespondWithAllowHeader(client, success.OKStatus, singleton.allowedMethods(message.Path()))
 }
 
-func (singleton *SingletonResource) allowedMethods(path string) []string {
-	switch path {
+func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
+	switch message.Path() {
 	case singleton.CollectionPath:
-		return collectionMethods
+		singleton.setData(message.Body())
+		msg.WriteStatus(client, success.CreatedStatus)
+		msg.WriteHeader(client, "Location", singleton.dataPath())
+		msg.WriteEndOfMessageHeader(client)
 	case singleton.dataPath():
-		return dataMethods
-	default:
-		return []string{http.OPTIONS}
+		clienterror.RespondMethodNotAllowed(client, dataMethods)
 	}
 }
 
-func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
-	singleton.setData(message.Body())
-	msg.WriteStatus(client, success.CreatedStatus)
-	msg.WriteHeader(client, "Location", singleton.dataPath())
-	msg.WriteEndOfMessageHeader(client)
-}
-
 func (singleton *SingletonResource) Put(client io.Writer, message http.RequestMessage) {
-	singleton.setData(message.Body())
-	success.RespondOkWithoutBody(client)
+	switch message.Path() {
+	case singleton.CollectionPath:
+		clienterror.RespondMethodNotAllowed(client, collectionMethods)
+	case singleton.dataPath():
+		singleton.setData(message.Body())
+		success.RespondOkWithoutBody(client)
+	}
 }
 
 func (singleton *SingletonResource) deleteData() {
@@ -101,6 +100,17 @@ func (singleton *SingletonResource) isRequestForData(message http.RequestMessage
 
 func (singleton *SingletonResource) dataPath() string {
 	return strings.Join([]string{singleton.CollectionPath, "data"}, "/")
+}
+
+func (singleton *SingletonResource) allowedMethods(path string) []string {
+	switch path {
+	case singleton.CollectionPath:
+		return collectionMethods
+	case singleton.dataPath():
+		return dataMethods
+	default:
+		return []string{http.OPTIONS}
+	}
 }
 
 var (
