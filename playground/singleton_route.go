@@ -38,21 +38,36 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
-	if singleton.data == nil {
-		clienterror.RespondNotFound(client, message.Path())
-	} else if message.Path() != singleton.dataPath() {
-		clienterror.RespondNotFound(client, message.Path())
-	} else {
+	if singleton.hasData() && singleton.isRequestForData(message) {
 		msg.RespondInPlainText(client, success.OKStatus, singleton.data)
+	} else {
+		clienterror.RespondNotFound(client, message.Path())
 	}
 }
 
 func (singleton *SingletonResource) Post(client io.Writer, message http.RequestMessage) {
-	singleton.data = message.Body()
-
+	singleton.setData(message.Body())
 	msg.WriteStatus(client, success.CreatedStatus)
 	msg.WriteHeader(client, "Location", singleton.dataPath())
 	msg.WriteEndOfMessageHeader(client)
+}
+
+func (singleton *SingletonResource) Put(client io.Writer, message http.RequestMessage) {
+	singleton.setData(message.Body())
+	msg.WriteStatus(client, success.OKStatus)
+	msg.WriteEndOfMessageHeader(client)
+}
+
+func (singleton *SingletonResource) setData(body []byte) {
+	singleton.data = body
+}
+
+func (singleton *SingletonResource) hasData() bool {
+	return singleton.data != nil
+}
+
+func (singleton *SingletonResource) isRequestForData(message http.RequestMessage) bool {
+	return message.Path() == singleton.dataPath()
 }
 
 func (singleton *SingletonResource) dataPath() string {

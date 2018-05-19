@@ -11,6 +11,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const (
+	collectionPath  = "/reverie"
+	dataPath        = "/reverie/data"
+	invalidDataPath = "/reverie/missing"
+)
+
 var _ = Describe("::NewSingletonRoute", func() {
 	It("returns a SingletonRoute at the given path", func() {
 		route := playground.NewSingletonRoute("/singleton")
@@ -23,11 +29,6 @@ var _ = Describe("::NewSingletonRoute", func() {
 
 var _ = Describe("SingletonRoute", func() {
 	Describe("#Route", func() {
-		const (
-			collectionPath = "/reverie"
-			dataPath       = "/reverie/data"
-		)
-
 		var (
 			router   http.Route
 			response = &bytes.Buffer{}
@@ -41,7 +42,8 @@ var _ = Describe("SingletonRoute", func() {
 			response.Reset()
 		})
 
-		Context("when the path is the configured path", func() {
+		//TODO KDK: You can't do the same thing for both the collection and a single data resource
+		Context("when the path is the configured collection path", func() {
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
 					requested := http.NewOptionsMessage(collectionPath)
@@ -63,7 +65,7 @@ var _ = Describe("SingletonRoute", func() {
 			})
 		})
 
-		Context("when the path starts with the configured prefix", func() {
+		Context("when the path is the data path", func() {
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
 					requested := http.NewOptionsMessage(dataPath)
@@ -76,6 +78,7 @@ var _ = Describe("SingletonRoute", func() {
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
+				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -85,7 +88,7 @@ var _ = Describe("SingletonRoute", func() {
 			})
 		})
 
-		It("returns nil for any other path", func() {
+		It("passes on any other path by returning nil", func() {
 			requested := http.NewGetMessage("/")
 			Expect(router.Route(requested)).To(BeNil())
 		})
@@ -102,7 +105,7 @@ var _ = Describe("SingletonResource", func() {
 	)
 
 	BeforeEach(func() {
-		singleton = &playground.SingletonResource{CollectionPath: "/singleton"}
+		singleton = &playground.SingletonResource{CollectionPath: collectionPath}
 		response.Reset()
 	})
 
@@ -111,7 +114,7 @@ var _ = Describe("SingletonResource", func() {
 			BeforeEach(func() {
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
-					PathReturns:   "/singleton/data",
+					PathReturns:   dataPath,
 				}
 
 				singleton.Get(response, request)
@@ -126,22 +129,21 @@ var _ = Describe("SingletonResource", func() {
 				responseMessage.HeaderShould("Content-Type", Equal("text/plain"))
 			})
 			It("sets Content-Length to the length of the response", func() {
-				responseMessage.HeaderShould("Content-Length", Equal("26"))
+				responseMessage.HeaderShould("Content-Length", Equal("24"))
 			})
 			It("writes an error message to the message body", func() {
-				responseMessage.BodyShould(Equal("Not found: /singleton/data"))
+				responseMessage.BodyShould(Equal("Not found: /reverie/data"))
 			})
 		})
 
 		Context("when the requested path is something other than the previously-responded Location", func() {
 			BeforeEach(func() {
-				postedLocation := post(singleton, "/singleton", "field=value")
+				postedLocation := post(singleton, collectionPath, "field=value")
 
-				getPath := "/singleton/missing"
-				Expect(getPath).NotTo(Equal(postedLocation))
+				Expect(invalidDataPath).NotTo(Equal(postedLocation))
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
-					PathReturns:   getPath,
+					PathReturns:   invalidDataPath,
 				}
 
 				singleton.Get(response, request)
@@ -152,13 +154,13 @@ var _ = Describe("SingletonResource", func() {
 				responseMessage.StatusShouldBe(404, "Not Found")
 			})
 			It("writes an error message to the message body", func() {
-				responseMessage.BodyShould(Equal("Not found: /singleton/missing"))
+				responseMessage.BodyShould(HavePrefix("Not found"))
 			})
 		})
 
 		Context("when the requested path is the previously-responded Location", func() {
 			BeforeEach(func() {
-				postedDataPath := post(singleton, "/singleton", "field=value")
+				postedDataPath := post(singleton, collectionPath, "field=value")
 				singleton.Get(response, &httptest.RequestMessage{
 					MethodReturns: http.GET,
 					PathReturns:   postedDataPath,
@@ -183,11 +185,11 @@ var _ = Describe("SingletonResource", func() {
 	})
 
 	Describe("#Post", func() {
-		Context("given any data in the body", func() {
+		Context("when posting data in the body to the collection path", func() {
 			BeforeEach(func() {
 				request = &httptest.RequestMessage{
 					MethodReturns: http.POST,
-					PathReturns:   "/singleton",
+					PathReturns:   collectionPath,
 				}
 
 				singleton.Post(response, request)
@@ -199,11 +201,40 @@ var _ = Describe("SingletonResource", func() {
 				responseMessage.StatusShouldBe(201, "Created")
 			})
 			It("sets Location to <path>/data", func() {
-				responseMessage.HeaderShould("Location", Equal("/singleton/data"))
+				responseMessage.HeaderShould("Location", Equal(dataPath))
 			})
 		})
 	})
+
+	Describe("#Put", func() {
+		BeforeEach(func() {
+			request = &httptest.RequestMessage{
+				MethodReturns: http.PUT,
+				PathReturns:   collectionPath,
+			}
+			request.SetStringBody("42")
+
+			singleton.Put(response, request)
+			responseMessage = httptest.ParseResponse(response)
+		})
+
+		It("responds 200 OK", func() {
+			responseMessage.ShouldBeWellFormed()
+			responseMessage.StatusShouldBe(200, "OK")
+		})
+		It("stores the content from the message body for subsequent requests", func() {
+			getResponse := get(singleton, dataPath)
+			getResponse.StatusShouldBe(200, "OK")
+			getResponse.HeaderShould("Content-Length", Equal("2"))
+		})
+	})
 })
+
+func get(resource http.GetResource, path string) *httptest.ResponseMessage {
+	response := &bytes.Buffer{}
+	resource.Get(response, http.NewGetMessage(path))
+	return httptest.ParseResponse(response)
+}
 
 func post(resource http.PostResource, path string, body string) (location string) {
 	request := &httptest.RequestMessage{
