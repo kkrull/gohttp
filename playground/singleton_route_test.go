@@ -42,7 +42,6 @@ var _ = Describe("SingletonRoute", func() {
 			response.Reset()
 		})
 
-		//TODO KDK: You can't do the same thing for both the collection and a single data resource
 		Context("when the path is the configured collection path", func() {
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
@@ -54,7 +53,7 @@ var _ = Describe("SingletonRoute", func() {
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
-				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
+				XIt("disallows GET", httptest.ShouldNotAllowMethod(response, http.GET))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
 			})
 
@@ -77,7 +76,7 @@ var _ = Describe("SingletonRoute", func() {
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
-				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
+				XIt("disallows POST", httptest.ShouldNotAllowMethod(response, http.POST))
 				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 			})
 
