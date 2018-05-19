@@ -38,7 +38,11 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Delete(client io.Writer, message http.RequestMessage) {
-	if singleton.hasData() {
+	if !singleton.isRequestForData(message) {
+		msg.WriteStatus(client, clienterror.MethodNotAllowedStatus)
+		msg.WriteHeader(client, "Allow", strings.Join([]string{http.OPTIONS, http.POST}, ","))
+		msg.WriteEndOfMessageHeader(client)
+	} else if singleton.hasData() {
 		singleton.deleteData()
 		msg.WriteStatus(client, success.OKStatus)
 		msg.WriteEndOfMessageHeader(client)

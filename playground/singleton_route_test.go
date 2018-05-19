@@ -113,15 +113,23 @@ var _ = Describe("SingletonResource", func() {
 
 	Describe("#Delete", func() {
 		Context("given the collection path", func() {
-			XIt("responds 405 Method Not Allowed")
+			BeforeEach(func() {
+				responseMessage = invokeResourceMethod(singleton.Delete, http.NewDeleteMessage(collectionPath))
+			})
+
+			It("responds 405 Method Not Allowed", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(405, "Method Not Allowed")
+			})
+			It("allows the methods allowed for the collection", func() {
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.OPTIONS))
+				responseMessage.HeaderShould("Allow", ContainSubstring(http.POST))
+			})
 		})
 
 		Context("when deleting non existent data at the data path", func() {
-			BeforeEach(func() {
-				responseMessage = invokeResourceMethod(singleton.Delete, http.NewDeleteMessage(dataPath))
-			})
-
 			It("responds 404 Not Found", func() {
+				responseMessage = invokeResourceMethod(singleton.Delete, http.NewDeleteMessage(dataPath))
 				responseMessage.ShouldBeWellFormed()
 				responseMessage.StatusShouldBe(404, "Not Found")
 			})
