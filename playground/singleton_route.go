@@ -38,6 +38,13 @@ func (singleton *SingletonResource) Name() string {
 }
 
 func (singleton *SingletonResource) Delete(client io.Writer, message http.RequestMessage) {
+	if singleton.hasData() {
+		singleton.deleteData()
+		msg.WriteStatus(client, success.OKStatus)
+		msg.WriteEndOfMessageHeader(client)
+	} else {
+		clienterror.RespondNotFound(client, message.Path())
+	}
 }
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
@@ -61,12 +68,16 @@ func (singleton *SingletonResource) Put(client io.Writer, message http.RequestMe
 	msg.WriteEndOfMessageHeader(client)
 }
 
-func (singleton *SingletonResource) setData(body []byte) {
-	singleton.data = body
+func (singleton *SingletonResource) deleteData() {
+	singleton.data = nil
 }
 
 func (singleton *SingletonResource) hasData() bool {
 	return singleton.data != nil
+}
+
+func (singleton *SingletonResource) setData(body []byte) {
+	singleton.data = body
 }
 
 func (singleton *SingletonResource) isRequestForData(message http.RequestMessage) bool {

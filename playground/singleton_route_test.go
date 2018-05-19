@@ -117,12 +117,30 @@ var _ = Describe("SingletonResource", func() {
 		})
 
 		Context("when deleting non existent data at the data path", func() {
-			XIt("responds 404 Not Found")
+			BeforeEach(func() {
+				responseMessage = invokeResourceMethod(singleton.Delete, http.NewDeleteMessage(dataPath))
+			})
+
+			It("responds 404 Not Found", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(404, "Not Found")
+			})
 		})
 
 		Context("when deleting existing data at the data path", func() {
+			BeforeEach(func() {
+				invokeResourceMethod(singleton.Put, putRequest(dataPath, "42"))
+				responseMessage = invokeResourceMethod(singleton.Delete, http.NewDeleteMessage(dataPath))
+			})
 
-			XIt("responds 200 OK")
+			It("responds 200 OK", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(200, "OK")
+			})
+			It("the data is no longer available for subsequent requests", func() {
+				getResponse := invokeResourceMethod(singleton.Get, http.NewGetMessage(dataPath))
+				getResponse.StatusShouldBe(404, "Not Found")
+			})
 		})
 	})
 
