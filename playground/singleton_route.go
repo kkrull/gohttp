@@ -37,6 +37,9 @@ func (singleton *SingletonResource) Name() string {
 	return "Singleton"
 }
 
+func (singleton *SingletonResource) Delete(client io.Writer, message http.RequestMessage) {
+}
+
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
 	if singleton.hasData() && singleton.isRequestForData(message) {
 		msg.RespondInPlainText(client, success.OKStatus, singleton.data)

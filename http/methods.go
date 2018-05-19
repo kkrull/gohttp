@@ -8,6 +8,36 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
+/* DELETE */
+
+type deleteMethod struct{}
+
+func (method *deleteMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
+	supportedResource, ok := resource.(DeleteResource)
+	if ok {
+		return &deleteRequest{
+			Message:  message,
+			Resource: supportedResource,
+		}, true
+	}
+
+	return nil, false
+}
+
+type deleteRequest struct {
+	Message  RequestMessage
+	Resource DeleteResource
+}
+
+func (request *deleteRequest) Handle(client io.Writer) error {
+	request.Resource.Delete(client, request.Message)
+	return nil
+}
+
+type DeleteResource interface {
+	Delete(client io.Writer, message RequestMessage)
+}
+
 /* GET */
 
 type getMethod struct{}

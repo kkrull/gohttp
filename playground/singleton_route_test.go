@@ -55,6 +55,7 @@ var _ = Describe("SingletonRoute", func() {
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 				XIt("disallows GET", httptest.ShouldNotAllowMethod(response, http.GET))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
+				XIt("disallows DELETE", httptest.ShouldNotAllowMethod(response, http.DELETE))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -78,6 +79,7 @@ var _ = Describe("SingletonRoute", func() {
 				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
 				XIt("disallows POST", httptest.ShouldNotAllowMethod(response, http.POST))
 				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
+				It("allows DELETE", httptest.ShouldAllowMethods(response, http.DELETE))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -108,16 +110,25 @@ var _ = Describe("SingletonResource", func() {
 		response.Reset()
 	})
 
+	Describe("#Delete", func() {
+		Context("given the collection path", func() {
+			XIt("responds 405 Method Not Allowed")
+		})
+
+		Context("when deleting non existent data at the data path", func() {
+			XIt("responds 404 Not Found")
+		})
+
+		Context("when deleting existing data at the data path", func() {
+
+			XIt("responds 200 OK")
+		})
+	})
+
 	Describe("#Get", func() {
 		Context("when no content has been written", func() {
 			BeforeEach(func() {
-				request = &httptest.RequestMessage{
-					MethodReturns: http.GET,
-					PathReturns:   dataPath,
-				}
-
-				singleton.Get(response, request)
-				responseMessage = httptest.ParseResponse(response)
+				responseMessage = get(singleton, dataPath)
 			})
 
 			It("responds 404 Not Found", func() {
@@ -137,16 +148,10 @@ var _ = Describe("SingletonResource", func() {
 
 		Context("when the requested path is something other than the previously-responded Location", func() {
 			BeforeEach(func() {
-				postedLocation := post(singleton, collectionPath, "field=value")
+				postResponse := post(singleton, collectionPath, "field=value")
 
-				Expect(invalidDataPath).NotTo(Equal(postedLocation))
-				request = &httptest.RequestMessage{
-					MethodReturns: http.GET,
-					PathReturns:   invalidDataPath,
-				}
-
-				singleton.Get(response, request)
-				responseMessage = httptest.ParseResponse(response)
+				Expect(invalidDataPath).NotTo(Equal(postResponse.HeaderValue("Location")))
+				responseMessage = get(singleton, invalidDataPath)
 			})
 
 			It("responds 404 Not Found", func() {
@@ -159,12 +164,8 @@ var _ = Describe("SingletonResource", func() {
 
 		Context("when the requested path is the previously-responded Location", func() {
 			BeforeEach(func() {
-				postedDataPath := post(singleton, collectionPath, "field=value")
-				singleton.Get(response, &httptest.RequestMessage{
-					MethodReturns: http.GET,
-					PathReturns:   postedDataPath,
-				})
-				responseMessage = httptest.ParseResponse(response)
+				postResponse := post(singleton, collectionPath, "field=value")
+				responseMessage = get(singleton, postResponse.HeaderValue("Location"))
 			})
 
 			It("responds 200 OK", func() {
@@ -203,28 +204,31 @@ var _ = Describe("SingletonResource", func() {
 				responseMessage.HeaderShould("Location", Equal(dataPath))
 			})
 		})
+
+		Context("when posting data directly to the data path", func() {
+			XIt("responds 405 Method Not Allowed")
+		})
 	})
 
 	Describe("#Put", func() {
-		BeforeEach(func() {
-			request = &httptest.RequestMessage{
-				MethodReturns: http.PUT,
-				PathReturns:   collectionPath,
-			}
-			request.SetStringBody("42")
-
-			singleton.Put(response, request)
-			responseMessage = httptest.ParseResponse(response)
+		Context("when putting data to the collection path", func() {
+			XIt("responds 405 Method Not Allowed")
 		})
 
-		It("responds 200 OK", func() {
-			responseMessage.ShouldBeWellFormed()
-			responseMessage.StatusShouldBe(200, "OK")
-		})
-		It("stores the content from the message body for subsequent requests", func() {
-			getResponse := get(singleton, dataPath)
-			getResponse.StatusShouldBe(200, "OK")
-			getResponse.HeaderShould("Content-Length", Equal("2"))
+		Context("when putting data directly to the data path", func() {
+			BeforeEach(func() {
+				responseMessage = put(singleton, dataPath, "42")
+			})
+
+			It("responds 200 OK", func() {
+				responseMessage.ShouldBeWellFormed()
+				responseMessage.StatusShouldBe(200, "OK")
+			})
+			It("stores the content from the message body for subsequent requests", func() {
+				getResponse := get(singleton, dataPath)
+				getResponse.StatusShouldBe(200, "OK")
+				getResponse.HeaderShould("Content-Length", Equal("2"))
+			})
 		})
 	})
 })
@@ -235,7 +239,7 @@ func get(resource http.GetResource, path string) *httptest.ResponseMessage {
 	return httptest.ParseResponse(response)
 }
 
-func post(resource http.PostResource, path string, body string) (location string) {
+func post(resource http.PostResource, path string, body string) *httptest.ResponseMessage {
 	request := &httptest.RequestMessage{
 		MethodReturns: http.POST,
 		PathReturns:   path,
@@ -244,6 +248,17 @@ func post(resource http.PostResource, path string, body string) (location string
 
 	response := &bytes.Buffer{}
 	resource.Post(response, request)
-	responseMessage := httptest.ParseResponse(response)
-	return responseMessage.HeaderValue("Location")
+	return httptest.ParseResponse(response)
+}
+
+func put(resource http.PutResource, path string, body string) *httptest.ResponseMessage {
+	request := &httptest.RequestMessage{
+		MethodReturns: http.PUT,
+		PathReturns:   path,
+	}
+	request.SetStringBody(body)
+
+	response := &bytes.Buffer{}
+	resource.Put(response, request)
+	return httptest.ParseResponse(response)
 }

@@ -10,6 +10,7 @@ import (
 
 const (
 	CONNECT string = "CONNECT"
+	DELETE  string = "DELETE"
 	GET     string = "GET"
 	HEAD    string = "HEAD"
 	OPTIONS string = "OPTIONS"
@@ -17,6 +18,14 @@ const (
 	PUT     string = "PUT"
 	TRACE   string = "TRACE"
 )
+
+func NewDeleteMessage(path string) RequestMessage {
+	return &requestMessage{
+		method: DELETE,
+		target: path,
+		path:   path,
+	}
+}
 
 func NewGetMessage(path string) RequestMessage {
 	return &requestMessage{
@@ -190,10 +199,11 @@ func (message *requestMessage) supportedMethods(resource Resource) []string {
 }
 
 var knownMethods = map[string]Method{
-	GET:  &getMethod{},
-	HEAD: &headMethod{},
-	POST: &postMethod{},
-	PUT:  &putMethod{},
+	DELETE: &deleteMethod{},
+	GET:    &getMethod{},
+	HEAD:   &headMethod{},
+	POST:   &postMethod{},
+	PUT:    &putMethod{},
 }
 
 type Method interface {
