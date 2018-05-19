@@ -39,13 +39,10 @@ func (singleton *SingletonResource) Name() string {
 
 func (singleton *SingletonResource) Delete(client io.Writer, message http.RequestMessage) {
 	if !singleton.isRequestForData(message) {
-		msg.WriteStatus(client, clienterror.MethodNotAllowedStatus)
-		msg.WriteHeader(client, "Allow", strings.Join([]string{http.OPTIONS, http.POST}, ","))
-		msg.WriteEndOfMessageHeader(client)
+		clienterror.RespondMethodNotAllowed(client, collectionMethods)
 	} else if singleton.hasData() {
 		singleton.deleteData()
-		msg.WriteStatus(client, success.OKStatus)
-		msg.WriteEndOfMessageHeader(client)
+		success.RespondOkWithoutBody(client)
 	} else {
 		clienterror.RespondNotFound(client, message.Path())
 	}
@@ -53,7 +50,7 @@ func (singleton *SingletonResource) Delete(client io.Writer, message http.Reques
 
 func (singleton *SingletonResource) Get(client io.Writer, message http.RequestMessage) {
 	if singleton.hasData() && singleton.isRequestForData(message) {
-		msg.RespondInPlainText(client, success.OKStatus, singleton.data)
+		success.RespondOKWithKnownBody(client, "text/plain", singleton.data)
 	} else {
 		clienterror.RespondNotFound(client, message.Path())
 	}
@@ -68,8 +65,7 @@ func (singleton *SingletonResource) Post(client io.Writer, message http.RequestM
 
 func (singleton *SingletonResource) Put(client io.Writer, message http.RequestMessage) {
 	singleton.setData(message.Body())
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteEndOfMessageHeader(client)
+	success.RespondOkWithoutBody(client)
 }
 
 func (singleton *SingletonResource) deleteData() {
@@ -91,3 +87,7 @@ func (singleton *SingletonResource) isRequestForData(message http.RequestMessage
 func (singleton *SingletonResource) dataPath() string {
 	return strings.Join([]string{singleton.CollectionPath, "data"}, "/")
 }
+
+var (
+	collectionMethods = []string{http.OPTIONS, http.POST}
+)

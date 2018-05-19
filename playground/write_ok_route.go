@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
 )
 
@@ -36,11 +35,9 @@ func (*WriteOKResource) Name() string {
 }
 
 func (resource *WriteOKResource) Post(client io.Writer, message http.RequestMessage) {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteEndOfMessageHeader(client)
+	success.RespondOkWithoutBody(client)
 }
 
 func (resource *WriteOKResource) Put(client io.Writer, message http.RequestMessage) {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteEndOfMessageHeader(client)
+	success.RespondOkWithoutBody(client)
 }

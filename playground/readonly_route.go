@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewReadOnlyRoute() *ReadOnlyRoute {
@@ -40,5 +41,5 @@ func (controller *ReadableNopResource) Get(client io.Writer, message http.Reques
 }
 
 func (controller *ReadableNopResource) Head(client io.Writer, message http.RequestMessage) {
-	writeOKWithNoBody(client)
+	success.RespondOkWithoutBody(client)
 }
