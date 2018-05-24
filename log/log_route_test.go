@@ -2,6 +2,7 @@ package log_test
 
 import (
 	"bytes"
+	"io"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
@@ -10,6 +11,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+const configuredPath = "/logs"
 
 var _ = Describe("::NewLogRoute", func() {
 	It("returns a Route at the given path", func() {
@@ -23,10 +26,6 @@ var _ = Describe("::NewLogRoute", func() {
 })
 
 var _ = Describe("Route", func() {
-	const (
-		configuredPath = "/logs"
-	)
-
 	var (
 		router   http.Route
 		response = &bytes.Buffer{}
@@ -65,3 +64,38 @@ var _ = Describe("Route", func() {
 		})
 	})
 })
+
+var _ = Describe("Viewer", func() {
+	var (
+		viewer   *log.Viewer
+		response *httptest.ResponseMessage
+	)
+
+	BeforeEach(func() {
+		viewer = &log.Viewer{}
+	})
+
+	Describe("#Get", func() {
+		Context("given no Authorization header", func() {
+			BeforeEach(func() {
+				response = invokeResourceMethod(viewer.Get, http.NewGetMessage(configuredPath))
+			})
+
+			It("responds 401 Unauthorized", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(401, "Unauthorized")
+			})
+			It("sets WWW-Authenticate to a Basic challenge in the logs realm", func() {
+				response.HeaderShould("WWW-Authenticate", Equal("Basic realm=\"logs\""))
+			})
+		})
+	})
+})
+
+func invokeResourceMethod(invokeMethod httpResourceMethod, request http.RequestMessage) *httptest.ResponseMessage {
+	response := &bytes.Buffer{}
+	invokeMethod(response, request)
+	return httptest.ParseResponse(response)
+}
+
+type httpResourceMethod = func(io.Writer, http.RequestMessage)

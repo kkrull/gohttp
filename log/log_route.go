@@ -1,7 +1,11 @@
 package log
 
 import (
+	"io"
+
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
 func NewLogRoute(path string) http.Route {
@@ -29,4 +33,10 @@ type Viewer struct{}
 
 func (viewer *Viewer) Name() string {
 	return "Log viewer"
+}
+
+func (viewer *Viewer) Get(client io.Writer, message http.RequestMessage) {
+	msg.WriteStatus(client, clienterror.UnauthorizedStatus)
+	msg.WriteHeader(client, "WWW-Authenticate", "Basic realm=\"logs\"")
+	msg.WriteEndOfMessageHeader(client)
 }
