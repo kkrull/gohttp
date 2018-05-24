@@ -2,10 +2,12 @@ package log
 
 import (
 	"io"
+	"strings"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/clienterror"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 func NewLogRoute(path string) http.Route {
@@ -36,7 +38,31 @@ func (viewer *Viewer) Name() string {
 }
 
 func (viewer *Viewer) Get(client io.Writer, message http.RequestMessage) {
-	msg.WriteStatus(client, clienterror.UnauthorizedStatus)
-	msg.WriteHeader(client, "WWW-Authenticate", "Basic realm=\"logs\"")
+	authorizations := message.HeaderValues("Authorization")
+	if len(authorizations) == 0 {
+		msg.WriteStatus(client, clienterror.UnauthorizedStatus)
+		msg.WriteHeader(client, "WWW-Authenticate", "Basic realm=\"logs\"")
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
+	firstAuthorization := authorizations[0]
+	fields := strings.Split(firstAuthorization, " ")
+
+	method := fields[0]
+	if method != "Basic" {
+		msg.WriteStatus(client, clienterror.ForbiddenStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
+	encodedCredentials := fields[1]
+	if encodedCredentials != "YWRtaW46aHVudGVyMg==" {
+		msg.WriteStatus(client, clienterror.ForbiddenStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteEndOfMessageHeader(client)
 }

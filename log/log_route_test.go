@@ -76,6 +76,12 @@ var _ = Describe("Viewer", func() {
 	})
 
 	Describe("#Get", func() {
+		const (
+			validAuthorization           = "Basic YWRtaW46aHVudGVyMg=="
+			invalidAuthorizationMethod   = "Wat YWRtaW46aHVudGVyMg=="
+			invalidAuthorizationPassword = "Basic YWRtaW46dG90YWxseWJvZ3VzcGFzc3dvcmQK"
+		)
+
 		Context("given no Authorization header", func() {
 			BeforeEach(func() {
 				response = invokeResourceMethod(viewer.Get, http.NewGetMessage(configuredPath))
@@ -87,6 +93,64 @@ var _ = Describe("Viewer", func() {
 			})
 			It("sets WWW-Authenticate to a Basic challenge in the logs realm", func() {
 				response.HeaderShould("WWW-Authenticate", Equal("Basic realm=\"logs\""))
+			})
+		})
+
+		Context("given an Authorization header with valid Basic credentials", func() {
+			BeforeEach(func() {
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   configuredPath,
+					TargetReturns: configuredPath,
+				}
+				request.AddHeader("Authorization", validAuthorization)
+				response = invokeResourceMethod(viewer.Get, request)
+			})
+
+			It("responds 200 OK", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(200, "OK")
+			})
+			XIt("responds with the contents of the configured readable buffer")
+		})
+
+		Context("given an Authorization header with any other method", func() {
+			BeforeEach(func() {
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   configuredPath,
+					TargetReturns: configuredPath,
+				}
+				request.AddHeader("Authorization", invalidAuthorizationMethod)
+				response = invokeResourceMethod(viewer.Get, request)
+			})
+
+			It("responds 403 Forbidden", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(403, "Forbidden")
+			})
+			It("has no body", func() {
+				response.BodyShould(BeEmpty())
+			})
+		})
+
+		Context("given an Authorization header with invalid Basic credentials", func() {
+			BeforeEach(func() {
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   configuredPath,
+					TargetReturns: configuredPath,
+				}
+				request.AddHeader("Authorization", invalidAuthorizationPassword)
+				response = invokeResourceMethod(viewer.Get, request)
+			})
+
+			It("responds 403 Forbidden", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(403, "Forbidden")
+			})
+			It("has no body", func() {
+				response.BodyShould(BeEmpty())
 			})
 		})
 	})
