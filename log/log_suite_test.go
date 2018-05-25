@@ -1,6 +1,7 @@
 package log_test
 
 import (
+	"bytes"
 	"io"
 	"testing"
 
@@ -13,12 +14,17 @@ func TestLog(t *testing.T) {
 	RunSpecs(t, "log")
 }
 
-/* WriterMock */
+/* RequestBufferStub */
 
-type WriterMock struct{}
-
-func (mock *WriterMock) Length() int {
-	return 0
+type RequestBufferStub struct {
+	NumBytesReturns int
+	WriteToWill     *bytes.Buffer
 }
 
-func (mock *WriterMock) WriteLoggedRequests(client io.Writer) {}
+func (stub *RequestBufferStub) NumBytes() int {
+	return stub.NumBytesReturns
+}
+
+func (stub *RequestBufferStub) WriteTo(client io.Writer) {
+	stub.WriteToWill.WriteTo(client)
+}

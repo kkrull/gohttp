@@ -12,13 +12,13 @@ import (
 var _ = Describe("TextLogger", func() {
 	Describe("#Parsed", func() {
 		var (
-			logger http.RequestLogger
+			logger *http.TextLogger
 			output *bytes.Buffer
 		)
 
 		BeforeEach(func() {
 			output = &bytes.Buffer{}
-			logger = http.TextLogger{Writer: output}
+			logger = http.NewBufferedRequestLogger()
 
 			requestMessage := &httptest.RequestMessage{
 				MethodReturns: "GET",
@@ -27,6 +27,7 @@ var _ = Describe("TextLogger", func() {
 			requestMessage.AddHeader("Content-Type", "text/plain")
 
 			logger.Parsed(requestMessage)
+			logger.WriteTo(output)
 		})
 
 		It("writes the request method and target", func() {

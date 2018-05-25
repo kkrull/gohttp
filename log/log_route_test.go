@@ -16,13 +16,13 @@ const configuredPath = "/logs"
 
 var _ = Describe("::NewLogRoute", func() {
 	It("returns a Route at the given path", func() {
-		logger := &WriterMock{}
+		logger := &RequestBufferStub{}
 		route := log.NewLogRoute("/foo", logger)
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&log.Route{
 			Path: "/foo",
 			Viewer: &log.Viewer{
-				RequestLog: logger,
+				Requests: logger,
 			},
 		}))
 	})
@@ -71,13 +71,16 @@ var _ = Describe("Route", func() {
 var _ = Describe("Viewer", func() {
 	var (
 		viewer   *log.Viewer
-		logger   log.Writer
+		logger   log.RequestBuffer
 		response *httptest.ResponseMessage
 	)
 
 	BeforeEach(func() {
-		logger = &WriterMock{}
-		viewer = &log.Viewer{RequestLog: logger}
+		logger = &RequestBufferStub{
+			NumBytesReturns: 4,
+			WriteToWill:     bytes.NewBufferString("ASDF"),
+		}
+		viewer = &log.Viewer{Requests: logger}
 	})
 
 	Describe("#Get", func() {
@@ -116,7 +119,10 @@ var _ = Describe("Viewer", func() {
 				response.ShouldBeWellFormed()
 				response.StatusShouldBe(200, "OK")
 			})
-			XIt("responds with the contents of the configured readable buffer")
+			It("responds with the contents of the configured readable buffer", func() {
+				response.HeaderShould("Content-Length", Equal("4"))
+				response.BodyShould(Equal("ASDF"))
+			})
 		})
 
 		Context("given an Authorization header with any other method", func() {

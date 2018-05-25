@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"time"
@@ -11,26 +12,31 @@ type noLogger struct{}
 
 func (noLogger) Parsed(message RequestMessage) {}
 
+func NewBufferedRequestLogger() *TextLogger {
+	return &TextLogger{buffer: &bytes.Buffer{}}
+}
+
+// Logs HTTP requests to a buffer in plain text
 type TextLogger struct {
-	Writer io.Writer
-}
-
-func (logger TextLogger) Length() int {
-	panic("implement me")
-}
-
-func (logger TextLogger) WriteLoggedRequests(client io.Writer) {
-	panic("implement me")
+	buffer *bytes.Buffer
 }
 
 func (logger TextLogger) Parsed(message RequestMessage) {
-	fmt.Fprintf(logger.Writer, "\n%s : %s %s\n",
+	fmt.Fprintf(logger.buffer, "\n%s : %s %s\n",
 		time.Now().Format("2006-01-02 03:04:05 Z07:00"),
 		message.Method(),
 		message.Target())
 	for _, header := range message.HeaderLines() {
-		fmt.Fprintln(logger.Writer, header)
+		fmt.Fprintln(logger.buffer, header)
 	}
-	fmt.Fprintln(logger.Writer)
-	fmt.Fprintf(logger.Writer, "%s", message.Body())
+	fmt.Fprintln(logger.buffer)
+	fmt.Fprintf(logger.buffer, "%s", message.Body())
+}
+
+func (logger TextLogger) NumBytes() int {
+	return logger.buffer.Len()
+}
+
+func (logger TextLogger) WriteTo(client io.Writer) {
+	logger.buffer.WriteTo(client)
 }

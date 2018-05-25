@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -97,7 +96,7 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
 				log.NewLogRoute(
 					"/logs",
-					&http.TextLogger{&bytes.Buffer{}},
+					http.NewBufferedRequestLogger(),
 				))))
 		})
 

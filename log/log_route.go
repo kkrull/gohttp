@@ -10,15 +10,14 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewLogRoute(path string, requests Writer) http.Route {
+func NewLogRoute(path string, requests RequestBuffer) http.Route {
 	return &Route{
-		Path: path,
-		Viewer: &Viewer{
-			RequestLog: requests,
-		},
+		Path:   path,
+		Viewer: &Viewer{Requests: requests},
 	}
 }
 
+// A route for viewing request logs
 type Route struct {
 	Path   string
 	Viewer *Viewer
@@ -32,9 +31,9 @@ func (route *Route) Route(requested http.RequestMessage) http.Request {
 	return requested.MakeResourceRequest(route.Viewer)
 }
 
-// Views server logs
+// Views logs of HTTP requests
 type Viewer struct {
-	RequestLog Writer
+	Requests RequestBuffer
 }
 
 func (viewer *Viewer) Name() string {
@@ -68,13 +67,14 @@ func (viewer *Viewer) Get(client io.Writer, message http.RequestMessage) {
 	}
 
 	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteContentLengthHeader(client, viewer.RequestLog.Length())
+	msg.WriteContentLengthHeader(client, viewer.Requests.NumBytes())
 	msg.WriteContentTypeHeader(client, "text/plain")
 	msg.WriteEndOfMessageHeader(client)
-	viewer.RequestLog.WriteLoggedRequests(client)
+	viewer.Requests.WriteTo(client)
 }
 
-type Writer interface {
-	Length() int
-	WriteLoggedRequests(client io.Writer)
+// Writes HTTP requests
+type RequestBuffer interface {
+	NumBytes() int
+	WriteTo(client io.Writer)
 }
