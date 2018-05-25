@@ -22,10 +22,11 @@ type TextLogger struct {
 }
 
 func (logger TextLogger) Parsed(message RequestMessage) {
-	fmt.Fprintf(logger.buffer, "\n%s : %s %s\n",
+	fmt.Fprintf(logger.buffer, "\n%s : %s %s %s\n",
 		time.Now().Format("2006-01-02 03:04:05 Z07:00"),
 		message.Method(),
-		message.Target())
+		message.Target(),
+		message.Version())
 	for _, header := range message.HeaderLines() {
 		fmt.Fprintln(logger.buffer, header)
 	}

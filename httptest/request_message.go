@@ -34,6 +34,10 @@ func (message *RequestMessage) Target() string {
 	return message.TargetReturns
 }
 
+func (message *RequestMessage) Version() string {
+	return http.VERSION_1_1
+}
+
 func (message *RequestMessage) AddQueryParameter(name string, value string) {
 	message.queryParameters = append(message.queryParameters, http.QueryParameter{Name: name, Value: value})
 }

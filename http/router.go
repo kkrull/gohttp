@@ -64,6 +64,7 @@ type RequestLogger interface {
 type RequestMessage interface {
 	Method() string
 	Target() string
+	Version() string
 	Path() string
 	QueryParameters() []QueryParameter
 

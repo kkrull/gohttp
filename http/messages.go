@@ -19,11 +19,16 @@ const (
 	TRACE   string = "TRACE"
 )
 
+const (
+	VERSION_1_1 string = "HTTP/1.1"
+)
+
 func NewDeleteMessage(path string) RequestMessage {
 	return &requestMessage{
 		method: DELETE,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -32,6 +37,7 @@ func NewGetMessage(path string) RequestMessage {
 		method: GET,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -40,6 +46,7 @@ func NewHeadMessage(path string) RequestMessage {
 		method: HEAD,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -50,6 +57,7 @@ func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 		method: OPTIONS,
 		target: targetAsteriskOrPath,
 		path:   targetAsteriskOrPath,
+		version: VERSION_1_1,
 	}
 }
 
@@ -58,6 +66,7 @@ func NewPostMessage(path string) RequestMessage {
 		method: POST,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -66,6 +75,7 @@ func NewPutMessage(path string) RequestMessage {
 		method: PUT,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -74,6 +84,7 @@ func NewTraceMessage(path string) RequestMessage {
 		method: TRACE,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -82,6 +93,7 @@ func NewRequestMessage(method, path string) RequestMessage {
 		method: method,
 		target: path,
 		path:   path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -89,6 +101,7 @@ type requestMessage struct {
 	method          string
 	path            string
 	target          string
+	version         string
 	queryParameters []QueryParameter
 	headers         []header
 	body            []byte
@@ -100,6 +113,10 @@ func (message *requestMessage) Method() string {
 
 func (message *requestMessage) Path() string {
 	return message.path
+}
+
+func (message *requestMessage) Version() string {
+	return message.version
 }
 
 func (message *requestMessage) AddQueryFlag(name string) {
@@ -183,7 +200,7 @@ func (message *requestMessage) unsupportedMethod(resource Resource) Request {
 func (message *requestMessage) supportedMethods(resource Resource) []string {
 	supported := []string{OPTIONS}
 	for name, method := range knownMethods {
-		imaginaryRequest := &requestMessage{method: name, target: message.target}
+		imaginaryRequest := &requestMessage{method: name, target: message.target, version: message.version}
 		_, isSupported := method.MakeRequest(imaginaryRequest, resource)
 		if isSupported {
 			supported = append(supported, name)
