@@ -1,6 +1,8 @@
 package log
 
 import (
+	bytes2 "bytes"
+	"encoding/base64"
 	"io"
 	"strings"
 
@@ -12,8 +14,12 @@ import (
 
 func NewLogRoute(path string, requests RequestBuffer) http.Route {
 	return &Route{
-		Path:   path,
-		Viewer: &Viewer{Requests: requests},
+		Path: path,
+		Viewer: &Viewer{
+			Requests:           requests,
+			AuthorizedUser:     "admin",
+			AuthorizedPassword: "hunter2",
+		},
 	}
 }
 
@@ -33,7 +39,9 @@ func (route *Route) Route(requested http.RequestMessage) http.Request {
 
 // Views logs of HTTP requests
 type Viewer struct {
-	Requests RequestBuffer
+	Requests           RequestBuffer
+	AuthorizedUser     string
+	AuthorizedPassword string
 }
 
 func (viewer *Viewer) Name() string {
@@ -44,14 +52,24 @@ func (viewer *Viewer) Get(client io.Writer, message http.RequestMessage) {
 	machine := logWriterStateMachine{
 		requests: viewer.Requests,
 		client:   client,
+		viewer:   viewer,
 	}
 	machine.FindAuthorizationHeader(message)
+}
+
+func (viewer *Viewer) isAuthorized(encodedCredentials string) bool {
+	decodedBytes, _ := base64.StdEncoding.DecodeString(encodedCredentials)
+	decodedString := bytes2.NewBuffer(decodedBytes).String()
+	decoded := strings.Split(decodedString, ":")
+	return decoded[0] == viewer.AuthorizedUser &&
+		decoded[1] == viewer.AuthorizedPassword
 }
 
 // State machine to go through the workflow of parsing and validating authorization, before writing request logs
 type logWriterStateMachine struct {
 	requests RequestBuffer
 	client   io.Writer
+	viewer   *Viewer
 }
 
 func (state *logWriterStateMachine) FindAuthorizationHeader(message http.RequestMessage) {
@@ -72,9 +90,10 @@ func (state *logWriterStateMachine) parseAuthorization(authorization string) {
 }
 
 func (state *logWriterStateMachine) testAuthorization(method string, encodedCredentials string) {
-	if method != "Basic" {
+	const basicMethod = "Basic"
+	if method != basicMethod {
 		state.forbidden()
-	} else if encodedCredentials != "YWRtaW46aHVudGVyMg==" {
+	} else if !state.viewer.isAuthorized(encodedCredentials) {
 		state.forbidden()
 	} else {
 		state.authorized()

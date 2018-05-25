@@ -15,14 +15,16 @@ import (
 const configuredPath = "/logs"
 
 var _ = Describe("::NewLogRoute", func() {
-	It("returns a Route at the given path", func() {
+	It("returns a Route at the given path for logs available to one with the appropriate credentials", func() {
 		logger := &RequestBufferStub{}
 		route := log.NewLogRoute("/foo", logger)
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&log.Route{
 			Path: "/foo",
 			Viewer: &log.Viewer{
-				Requests: logger,
+				Requests:           logger,
+				AuthorizedUser:     "admin",
+				AuthorizedPassword: "hunter2",
 			},
 		}))
 	})
@@ -80,7 +82,11 @@ var _ = Describe("Viewer", func() {
 			NumBytesReturns: 4,
 			WriteToWill:     bytes.NewBufferString("ASDF"),
 		}
-		viewer = &log.Viewer{Requests: logger}
+		viewer = &log.Viewer{
+			Requests:           logger,
+			AuthorizedUser:     "admin",
+			AuthorizedPassword: "hunter2",
+		}
 	})
 
 	Describe("#Get", func() {
