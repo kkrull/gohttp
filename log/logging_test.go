@@ -1,10 +1,10 @@
-package http_test
+package log_test
 
 import (
 	"bytes"
 
-	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
+	"github.com/kkrull/gohttp/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -12,13 +12,13 @@ import (
 var _ = Describe("TextLogger", func() {
 	Describe("#Parsed", func() {
 		var (
-			logger *http.TextLogger
+			logger *log.TextLogger
 			output *bytes.Buffer
 		)
 
 		BeforeEach(func() {
 			output = &bytes.Buffer{}
-			logger = http.NewBufferedRequestLogger()
+			logger = log.NewBufferedRequestLogger()
 
 			requestMessage := &httptest.RequestMessage{
 				MethodReturns: "GET",

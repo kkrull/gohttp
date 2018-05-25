@@ -48,7 +48,7 @@ func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, 
 func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) http.Router {
 	router := http.NewRouter()
 
-	logger := http.NewBufferedRequestLogger()
+	logger := log.NewBufferedRequestLogger()
 	router.LogRequests(logger)
 
 	router.AddRoute(capability.NewRoute())

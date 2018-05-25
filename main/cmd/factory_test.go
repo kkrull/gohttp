@@ -96,7 +96,7 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
 				log.NewLogRoute(
 					"/logs",
-					http.NewBufferedRequestLogger(),
+					log.NewBufferedRequestLogger(),
 				))))
 		})
 

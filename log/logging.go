@@ -1,16 +1,13 @@
-package http
+package log
 
 import (
 	"bytes"
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/kkrull/gohttp/http"
 )
-
-// A null object for RequestLogger that does nothing
-type noLogger struct{}
-
-func (noLogger) Parsed(message RequestMessage) {}
 
 func NewBufferedRequestLogger() *TextLogger {
 	return &TextLogger{buffer: &bytes.Buffer{}}
@@ -21,7 +18,7 @@ type TextLogger struct {
 	buffer *bytes.Buffer
 }
 
-func (logger TextLogger) Parsed(message RequestMessage) {
+func (logger TextLogger) Parsed(message http.RequestMessage) {
 	fmt.Fprintf(logger.buffer, "\n%s : %s %s %s\n",
 		time.Now().Format("2006-01-02 03:04:05 Z07:00"),
 		message.Method(),
