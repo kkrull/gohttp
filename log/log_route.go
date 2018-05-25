@@ -47,6 +47,10 @@ func (viewer *Viewer) Get(client io.Writer, message http.RequestMessage) {
 		msg.WriteHeader(client, "WWW-Authenticate", "Basic realm=\"logs\"")
 		msg.WriteEndOfMessageHeader(client)
 		return
+	} else if len(authorizations) > 1 {
+		msg.WriteStatus(client, clienterror.BadRequestStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
 	}
 
 	firstAuthorization := authorizations[0]

@@ -90,20 +90,6 @@ var _ = Describe("Viewer", func() {
 			invalidAuthorizationPassword = "Basic YWRtaW46dG90YWxseWJvZ3VzcGFzc3dvcmQK"
 		)
 
-		Context("given no Authorization header", func() {
-			BeforeEach(func() {
-				response = invokeResourceMethod(viewer.Get, http.NewGetMessage(configuredPath))
-			})
-
-			It("responds 401 Unauthorized", func() {
-				response.ShouldBeWellFormed()
-				response.StatusShouldBe(401, "Unauthorized")
-			})
-			It("sets WWW-Authenticate to a Basic challenge in the logs realm", func() {
-				response.HeaderShould("WWW-Authenticate", Equal("Basic realm=\"logs\""))
-			})
-		})
-
 		Context("given an Authorization header with valid Basic credentials", func() {
 			BeforeEach(func() {
 				request := &httptest.RequestMessage{
@@ -122,6 +108,41 @@ var _ = Describe("Viewer", func() {
 			It("responds with the contents of the configured readable buffer", func() {
 				response.HeaderShould("Content-Length", Equal("4"))
 				response.BodyShould(Equal("ASDF"))
+			})
+		})
+
+		Context("given no Authorization header", func() {
+			BeforeEach(func() {
+				response = invokeResourceMethod(viewer.Get, http.NewGetMessage(configuredPath))
+			})
+
+			It("responds 401 Unauthorized", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(401, "Unauthorized")
+			})
+			It("sets WWW-Authenticate to a Basic challenge in the logs realm", func() {
+				response.HeaderShould("WWW-Authenticate", Equal("Basic realm=\"logs\""))
+			})
+		})
+
+		Context("given 2 or more Authorization headers", func() {
+			BeforeEach(func() {
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   configuredPath,
+					TargetReturns: configuredPath,
+				}
+				request.AddHeader("Authorization", validAuthorization)
+				request.AddHeader("Authorization", invalidAuthorizationMethod)
+				response = invokeResourceMethod(viewer.Get, request)
+			})
+
+			It("responds 400 Bad Request", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(400, "Bad Request")
+			})
+			It("has no body", func() {
+				response.BodyShould(BeEmpty())
 			})
 		})
 
