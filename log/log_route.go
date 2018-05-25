@@ -41,40 +41,68 @@ func (viewer *Viewer) Name() string {
 }
 
 func (viewer *Viewer) Get(client io.Writer, message http.RequestMessage) {
+	machine := logWriterStateMachine{
+		requests: viewer.Requests,
+		client:   client,
+	}
+	machine.FindAuthorizationHeader(message)
+}
+
+// State machine to go through the workflow of parsing and validating authorization, before writing request logs
+type logWriterStateMachine struct {
+	requests RequestBuffer
+	client   io.Writer
+}
+
+func (state *logWriterStateMachine) FindAuthorizationHeader(message http.RequestMessage) {
 	authorizations := message.HeaderValues("Authorization")
-	if len(authorizations) == 0 {
-		msg.WriteStatus(client, clienterror.UnauthorizedStatus)
-		msg.WriteHeader(client, "WWW-Authenticate", "Basic realm=\"logs\"")
-		msg.WriteEndOfMessageHeader(client)
-		return
-	} else if len(authorizations) > 1 {
-		msg.WriteStatus(client, clienterror.BadRequestStatus)
-		msg.WriteEndOfMessageHeader(client)
-		return
+	switch len(authorizations) {
+	case 0:
+		state.unauthorized()
+	case 1:
+		state.parseAuthorization(authorizations[0])
+	default:
+		state.ambiguouslyAuthorized()
 	}
+}
 
-	firstAuthorization := authorizations[0]
-	fields := strings.Split(firstAuthorization, " ")
+func (state *logWriterStateMachine) parseAuthorization(authorization string) {
+	fields := strings.Split(authorization, " ")
+	state.testAuthorization(fields[0], fields[1])
+}
 
-	method := fields[0]
+func (state *logWriterStateMachine) testAuthorization(method string, encodedCredentials string) {
 	if method != "Basic" {
-		msg.WriteStatus(client, clienterror.ForbiddenStatus)
-		msg.WriteEndOfMessageHeader(client)
-		return
+		state.forbidden()
+	} else if encodedCredentials != "YWRtaW46aHVudGVyMg==" {
+		state.forbidden()
+	} else {
+		state.authorized()
 	}
+}
 
-	encodedCredentials := fields[1]
-	if encodedCredentials != "YWRtaW46aHVudGVyMg==" {
-		msg.WriteStatus(client, clienterror.ForbiddenStatus)
-		msg.WriteEndOfMessageHeader(client)
-		return
-	}
+func (state *logWriterStateMachine) ambiguouslyAuthorized() {
+	msg.WriteStatus(state.client, clienterror.BadRequestStatus)
+	msg.WriteEndOfMessageHeader(state.client)
+}
 
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteContentLengthHeader(client, viewer.Requests.NumBytes())
-	msg.WriteContentTypeHeader(client, "text/plain")
-	msg.WriteEndOfMessageHeader(client)
-	viewer.Requests.WriteTo(client)
+func (state *logWriterStateMachine) authorized() {
+	msg.WriteStatus(state.client, success.OKStatus)
+	msg.WriteContentLengthHeader(state.client, state.requests.NumBytes())
+	msg.WriteContentTypeHeader(state.client, "text/plain")
+	msg.WriteEndOfMessageHeader(state.client)
+	state.requests.WriteTo(state.client)
+}
+
+func (state *logWriterStateMachine) forbidden() {
+	msg.WriteStatus(state.client, clienterror.ForbiddenStatus)
+	msg.WriteEndOfMessageHeader(state.client)
+}
+
+func (state *logWriterStateMachine) unauthorized() {
+	msg.WriteStatus(state.client, clienterror.UnauthorizedStatus)
+	msg.WriteHeader(state.client, "WWW-Authenticate", "Basic realm=\"logs\"")
+	msg.WriteEndOfMessageHeader(state.client)
 }
 
 // Writes HTTP requests
