@@ -15,6 +15,14 @@ type TextLogger struct {
 	Writer io.Writer
 }
 
+func (logger TextLogger) Length() int {
+	panic("implement me")
+}
+
+func (logger TextLogger) WriteLoggedRequests(client io.Writer) {
+	panic("implement me")
+}
+
 func (logger TextLogger) Parsed(message RequestMessage) {
 	fmt.Fprintf(logger.Writer, "\n%s : %s %s\n",
 		time.Now().Format("2006-01-02 03:04:05 Z07:00"),

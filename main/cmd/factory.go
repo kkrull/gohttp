@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"flag"
 	"os"
 
@@ -47,8 +48,13 @@ func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, 
 
 func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) http.Router {
 	router := http.NewRouter()
+
+	buffer := &bytes.Buffer{}
+	logger := &http.TextLogger{Writer: buffer}
+	router.LogRequests(logger)
+
 	router.AddRoute(capability.NewRoute())
-	router.AddRoute(log.NewLogRoute("/logs"))
+	router.AddRoute(log.NewLogRoute("/logs", logger))
 	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 	router.AddRoute(playground.NewWriteOKRoute("/form"))
 	router.AddRoute(playground.NewWriteOKRoute("/put-target"))

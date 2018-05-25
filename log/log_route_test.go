@@ -16,11 +16,14 @@ const configuredPath = "/logs"
 
 var _ = Describe("::NewLogRoute", func() {
 	It("returns a Route at the given path", func() {
-		route := log.NewLogRoute("/foo")
+		logger := &WriterMock{}
+		route := log.NewLogRoute("/foo", logger)
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&log.Route{
-			Path:   "/foo",
-			Viewer: &log.Viewer{},
+			Path: "/foo",
+			Viewer: &log.Viewer{
+				RequestLog: logger,
+			},
 		}))
 	})
 })
@@ -68,11 +71,13 @@ var _ = Describe("Route", func() {
 var _ = Describe("Viewer", func() {
 	var (
 		viewer   *log.Viewer
+		logger   log.Writer
 		response *httptest.ResponseMessage
 	)
 
 	BeforeEach(func() {
-		viewer = &log.Viewer{}
+		logger = &WriterMock{}
+		viewer = &log.Viewer{RequestLog: logger}
 	})
 
 	Describe("#Get", func() {

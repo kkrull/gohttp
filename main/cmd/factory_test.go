@@ -1,6 +1,7 @@
 package cmd_test
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -93,7 +94,11 @@ var _ = Describe("InterruptFactory", func() {
 		})
 
 		It("has a log route at /logs", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(log.NewLogRoute("/logs"))))
+			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
+				log.NewLogRoute(
+					"/logs",
+					&http.TextLogger{&bytes.Buffer{}},
+				))))
 		})
 
 		It("has a playground write-only route at /form", func() {
