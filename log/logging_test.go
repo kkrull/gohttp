@@ -21,8 +21,9 @@ var _ = Describe("TextLogger", func() {
 			logger = log.NewBufferedRequestLogger()
 
 			requestMessage := &httptest.RequestMessage{
-				MethodReturns: "GET",
-				TargetReturns: "/foo",
+				MethodReturns:  "GET",
+				TargetReturns:  "/foo",
+				VersionReturns: "HTTP/1.1",
 			}
 			requestMessage.AddHeader("Content-Type", "text/plain")
 
@@ -31,7 +32,7 @@ var _ = Describe("TextLogger", func() {
 		})
 
 		It("writes the request method and target", func() {
-			Expect(output.String()).To(ContainSubstring("GET /foo"))
+			Expect(output.String()).To(ContainSubstring("GET /foo HTTP/1.1"))
 		})
 		It("writes each header line", func() {
 			Expect(output.String()).To(MatchRegexp("Content-Type: text/plain"))

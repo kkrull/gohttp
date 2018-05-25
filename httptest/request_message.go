@@ -10,9 +10,10 @@ import (
 )
 
 type RequestMessage struct {
-	MethodReturns string
-	PathReturns   string
-	TargetReturns string
+	MethodReturns  string
+	PathReturns    string
+	TargetReturns  string
+	VersionReturns string
 
 	MakeResourceRequestReturns  http.Request
 	makeResourceRequestReceived http.Resource
@@ -35,7 +36,7 @@ func (message *RequestMessage) Target() string {
 }
 
 func (message *RequestMessage) Version() string {
-	return http.VERSION_1_1
+	return message.VersionReturns
 }
 
 func (message *RequestMessage) AddQueryParameter(name string, value string) {
