@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/kkrull/gohttp/http"
-	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
 )
 
@@ -46,19 +45,13 @@ func (controller *ReadWriteNopResource) Get(client io.Writer, message http.Reque
 }
 
 func (controller *ReadWriteNopResource) Head(client io.Writer, message http.RequestMessage) {
-	writeOKWithNoBody(client)
+	success.RespondOkWithoutBody(client)
 }
 
 func (controller *ReadWriteNopResource) Post(client io.Writer, message http.RequestMessage) {
-	writeOKWithNoBody(client)
+	success.RespondOkWithoutBody(client)
 }
 
 func (controller *ReadWriteNopResource) Put(client io.Writer, message http.RequestMessage) {
-	writeOKWithNoBody(client)
-}
-
-func writeOKWithNoBody(client io.Writer) {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteContentLengthHeader(client, 0)
-	msg.WriteEndOfMessageHeader(client)
+	success.RespondOkWithoutBody(client)
 }

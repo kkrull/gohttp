@@ -2,11 +2,40 @@ package http
 
 import (
 	"io"
-	"strings"
 
 	"github.com/kkrull/gohttp/msg"
 	"github.com/kkrull/gohttp/msg/success"
 )
+
+/* DELETE */
+
+type deleteMethod struct{}
+
+func (method *deleteMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
+	supportedResource, ok := resource.(DeleteResource)
+	if ok {
+		return &deleteRequest{
+			Message:  message,
+			Resource: supportedResource,
+		}, true
+	}
+
+	return nil, false
+}
+
+type deleteRequest struct {
+	Message  RequestMessage
+	Resource DeleteResource
+}
+
+func (request *deleteRequest) Handle(client io.Writer) error {
+	request.Resource.Delete(client, request.Message)
+	return nil
+}
+
+type DeleteResource interface {
+	Delete(client io.Writer, message RequestMessage)
+}
 
 /* GET */
 
@@ -70,15 +99,43 @@ type HeadResource interface {
 
 /* OPTIONS */
 
-type optionsRequest struct {
+type optionsMethod struct{}
+
+func (*optionsMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
+	supportedResource, ok := resource.(OptionsResource)
+	if ok {
+		return &dynamicOptionsRequest{
+			Message:  message,
+			Resource: supportedResource,
+		}, true
+	}
+
+	return nil, false
+}
+
+// Asks an OptionsResource what it thinks its supported HTTP methods are,
+// when there is no single answer that is known ahead of time
+type dynamicOptionsRequest struct {
+	Message  RequestMessage
+	Resource OptionsResource
+}
+
+func (request *dynamicOptionsRequest) Handle(client io.Writer) error {
+	request.Resource.Options(client, request.Message)
+	return nil
+}
+
+type OptionsResource interface {
+	Options(client io.Writer, message RequestMessage)
+}
+
+// Responds with a static set of supported HTTP methods that are known a priori
+type staticOptionsRequest struct {
 	SupportedMethods []string
 }
 
-func (request *optionsRequest) Handle(client io.Writer) error {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteContentLengthHeader(client, 0)
-	msg.WriteHeader(client, "Allow", strings.Join(request.SupportedMethods, ","))
-	msg.WriteEndOfMessageHeader(client)
+func (request *staticOptionsRequest) Handle(client io.Writer) error {
+	msg.RespondWithAllowHeader(client, success.OKStatus, request.SupportedMethods)
 	return nil
 }
 

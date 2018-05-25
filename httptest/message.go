@@ -45,6 +45,18 @@ func (message *ResponseMessage) HeaderShould(name string, match types.GomegaMatc
 	ExpectWithOffset(1, value).To(match, name)
 }
 
+func (message *ResponseMessage) HeaderShouldNot(name string, doNotMatch types.GomegaMatcher) {
+	value, ok := message.headerFields()[name]
+	ExpectWithOffset(1, ok).To(BeTrue(), "%s does not exist", name)
+	ExpectWithOffset(1, value).NotTo(doNotMatch, name)
+}
+
+func (message *ResponseMessage) HeaderValue(name string) string {
+	value, ok := message.headerFields()[name]
+	ExpectWithOffset(1, ok).To(BeTrue(), "%s does not exist", name)
+	return value
+}
+
 func (message ResponseMessage) headerFields() map[string]string {
 	const indexAfterStartLine = 1
 	messageHeader, _ := message.splitMessageHeaderAndBody()

@@ -14,6 +14,13 @@ func ShouldAllowMethods(response fmt.Stringer, methods ...string) func() {
 	}
 }
 
+func ShouldNotAllowMethod(response fmt.Stringer, method string) func() {
+	return func() {
+		responseMessage := ParseResponse(response)
+		responseMessage.HeaderShouldNot("Allow", ContainSubstring(method))
+	}
+}
+
 func containSubstrings(values []string) types.GomegaMatcher {
 	valueMatchers := make([]types.GomegaMatcher, len(values))
 	for i, value := range values {

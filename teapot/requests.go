@@ -49,7 +49,5 @@ func writeHeaders(client io.Writer, body string) {
 }
 
 func (teapot *IdentityTeapot) getTea(client io.Writer) {
-	msg.WriteStatus(client, success.OKStatus)
-	msg.WriteContentLengthHeader(client, 0)
-	msg.WriteEndOfMessageHeader(client)
+	success.RespondOkWithoutBody(client)
 }

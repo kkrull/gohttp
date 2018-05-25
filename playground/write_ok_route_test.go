@@ -11,18 +11,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("::NewFormRoute", func() {
-	It("returns a FormRoute at the given path", func() {
-		route := playground.NewFormRoute("/oracle")
+var _ = Describe("::NewWriteOKRoute", func() {
+	It("returns a WriteOKRoute at the given path", func() {
+		route := playground.NewWriteOKRoute("/oracle")
 		Expect(route).NotTo(BeNil())
-		Expect(route).To(BeEquivalentTo(&playground.FormRoute{
-			Path: "/oracle",
-			Form: &playground.SingletonForm{},
+		Expect(route).To(BeEquivalentTo(&playground.WriteOKRoute{
+			Path:     "/oracle",
+			Resource: &playground.WriteOKResource{},
 		}))
 	})
 })
 
-var _ = Describe("FormRoute", func() {
+var _ = Describe("WriteOKRoute", func() {
 	Describe("#Route", func() {
 		const givenPath = "/sweetness"
 
@@ -32,12 +32,11 @@ var _ = Describe("FormRoute", func() {
 		)
 
 		BeforeEach(func() {
-			router = &playground.FormRoute{Path: givenPath}
+			router = &playground.WriteOKRoute{Path: givenPath}
 			response.Reset()
 		})
 
 		Context("when the path is exactly equal to the given path", func() {
-
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
 					requested := http.NewOptionsMessage(givenPath)
@@ -66,9 +65,9 @@ var _ = Describe("FormRoute", func() {
 	})
 })
 
-var _ = Describe("SingletonForm", func() {
+var _ = Describe("WriteOKResource", func() {
 	var (
-		form            *playground.SingletonForm
+		okResource      *playground.WriteOKResource
 		request         *httptest.RequestMessage
 		responseMessage *httptest.ResponseMessage
 
@@ -82,13 +81,13 @@ var _ = Describe("SingletonForm", func() {
 	Describe("#Post", func() {
 		Context("given any data in the body", func() {
 			BeforeEach(func() {
-				form = &playground.SingletonForm{}
+				okResource = &playground.WriteOKResource{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.POST,
 					PathReturns:   "/form",
 				}
 
-				form.Post(response, request)
+				okResource.Post(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 
@@ -102,13 +101,13 @@ var _ = Describe("SingletonForm", func() {
 	Describe("#Put", func() {
 		Context("given any data in the body", func() {
 			BeforeEach(func() {
-				form = &playground.SingletonForm{}
+				okResource = &playground.WriteOKResource{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.PUT,
 					PathReturns:   "/form",
 				}
 
-				form.Put(response, request)
+				okResource.Put(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 
