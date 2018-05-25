@@ -19,27 +19,34 @@ const (
 	TRACE   string = "TRACE"
 )
 
+const (
+	VERSION_1_1 string = "HTTP/1.1"
+)
+
 func NewDeleteMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: DELETE,
-		target: path,
-		path:   path,
+		method:  DELETE,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
 func NewGetMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: GET,
-		target: path,
-		path:   path,
+		method:  GET,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
 func NewHeadMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: HEAD,
-		target: path,
-		path:   path,
+		method:  HEAD,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -47,41 +54,46 @@ func NewHeadMessage(path string) RequestMessage {
 // or an asterisk-form query of the server as a whole (https://tools.ietf.org/html/rfc7230#section-5.3.4).
 func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 	return &requestMessage{
-		method: OPTIONS,
-		target: targetAsteriskOrPath,
-		path:   targetAsteriskOrPath,
+		method:  OPTIONS,
+		target:  targetAsteriskOrPath,
+		path:    targetAsteriskOrPath,
+		version: VERSION_1_1,
 	}
 }
 
 func NewPostMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: POST,
-		target: path,
-		path:   path,
+		method:  POST,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
 func NewPutMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: PUT,
-		target: path,
-		path:   path,
+		method:  PUT,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
 func NewTraceMessage(path string) RequestMessage {
 	return &requestMessage{
-		method: TRACE,
-		target: path,
-		path:   path,
+		method:  TRACE,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
 func NewRequestMessage(method, path string) RequestMessage {
 	return &requestMessage{
-		method: method,
-		target: path,
-		path:   path,
+		method:  method,
+		target:  path,
+		path:    path,
+		version: VERSION_1_1,
 	}
 }
 
@@ -89,6 +101,7 @@ type requestMessage struct {
 	method          string
 	path            string
 	target          string
+	version         string
 	queryParameters []QueryParameter
 	headers         []header
 	body            []byte
@@ -100,6 +113,10 @@ func (message *requestMessage) Method() string {
 
 func (message *requestMessage) Path() string {
 	return message.path
+}
+
+func (message *requestMessage) Version() string {
+	return message.version
 }
 
 func (message *requestMessage) AddQueryFlag(name string) {
@@ -183,7 +200,7 @@ func (message *requestMessage) unsupportedMethod(resource Resource) Request {
 func (message *requestMessage) supportedMethods(resource Resource) []string {
 	supported := []string{OPTIONS}
 	for name, method := range knownMethods {
-		imaginaryRequest := &requestMessage{method: name, target: message.target}
+		imaginaryRequest := &requestMessage{method: name, target: message.target, version: message.version}
 		_, isSupported := method.MakeRequest(imaginaryRequest, resource)
 		if isSupported {
 			supported = append(supported, name)

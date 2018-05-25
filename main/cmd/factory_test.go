@@ -8,6 +8,7 @@ import (
 	"github.com/kkrull/gohttp/capability"
 	"github.com/kkrull/gohttp/fs"
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/log"
 	"github.com/kkrull/gohttp/main/cmd"
 	"github.com/kkrull/gohttp/playground"
 	"github.com/kkrull/gohttp/teapot"
@@ -89,6 +90,14 @@ var _ = Describe("InterruptFactory", func() {
 
 		It("has a capabilities route", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute())))
+		})
+
+		It("has a log route at /logs", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
+				log.NewLogRoute(
+					"/logs",
+					log.NewBufferedRequestLogger(),
+				))))
 		})
 
 		It("has a playground write-only route at /form", func() {

@@ -37,15 +37,16 @@ func (parser *parseMethodObject) parsingRequestLine(requestLine string) (ok *req
 		return nil, &clienterror.BadRequest{DisplayText: "incorrectly formatted or missing request-line"}
 	}
 
-	return parser.parsingTarget(fields[0], fields[1])
+	return parser.parsingTarget(fields[0], fields[1], fields[2])
 }
 
-func (parser *parseMethodObject) parsingTarget(method, target string) (ok *requestMessage, badRequest Response) {
+func (parser *parseMethodObject) parsingTarget(method, target, version string) (ok *requestMessage, badRequest Response) {
 	path, query, _ := splitTarget(target)
 	requested := &requestMessage{
-		method: method,
-		target: target,
-		path:   path,
+		method:  method,
+		target:  target,
+		path:    path,
+		version: version,
 	}
 
 	return parser.parsingQueryString(requested, query)

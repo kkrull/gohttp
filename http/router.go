@@ -64,6 +64,7 @@ type RequestLogger interface {
 type RequestMessage interface {
 	Method() string
 	Target() string
+	Version() string
 	Path() string
 	QueryParameters() []QueryParameter
 
@@ -81,3 +82,8 @@ type Route interface {
 type QueryParameter struct {
 	Name, Value string
 }
+
+// A null object for RequestLogger that does nothing
+type noLogger struct{}
+
+func (noLogger) Parsed(message RequestMessage) {}
