@@ -109,5 +109,45 @@ var _ = Describe("CookieRegistrar", func() {
 				response.BodyShould(Equal("Eat a Snickerdoodle."))
 			})
 		})
+
+		Context("given no 'type' parameter", func() {
+			BeforeEach(func() {
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   setTypePath,
+					TargetReturns: setTypePath,
+				}
+				response = invokeResourceMethod(registrar.Get, request)
+			})
+
+			It("responds 400 Bad Request", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(400, "Bad Request")
+			})
+			It("has no body", func() {
+				response.BodyShould(BeEmpty())
+			})
+		})
+
+		Context("given 2 or more 'type' parameters", func() {
+			BeforeEach(func() {
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   setTypePath,
+					TargetReturns: setTypePath,
+				}
+				request.AddQueryParameter("type", "HighlanderCookie")
+				request.AddQueryParameter("type", "TheKurganCookie")
+				response = invokeResourceMethod(registrar.Get, request)
+			})
+
+			It("responds 400 Bad Request", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(400, "Bad Request")
+			})
+			It("has no body", func() {
+				response.BodyShould(BeEmpty())
+			})
+		})
 	})
 })
