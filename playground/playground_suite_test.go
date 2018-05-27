@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/kkrull/gohttp/http"
+	"github.com/kkrull/gohttp/httptest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -98,6 +99,14 @@ func (mock *ReadWriteResourceMock) PutShouldHaveBeenCalled() {
 }
 
 /* Helpers */
+
+func invokeResourceMethod(invokeMethod httpResourceMethod, request http.RequestMessage) *httptest.ResponseMessage {
+	response := &bytes.Buffer{}
+	invokeMethod(response, request)
+	return httptest.ParseResponse(response)
+}
+
+type httpResourceMethod = func(io.Writer, http.RequestMessage)
 
 func handleRequest(router http.Route, method, path string) {
 	requested := http.NewRequestMessage(method, path)

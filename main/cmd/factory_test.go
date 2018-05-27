@@ -100,6 +100,10 @@ var _ = Describe("InterruptFactory", func() {
 				))))
 		})
 
+		It("has a playground route to test round trips for cookies at /cookie and /eat_cookie", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewCookieRoute("/cookie", "/eat_cookie"))))
+		})
+
 		It("has a playground write-only route at /form", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewWriteOKRoute("/form"))))
 		})
