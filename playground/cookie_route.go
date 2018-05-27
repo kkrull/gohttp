@@ -11,13 +11,12 @@ import (
 )
 
 func NewCookieRoute(setTypePath, readTypePath string) *CookieRoute {
-	ledger := &MemoryCookieLedger{}
 	return &CookieRoute{
 		SetTypePath: setTypePath,
-		Registrar:   &CookieRegistrar{Ledger: ledger},
+		Registrar:   &CookieRegistrar{},
 
 		ReadTypePath: readTypePath,
-		Monster:      &CookieMonster{Ledger: ledger},
+		Monster:      &CookieMonster{},
 	}
 }
 
@@ -43,9 +42,7 @@ func (route *CookieRoute) Route(requested http.RequestMessage) http.Request {
 }
 
 // "C" IS FOR COOKIE
-type CookieMonster struct {
-	Ledger CookieLedger
-}
+type CookieMonster struct{}
 
 func (monster *CookieMonster) Name() string {
 	return "Cookie Monster"
@@ -77,9 +74,7 @@ func (monster *CookieMonster) preferredCookieState(client io.Writer, cookieType 
 }
 
 // Registers cookies
-type CookieRegistrar struct {
-	Ledger CookieLedger
-}
+type CookieRegistrar struct{}
 
 func (registrar *CookieRegistrar) Name() string {
 	return "Cookie registrar"
@@ -156,11 +151,4 @@ type tooManyValuesError struct {
 
 func (err *tooManyValuesError) Error() string {
 	return fmt.Sprintf("too many values for %s", err.what)
-}
-
-// Stores information about cookies in memory
-type MemoryCookieLedger struct{}
-
-// Keeps track of the cookie monster's preferred type of cookie
-type CookieLedger interface {
 }

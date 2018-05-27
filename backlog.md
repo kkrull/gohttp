@@ -71,3 +71,9 @@ HTTP version
 * Given HTTP/1.2+ -- should it respond with 501 Not Implemented?
   RFC 7231 seems to suggest that it's only meant for an unsupported _method_.
 * Given HTTP/2+ -- it could respond 505 HTTP Version Not Supported
+
+
+## Cookies
+
+* Sign cookies -- something like sha256
+* Encrypt cookies -- with a strong encryption algorithm and salt

@@ -38,11 +38,6 @@ var _ = Describe("::NewCookieRoute", func() {
 		Expect(route.Registrar).NotTo(BeNil())
 		Expect(route.Registrar).To(BeAssignableToTypeOf(&playground.CookieRegistrar{}))
 	})
-
-	It("the cookie monster and the cookie registrar share the same, in-memory ledger", func() {
-		Expect(route.Monster.Ledger).To(BeEquivalentTo(&playground.MemoryCookieLedger{}))
-		Expect(route.Monster.Ledger).To(BeIdenticalTo(route.Registrar.Ledger))
-	})
 })
 
 var _ = Describe("CookieRoute", func() {
@@ -116,15 +111,13 @@ var _ = Describe("CookieRoute", func() {
 
 var _ = Describe("CookieMonster", func() {
 	var (
-		monster *playground.CookieMonster
-		//ledger   *CookieLedgerMock
+		monster  *playground.CookieMonster
 		response *httptest.ResponseMessage
 	)
 
 	Describe("#Get", func() {
 		Context("given 1 Cookie header", func() {
 			BeforeEach(func() {
-				//ledger = &CookieLedgerMock{PreferredTypeReturns: "earwax"}
 				monster = &playground.CookieMonster{}
 				request := &httptest.RequestMessage{
 					MethodReturns: http.GET,
@@ -152,7 +145,6 @@ var _ = Describe("CookieMonster", func() {
 
 		Context("given no Cookie header", func() {
 			BeforeEach(func() {
-				//ledger = &CookieLedgerMock{PreferredTypeReturns: "earwax"}
 				monster = &playground.CookieMonster{}
 				request := &httptest.RequestMessage{
 					MethodReturns: http.GET,
@@ -170,7 +162,6 @@ var _ = Describe("CookieMonster", func() {
 
 		Context("given 2 or more Cookie headers", func() {
 			BeforeEach(func() {
-				//ledger = &CookieLedgerMock{PreferredTypeReturns: "earwax"}
 				monster = &playground.CookieMonster{}
 				request := &httptest.RequestMessage{
 					MethodReturns: http.GET,
