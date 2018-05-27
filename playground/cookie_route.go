@@ -114,11 +114,11 @@ func singleHeader(message http.RequestMessage, field string) (value string, err 
 	values := message.HeaderValues(field)
 	switch len(values) {
 	case 0:
-		return "", fmt.Errorf("missing type parameter")
+		return "", &missingValueError{what: field}
 	case 1:
 		return values[0], nil
 	default:
-		return "", fmt.Errorf("too many type parameters")
+		return "", &tooManyValuesError{what: field}
 	}
 }
 
@@ -132,12 +132,30 @@ func singleQueryParameter(message http.RequestMessage, name string) (value strin
 
 	switch len(values) {
 	case 0:
-		return "", fmt.Errorf("missing type parameter")
+		return "", &missingValueError{what: "type parameter"}
 	case 1:
 		return values[0], nil
 	default:
-		return "", fmt.Errorf("too many type parameters")
+		return "", &tooManyValuesError{what: "type parameter"}
 	}
+}
+
+// Resulting from a lack of any value for something that needed a value
+type missingValueError struct {
+	what string
+}
+
+func (err *missingValueError) Error() string {
+	return fmt.Sprintf("no value provided for %s", err.what)
+}
+
+// Resulting from too many values for something that needed a single value
+type tooManyValuesError struct {
+	what string
+}
+
+func (err *tooManyValuesError) Error() string {
+	return fmt.Sprintf("too many values for %s", err.what)
 }
 
 // Stores information about cookies in memory
