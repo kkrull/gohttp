@@ -47,6 +47,7 @@ Missing ways to cause I/O errors with
 
 * Invoking requests -- buffering and parsing the response message
 * Building up request messages -- a builder would come in handy
+* Constants for commonly-used content types
 
 
 ## Routing

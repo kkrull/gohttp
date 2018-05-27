@@ -2,7 +2,6 @@ package playground_test
 
 import (
 	"bytes"
-	"io"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/httptest"
@@ -327,11 +326,3 @@ func putRequest(path string, body string) *httptest.RequestMessage {
 	request.SetStringBody(body)
 	return request
 }
-
-func invokeResourceMethod(invokeMethod httpResourceMethod, request http.RequestMessage) *httptest.ResponseMessage {
-	response := &bytes.Buffer{}
-	invokeMethod(response, request)
-	return httptest.ParseResponse(response)
-}
-
-type httpResourceMethod = func(io.Writer, http.RequestMessage)
