@@ -116,24 +116,22 @@ var _ = Describe("CookieRoute", func() {
 
 var _ = Describe("CookieMonster", func() {
 	var (
-		monster  *playground.CookieMonster
+		monster *playground.CookieMonster
+		//ledger   *CookieLedgerMock
 		response *httptest.ResponseMessage
 	)
 
-	BeforeEach(func() {
-		monster = &playground.CookieMonster{}
-	})
-
 	Describe("#Get", func() {
-		Context("when a cookie type has been registered", func() {
+		Context("given 1 Cookie header", func() {
 			BeforeEach(func() {
-				ledger := &CookieLedgerMock{PreferredTypeReturns: "earwax"}
-				monster = &playground.CookieMonster{Ledger: ledger}
+				//ledger = &CookieLedgerMock{PreferredTypeReturns: "earwax"}
+				monster = &playground.CookieMonster{}
 				request := &httptest.RequestMessage{
 					MethodReturns: http.GET,
 					PathReturns:   readTypePath,
 					TargetReturns: readTypePath,
 				}
+				request.AddHeader("Cookie", "earwax")
 				response = invokeResourceMethod(monster.Get, request)
 			})
 
@@ -147,8 +145,46 @@ var _ = Describe("CookieMonster", func() {
 			It("sets Content-Length to the number of bytes in the message body", func() {
 				Expect(response.HeaderAsInt("Content-Length")).To(BeNumerically(">", 0))
 			})
-			It("acknowledges the registration in the message body", func() {
+			It("expresses satisfaction for the specified type of cookie", func() {
 				response.BodyShould(Equal("mmmm earwax"))
+			})
+		})
+
+		Context("given no Cookie header", func() {
+			BeforeEach(func() {
+				//ledger = &CookieLedgerMock{PreferredTypeReturns: "earwax"}
+				monster = &playground.CookieMonster{}
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   readTypePath,
+					TargetReturns: readTypePath,
+				}
+				response = invokeResourceMethod(monster.Get, request)
+			})
+
+			It("responds 400 Bad Request", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(400, "Bad Request")
+			})
+		})
+
+		Context("given 2 or more Cookie headers", func() {
+			BeforeEach(func() {
+				//ledger = &CookieLedgerMock{PreferredTypeReturns: "earwax"}
+				monster = &playground.CookieMonster{}
+				request := &httptest.RequestMessage{
+					MethodReturns: http.GET,
+					PathReturns:   readTypePath,
+					TargetReturns: readTypePath,
+				}
+				request.AddHeader("Cookie", "chocolate")
+				request.AddHeader("Cookie", "wat")
+				response = invokeResourceMethod(monster.Get, request)
+			})
+
+			It("responds 400 Bad Request", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(400, "Bad Request")
 			})
 		})
 	})

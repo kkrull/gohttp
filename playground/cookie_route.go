@@ -52,7 +52,21 @@ func (monster *CookieMonster) Name() string {
 }
 
 func (monster *CookieMonster) Get(client io.Writer, message http.RequestMessage) {
-	cookieType, _ := monster.Ledger.PreferredType()
+	sessionCookie, err := singleHeader(message, "Cookie")
+	if err != nil {
+		monster.badCookieState(client)
+	} else {
+		cookieType := sessionCookie
+		monster.preferredCookieState(client, cookieType)
+	}
+}
+
+func (monster *CookieMonster) badCookieState(client io.Writer) {
+	msg.WriteStatus(client, clienterror.BadRequestStatus)
+	msg.WriteEndOfMessageHeader(client)
+}
+
+func (monster *CookieMonster) preferredCookieState(client io.Writer, cookieType string) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteContentTypeHeader(client, "text/plain")
 
@@ -94,6 +108,18 @@ func (registrar *CookieRegistrar) typeSetState(client io.Writer, cookieType stri
 	msg.WriteContentLengthHeader(client, len(body))
 	msg.WriteEndOfMessageHeader(client)
 	msg.WriteBody(client, body)
+}
+
+func singleHeader(message http.RequestMessage, field string) (value string, err error) {
+	values := message.HeaderValues(field)
+	switch len(values) {
+	case 0:
+		return "", fmt.Errorf("missing type parameter")
+	case 1:
+		return values[0], nil
+	default:
+		return "", fmt.Errorf("too many type parameters")
+	}
 }
 
 func singleQueryParameter(message http.RequestMessage, name string) (value string, err error) {
