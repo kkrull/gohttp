@@ -143,11 +143,6 @@ func singleQueryParameter(message http.RequestMessage, name string) (value strin
 // Stores information about cookies in memory
 type MemoryCookieLedger struct{}
 
-func (ledger *MemoryCookieLedger) PreferredType() (string, error) {
-	return "", fmt.Errorf("no preference has been defined")
-}
-
 // Keeps track of the cookie monster's preferred type of cookie
 type CookieLedger interface {
-	PreferredType() (string, error)
 }

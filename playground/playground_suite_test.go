@@ -16,16 +16,6 @@ func TestPlayground(t *testing.T) {
 	RunSpecs(t, "playground")
 }
 
-/* CookieLedgerMock */
-
-type CookieLedgerMock struct {
-	PreferredTypeReturns string
-}
-
-func (mock *CookieLedgerMock) PreferredType() (string, error) {
-	return mock.PreferredTypeReturns, nil
-}
-
 /* ParameterReporterMock */
 
 type ParameterReporterMock struct{}

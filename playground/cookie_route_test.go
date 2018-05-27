@@ -271,19 +271,3 @@ var _ = Describe("CookieRegistrar", func() {
 		})
 	})
 })
-
-var _ = Describe("CookieLedger", func() {
-	var (
-		ledger     *playground.MemoryCookieLedger
-		preference string
-		err        error
-	)
-
-	Describe("#PreferredType", func() {
-		It("returns an error when no preference has been specified", func() {
-			preference, err = ledger.PreferredType()
-			Expect(preference).To(Equal(""))
-			Expect(err).To(MatchError("no preference has been defined"))
-		})
-	})
-})
