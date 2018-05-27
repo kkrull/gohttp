@@ -1,5 +1,11 @@
 # Developer backlog
 
+## Universal HEAD requests
+
+Any time GET is supported, HEAD should be too.  
+Come up with some general mechanism to have a default resource method that calls `GetResource#Get` and ignores the message body.
+
+
 ## Content-type missing on empty file
 
 It should probably be text/plain, but it's worth double-checking to see if there's a specification for this.
@@ -22,6 +28,12 @@ $ curl -4 -v 'http://localhost:1234/cat-form/.gitkeep' ; echo ''
 ```
 
 
+## Header-only responses
+
+A number of responses don't have or need any message body.
+Come up with a way to consistently set `Content-Length` to 0.
+
+
 ## Handling requests
 
 Missing ways to cause I/O errors with
@@ -31,11 +43,18 @@ Missing ways to cause I/O errors with
 * `os.File`
 
 
-## Naming
+## DRYness
 
-- `Controller` might be better referred to as a `Resource` that supports (HTTP) methods.
+* Invoking requests -- buffering and parsing the response message
+* Building up request messages -- a builder would come in handy
+
+
+## Routing
+
 - `package.Route` might be better called `MethodRoute` and be dedicated to de-muxing HTTP method **only**
 - `Router.Route` might be better called `ResourceRoute` and be dedicated to de-muxing over Target/Resource **only**
+- The route configuration is getting big enough that it would be handy to configure from a file instead of modifying code all the time.
+- It would be more clear which paths go to which routes/resources if each constructor takes the path(s) it serves are parameters.
 
 
 ## Request parsing
