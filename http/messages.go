@@ -8,19 +8,20 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
+// Request method verbs
 const (
-	CONNECT string = "CONNECT"
-	DELETE  string = "DELETE"
-	GET     string = "GET"
-	HEAD    string = "HEAD"
-	OPTIONS string = "OPTIONS"
-	POST    string = "POST"
-	PUT     string = "PUT"
-	TRACE   string = "TRACE"
+	CONNECT = "CONNECT"
+	DELETE  = "DELETE"
+	GET     = "GET"
+	HEAD    = "HEAD"
+	OPTIONS = "OPTIONS"
+	POST    = "POST"
+	PUT     = "PUT"
+	TRACE   = "TRACE"
 )
 
 const (
-	VERSION_1_1 string = "HTTP/1.1"
+	VERSION_1_1 = "HTTP/1.1"
 )
 
 func NewDeleteMessage(path string) RequestMessage {
