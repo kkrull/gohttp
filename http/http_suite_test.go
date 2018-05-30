@@ -38,6 +38,14 @@ func (mock *HandlerMock) Routes() []http.Route {
 	return nil
 }
 
+/* PatchResourceMock */
+
+type PatchResourceMock struct{}
+
+func (mock *PatchResourceMock) Name() string {
+	return "PatchResourceMock"
+}
+
 /* RequestLoggerMock */
 
 type RequestLoggerMock struct {

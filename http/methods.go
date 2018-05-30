@@ -139,6 +139,12 @@ func (request *staticOptionsRequest) Handle(client io.Writer) error {
 	return nil
 }
 
+/* PATCH */
+
+type PatchResource interface {
+	Patch(client io.Writer, message RequestMessage)
+}
+
 /* POST */
 
 type postMethod struct{}
