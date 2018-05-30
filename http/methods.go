@@ -71,6 +71,7 @@ type GetResource interface {
 
 type headMethod struct{}
 
+//TODO KDK: Is there a way to DRY up these conversion functions?
 func (*headMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
 	supportedResource, ok := resource.(HeadResource)
 	if ok {

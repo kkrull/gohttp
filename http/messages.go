@@ -186,7 +186,7 @@ func (message *requestMessage) MakeResourceRequest(resource Resource) Request {
 		return &staticOptionsRequest{SupportedMethods: message.supportedMethods(resource)}
 	}
 
-	return message.unsupportedMethod(resource)
+	return message.unsupportedMethod(resource) //TODO KDK: Return _, error instead, and have the caller decide it's an unsupported method?
 }
 
 func (message *requestMessage) unknownHttpMethod(resource Resource) Request {
