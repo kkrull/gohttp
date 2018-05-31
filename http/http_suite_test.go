@@ -56,7 +56,7 @@ func (mock *RequestLoggerMock) ParsedShouldHaveReceived(method, target string) {
 
 /* ResourceMock */
 
-type ResourceMock struct{
+type ResourceMock struct {
 	patchReceivedMessage http.RequestMessage
 }
 

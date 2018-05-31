@@ -52,6 +52,10 @@ func contentTypeFromFileExtension(filename string) string {
 	return mime.TypeByExtension(extension)
 }
 
+func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMessage) {
+	//panic("implement me")
+}
+
 // A view of all/part of a file
 type FileSlice interface {
 	WriteStatus(writer io.Writer)

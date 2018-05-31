@@ -208,4 +208,37 @@ var _ = Describe("ExistingFile", func() {
 
 		It("supports read operations", httptest.ShouldAllowMethods(responseBuffer, "GET", "HEAD", "OPTIONS"))
 	})
+
+	Describe("#Patch", func() {
+		Context("when the path is a file in the base path and the If-Match header matches the file", func() {
+			const (
+				universalAnswer     = "42"
+				universalAnswerSha1 = "92cfceb39d57d914ed8b14d0e37643de0797ae56"
+				//wrongAnswer         = "43"
+				//wrongAnswerSha1     = "0286dd552c9bea9a69ecb3759e7b94777635514b"
+			)
+
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, universalAnswer)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PATCH,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.AddHeader("If-Match", universalAnswerSha1)
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Patch(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds with 204 No Content", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(204, "No Content")
+			})
+		})
+	})
 })
