@@ -15,6 +15,7 @@ const (
 	GET     = "GET"
 	HEAD    = "HEAD"
 	OPTIONS = "OPTIONS"
+	PATCH   = "PATCH"
 	POST    = "POST"
 	PUT     = "PUT"
 	TRACE   = "TRACE"
@@ -58,6 +59,15 @@ func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 		method:  OPTIONS,
 		target:  targetAsteriskOrPath,
 		path:    targetAsteriskOrPath,
+		version: VERSION_1_1,
+	}
+}
+
+func NewPatchMessage(path string) RequestMessage {
+	return &requestMessage{
+		method:  PATCH,
+		target:  path,
+		path:    path,
 		version: VERSION_1_1,
 	}
 }
@@ -217,6 +227,7 @@ var knownMethods = map[string]Method{
 	GET:     &getMethod{},
 	HEAD:    &headMethod{},
 	OPTIONS: &optionsMethod{},
+	PATCH:   &patchMethod{},
 	POST:    &postMethod{},
 	PUT:     &putMethod{},
 }
