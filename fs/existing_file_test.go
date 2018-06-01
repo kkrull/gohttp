@@ -2,6 +2,7 @@ package fs_test
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -210,17 +211,17 @@ var _ = Describe("ExistingFile", func() {
 	})
 
 	Describe("#Patch", func() {
-		Context("when the path is a file in the base path and the If-Match header matches the file", func() {
-			const (
-				universalAnswer     = "42"
-				universalAnswerSha1 = "92cfceb39d57d914ed8b14d0e37643de0797ae56"
-				//wrongAnswer         = "43"
-				//wrongAnswerSha1     = "0286dd552c9bea9a69ecb3759e7b94777635514b"
-			)
+		const (
+			universalAnswer     = "42"
+			universalAnswerSha1 = "92cfceb39d57d914ed8b14d0e37643de0797ae56"
+			wrongAnswer         = "43"
+			wrongAnswerSha1     = "0286dd552c9bea9a69ecb3759e7b94777635514b"
+		)
 
+		Context("when the path is a file in the base path and the If-Match header matches the file", func() {
 			BeforeEach(func() {
 				existingFile = path.Join(basePath, "readwrite.txt")
-				Expect(createTextFile(existingFile, universalAnswer)).To(Succeed())
+				Expect(createTextFile(existingFile, wrongAnswer)).To(Succeed())
 
 				requestMessage := &httptest.RequestMessage{
 					MethodReturns:  http.PATCH,
@@ -228,7 +229,8 @@ var _ = Describe("ExistingFile", func() {
 					PathReturns:    "/readwrite.txt",
 					VersionReturns: http.VERSION_1_1,
 				}
-				requestMessage.AddHeader("If-Match", universalAnswerSha1)
+				requestMessage.AddHeader("If-Match", wrongAnswerSha1)
+				requestMessage.SetStringBody(universalAnswer)
 
 				resource = &fs.ExistingFile{Filename: existingFile}
 				resource.Patch(responseBuffer, requestMessage)
@@ -238,6 +240,12 @@ var _ = Describe("ExistingFile", func() {
 			It("responds with 204 No Content", func() {
 				response.ShouldBeWellFormed()
 				response.StatusShouldBe(204, "No Content")
+			})
+
+			It("updates the file's contents to what is in the message body", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(universalAnswer))
 			})
 		})
 	})

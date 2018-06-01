@@ -2,11 +2,14 @@ package fs
 
 import (
 	"io"
+	"io/ioutil"
 	"mime"
+	"os"
 	"path"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/success"
 )
 
 type ExistingFile struct {
@@ -53,7 +56,9 @@ func contentTypeFromFileExtension(filename string) string {
 }
 
 func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMessage) {
-	//panic("implement me")
+	_ = ioutil.WriteFile(existingFile.Filename, message.Body(), os.ModePerm)
+	msg.WriteStatus(client, success.NoContentStatus)
+	msg.WriteEndOfMessageHeader(client)
 }
 
 // A view of all/part of a file
