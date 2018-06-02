@@ -1,6 +1,8 @@
 package fs
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/servererror"
 	"github.com/kkrull/gohttp/msg/success"
 )
 
@@ -56,9 +59,24 @@ func contentTypeFromFileExtension(filename string) string {
 }
 
 func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMessage) {
-	_ = ioutil.WriteFile(existingFile.Filename, message.Body(), os.ModePerm)
+	if err := ioutil.WriteFile(existingFile.Filename, message.Body(), os.ModePerm); err != nil {
+		msg.WriteStatus(client, servererror.InternalServerErrorStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
 	msg.WriteStatus(client, success.NoContentStatus)
+	msg.WriteHeader(client, "Content-Location", message.Path())
+	msg.WriteHeader(client, "ETag", existingFile.validatorTag())
 	msg.WriteEndOfMessageHeader(client)
+}
+
+func (existingFile *ExistingFile) validatorTag() string {
+	h := sha1.New()
+	file, _ := os.Open(existingFile.Filename)
+	defer file.Close()
+	io.Copy(h, file)
+	return fmt.Sprintf("\"%x\"", h.Sum(nil))
 }
 
 // A view of all/part of a file
