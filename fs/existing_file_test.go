@@ -266,7 +266,7 @@ var _ = Describe("ExistingFile", func() {
 					PathReturns:    "/readonly.txt",
 					VersionReturns: http.VERSION_1_1,
 				}
-				requestMessage.AddHeader("If-Match", updatedContentSha1)
+				requestMessage.AddHeader("If-Match", originalContentSha1)
 				requestMessage.SetStringBody(updatedContent)
 
 				resource = &fs.ExistingFile{Filename: existingFile}
@@ -285,7 +285,36 @@ var _ = Describe("ExistingFile", func() {
 			})
 		})
 
-		XContext("when the If-Match header is not the same as the file's current SHA1 sum", func() {
+		Context("when there is not a single If-Match", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PATCH,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Patch(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds 409 Conflict", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(409, "Conflict")
+			})
+			It("leaves the file unchanged", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(originalContent))
+			})
+		})
+
+		Context("when the If-Match header is not the same as the file's current SHA1 sum", func() {
 			BeforeEach(func() {
 				existingFile = path.Join(basePath, "readwrite.txt")
 				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
@@ -304,9 +333,9 @@ var _ = Describe("ExistingFile", func() {
 				response = httptest.ParseResponse(responseBuffer)
 			})
 
-			It("responds 500 Internal Server Error", func() {
+			It("responds 412 Precondition Failed", func() {
 				response.ShouldBeWellFormed()
-				response.StatusShouldBe(500, "Internal Server Error")
+				response.StatusShouldBe(412, "Precondition Failed")
 			})
 			It("leaves the file unchanged", func() {
 				fileBytes, err := ioutil.ReadFile(existingFile)

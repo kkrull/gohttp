@@ -11,6 +11,7 @@ import (
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
+	"github.com/kkrull/gohttp/msg/clienterror"
 	"github.com/kkrull/gohttp/msg/servererror"
 	"github.com/kkrull/gohttp/msg/success"
 )
@@ -59,6 +60,21 @@ func contentTypeFromFileExtension(filename string) string {
 }
 
 func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMessage) {
+	currentETag := existingFile.fileContentsHash()
+	conditionalHeaders := message.HeaderValues("If-Match")
+	if len(conditionalHeaders) != 1 {
+		msg.WriteStatus(client, clienterror.ConflictStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
+	conditionalHeader := conditionalHeaders[0]
+	if conditionalHeader != currentETag {
+		msg.WriteStatus(client, clienterror.PreconditionFailedStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
 	if err := ioutil.WriteFile(existingFile.Filename, message.Body(), os.ModePerm); err != nil {
 		msg.WriteStatus(client, servererror.InternalServerErrorStatus)
 		msg.WriteEndOfMessageHeader(client)
@@ -72,11 +88,15 @@ func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMe
 }
 
 func (existingFile *ExistingFile) validatorTag() string {
+	return "\"" + existingFile.fileContentsHash() + "\""
+}
+
+func (existingFile *ExistingFile) fileContentsHash() string {
 	h := sha1.New()
 	file, _ := os.Open(existingFile.Filename)
 	defer file.Close()
 	io.Copy(h, file)
-	return fmt.Sprintf("\"%x\"", h.Sum(nil))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // A view of all/part of a file
