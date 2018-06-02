@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 )
 
 // Builder for TCPServer that defaults to any available port on localhost
@@ -88,6 +89,7 @@ func (server *TCPServer) startListening() error {
 		return listenError
 	}
 
+	fmt.Printf("Listening for connections on %v\n", listener.Addr())
 	server.listener = listener
 	return nil
 }
@@ -97,14 +99,30 @@ func (server TCPServer) hostAndPort() string {
 }
 
 func (server TCPServer) acceptConnections() {
-	for {
+	allRequestsHaveTaken := time.Duration(0)
+	for i := 1; ; i++ {
 		conn, listenerClosed := server.listener.AcceptTCP()
 		if listenerClosed != nil {
 			return
 		}
 
-		server.Handler.Handle(bufio.NewReader(conn), conn)
-		_ = conn.Close()
+		connectionNumber := i
+		startTime := time.Now()
+		fmt.Printf("Accept [%04d]: %v --> %v\n", connectionNumber, conn.RemoteAddr(), conn.LocalAddr())
+		go func() {
+			server.Handler.Handle(bufio.NewReader(conn), conn)
+			endTime := time.Now()
+			_ = conn.Close()
+			thisRequestTook := endTime.Sub(startTime)
+			allRequestsHaveTaken += thisRequestTook
+			fmt.Printf("Closed [%04d]: %v --> %v (%f ms / %f sec total)\n",
+				connectionNumber,
+				conn.RemoteAddr(),
+				conn.LocalAddr(),
+				float64(thisRequestTook.Nanoseconds())/float64(time.Millisecond),
+				float64(allRequestsHaveTaken.Nanoseconds())/float64(time.Second),
+			)
+		}()
 	}
 }
 
