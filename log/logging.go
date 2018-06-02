@@ -10,7 +10,7 @@ import (
 )
 
 func NewBufferedRequestLogger() *TextLogger {
-	return &TextLogger{buffer: &bytes.Buffer{}}
+	return &TextLogger{buffer: bytes.NewBuffer(make([]byte, 256*5000))}
 }
 
 // Logs HTTP requests to a buffer in plain text
@@ -19,16 +19,16 @@ type TextLogger struct {
 }
 
 func (logger TextLogger) Parsed(message http.RequestMessage) {
-	fmt.Fprintf(logger.buffer, "\n%s : %s %s %s\n",
+	fmt.Fprintf(logger.buffer, "%s : %s %s %s\n",
 		time.Now().Format("2006-01-02 03:04:05 Z07:00"),
 		message.Method(),
 		message.Target(),
 		message.Version())
-	for _, header := range message.HeaderLines() {
-		fmt.Fprintln(logger.buffer, header)
-	}
-	fmt.Fprintln(logger.buffer)
-	fmt.Fprintf(logger.buffer, "%s", message.Body())
+	//for _, header := range message.HeaderLines() {
+	//	fmt.Fprintln(logger.buffer, header)
+	//}
+	//fmt.Fprintln(logger.buffer)
+	//fmt.Fprintf(logger.buffer, "%s", message.Body())
 }
 
 func (logger TextLogger) NumBytes() int {
