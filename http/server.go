@@ -7,28 +7,42 @@ import (
 	"net"
 )
 
-func MakeTCPServerOnAvailablePort(host string) *TCPServer {
-	return &TCPServer{
-		Host:    host,
-		Port:    0,
-		Handler: NewConnectionHandler(NewRouter()),
+// Builder for TCPServer that defaults to any available port on localhost
+func TCPServerBuilder(host string) *tcpServerBuilder {
+	return &tcpServerBuilder{
+		host:    host,
+		port:    0,
+		handler: NewConnectionHandler(NewRouter()),
 	}
 }
 
-func MakeTCPServer(host string, port uint16) *TCPServer {
+type tcpServerBuilder struct {
+	host    string
+	port    uint16
+	handler ConnectionHandler
+}
+
+func (builder *tcpServerBuilder) Build() *TCPServer {
 	return &TCPServer{
-		Host:    host,
-		Port:    port,
-		Handler: NewConnectionHandler(NewRouter()),
+		Host:    builder.host,
+		Port:    builder.port,
+		Handler: builder.handler,
 	}
 }
 
-func MakeTCPServerWithHandler(host string, port uint16, handler ConnectionHandler) *TCPServer {
-	return &TCPServer{
-		Host:    host,
-		Port:    port,
-		Handler: handler,
-	}
+func (builder *tcpServerBuilder) ListeningOnHost(host string) *tcpServerBuilder {
+	builder.host = host
+	return builder
+}
+
+func (builder *tcpServerBuilder) ListeningOnPort(port uint16) *tcpServerBuilder {
+	builder.port = port
+	return builder
+}
+
+func (builder *tcpServerBuilder) WithConnectionHandler(handler ConnectionHandler) *tcpServerBuilder {
+	builder.handler = handler
+	return builder
 }
 
 type TCPServer struct {

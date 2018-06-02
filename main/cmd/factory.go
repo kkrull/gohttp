@@ -39,10 +39,11 @@ func (factory *InterruptFactory) RunCommand(server Server) (command CliCommand, 
 
 func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, port uint16) Server {
 	router := factory.routerWithAllRoutes(contentRootPath)
-	return http.MakeTCPServerWithHandler(
-		host,
-		port,
-		http.NewConnectionHandler(router))
+	handler := http.NewConnectionHandler(router)
+	return http.TCPServerBuilder(host).
+		ListeningOnPort(port).
+		WithConnectionHandler(handler).
+		Build()
 }
 
 func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) http.Router {

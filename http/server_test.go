@@ -32,7 +32,7 @@ var _ = Describe("TCPServer", func() {
 	Describe("#Address", func() {
 		Context("when the server is not running", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 				Expect(server.Shutdown()).To(Succeed())
 				close(done)
@@ -45,7 +45,9 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when the server is running", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServer("localhost", 8420)
+				server = http.TCPServerBuilder("localhost").
+					ListeningOnPort(8420).
+					Build()
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
@@ -62,7 +64,7 @@ var _ = Describe("TCPServer", func() {
 	Describe("#Start", func() {
 		Context("when the server is already running", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
@@ -75,8 +77,8 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when there is an error resolving the given host and port to an address", func() {
 			It("immediately returns an error", func(done Done) {
-				invalidHostAddress := "666.666.666.666"
-				server = http.MakeTCPServerOnAvailablePort(invalidHostAddress)
+				const invalidHostAddress = "666.666.666.666"
+				server = http.TCPServerBuilder(invalidHostAddress).Build()
 				Expect(server.Start()).To(MatchError(HaveSuffix("no such host")))
 				close(done)
 			}, 5)
@@ -84,8 +86,10 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when there is an error binding to resolved address", func() {
 			It("immediately returns the error", func(done Done) {
-				var portOnlyAvailableToRoot uint16 = 1
-				server = http.MakeTCPServer("localhost", portOnlyAvailableToRoot)
+				const portOnlyAvailableToRoot uint16 = 1
+				server = http.TCPServerBuilder("localhost").
+					ListeningOnPort(portOnlyAvailableToRoot).
+					Build()
 				Expect(server.Start()).To(MatchError(HaveSuffix("bind: permission denied")))
 				close(done)
 			})
@@ -93,13 +97,15 @@ var _ = Describe("TCPServer", func() {
 
 		Context("given an available host address and port", func() {
 			It("returns no error as soon as the socket is open", func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
 
 			It("accepts connections on the specified address", func(done Done) {
-				server = http.MakeTCPServer("localhost", 8421)
+				server = http.TCPServerBuilder("localhost").
+					ListeningOnPort(8421).
+					Build()
 				Expect(server.Start()).To(Succeed())
 
 				conn, connectError = net.Dial("tcp", "localhost:8421")
@@ -110,7 +116,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("given no port number", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 				close(done)
 			})
@@ -125,7 +131,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when the server is running", func() {
 			BeforeEach(func() {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 			})
 
@@ -145,14 +151,14 @@ var _ = Describe("TCPServer", func() {
 	Describe("#Shutdown", func() {
 		Context("when the server has not been started", func() {
 			It("returns no error", func() {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Shutdown()).To(Succeed())
 			})
 		})
 
 		Context("when the server is running", func() {
 			It("stops accepting connections", func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 				oldAddress := server.Address().String()
 
@@ -165,7 +171,7 @@ var _ = Describe("TCPServer", func() {
 
 		Context("when the server is stopped", func() {
 			BeforeEach(func(done Done) {
-				server = http.MakeTCPServerOnAvailablePort("localhost")
+				server = http.TCPServerBuilder("localhost").Build()
 				Expect(server.Start()).To(Succeed())
 				Expect(server.Shutdown()).To(Succeed())
 				close(done)
@@ -184,9 +190,9 @@ var _ = Describe("TCPServer", func() {
 		Context("when it receives a request", func() {
 			BeforeEach(func(done Done) {
 				handler = &HandlerMock{}
-				server = &http.TCPServer{
-					Handler: handler,
-					Host:    "localhost"}
+				server = http.TCPServerBuilder("localhost").
+					WithConnectionHandler(handler).
+					Build()
 
 				Expect(server.Start()).To(Succeed())
 				conn, connectError = net.Dial("tcp", server.Address().String())
