@@ -8,19 +8,21 @@ import (
 	"github.com/kkrull/gohttp/msg/servererror"
 )
 
+// Request method verbs
 const (
-	CONNECT string = "CONNECT"
-	DELETE  string = "DELETE"
-	GET     string = "GET"
-	HEAD    string = "HEAD"
-	OPTIONS string = "OPTIONS"
-	POST    string = "POST"
-	PUT     string = "PUT"
-	TRACE   string = "TRACE"
+	CONNECT = "CONNECT"
+	DELETE  = "DELETE"
+	GET     = "GET"
+	HEAD    = "HEAD"
+	OPTIONS = "OPTIONS"
+	PATCH   = "PATCH"
+	POST    = "POST"
+	PUT     = "PUT"
+	TRACE   = "TRACE"
 )
 
 const (
-	VERSION_1_1 string = "HTTP/1.1"
+	VERSION_1_1 = "HTTP/1.1"
 )
 
 func NewDeleteMessage(path string) RequestMessage {
@@ -57,6 +59,15 @@ func NewOptionsMessage(targetAsteriskOrPath string) RequestMessage {
 		method:  OPTIONS,
 		target:  targetAsteriskOrPath,
 		path:    targetAsteriskOrPath,
+		version: VERSION_1_1,
+	}
+}
+
+func NewPatchMessage(path string) RequestMessage {
+	return &requestMessage{
+		method:  PATCH,
+		target:  path,
+		path:    path,
 		version: VERSION_1_1,
 	}
 }
@@ -216,6 +227,7 @@ var knownMethods = map[string]Method{
 	GET:     &getMethod{},
 	HEAD:    &headMethod{},
 	OPTIONS: &optionsMethod{},
+	PATCH:   &patchMethod{},
 	POST:    &postMethod{},
 	PUT:     &putMethod{},
 }

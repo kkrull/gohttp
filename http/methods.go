@@ -139,6 +139,36 @@ func (request *staticOptionsRequest) Handle(client io.Writer) error {
 	return nil
 }
 
+/* PATCH */
+
+type patchMethod struct{}
+
+func (*patchMethod) MakeRequest(message *requestMessage, resource Resource) (request Request, isSupported bool) {
+	supportedResource, ok := resource.(PatchResource)
+	if ok {
+		return &patchRequest{
+			Message:  message,
+			Resource: supportedResource,
+		}, true
+	}
+
+	return nil, false
+}
+
+type patchRequest struct {
+	Message  RequestMessage
+	Resource PatchResource
+}
+
+func (request *patchRequest) Handle(client io.Writer) error {
+	request.Resource.Patch(client, request.Message)
+	return nil
+}
+
+type PatchResource interface {
+	Patch(client io.Writer, message RequestMessage)
+}
+
 /* POST */
 
 type postMethod struct{}

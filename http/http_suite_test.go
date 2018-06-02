@@ -54,6 +54,24 @@ func (mock *RequestLoggerMock) ParsedShouldHaveReceived(method, target string) {
 	ExpectWithOffset(1, mock.parsedReceived.Target()).To(Equal(target))
 }
 
+/* ResourceMock */
+
+type ResourceMock struct {
+	patchReceivedMessage http.RequestMessage
+}
+
+func (mock *ResourceMock) Name() string {
+	return "ResourceMock"
+}
+
+func (mock *ResourceMock) Patch(client io.Writer, message http.RequestMessage) {
+	mock.patchReceivedMessage = message
+}
+
+func (mock *ResourceMock) PatchShouldHaveBeenCalled(path string) {
+	ExpectWithOffset(1, mock.patchReceivedMessage.Path()).To(Equal(path))
+}
+
 /* ResponseMock */
 
 type ResponseMock struct {

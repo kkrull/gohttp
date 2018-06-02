@@ -2,6 +2,7 @@ package fs_test
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -207,5 +208,140 @@ var _ = Describe("ExistingFile", func() {
 		})
 
 		It("supports read operations", httptest.ShouldAllowMethods(responseBuffer, "GET", "HEAD", "OPTIONS"))
+	})
+
+	Describe("#Patch", func() {
+		const (
+			originalContent     = "42"
+			originalContentSha1 = "92cfceb39d57d914ed8b14d0e37643de0797ae56"
+			updatedContent      = "43"
+			updatedContentSha1  = "0286dd552c9bea9a69ecb3759e7b94777635514b"
+		)
+
+		Context("when the path is a file in the base path and the If-Match header matches the file", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PATCH,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.AddHeader("If-Match", originalContentSha1)
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Patch(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds with 204 No Content", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(204, "No Content")
+			})
+			It("sets a Content-Location header to the URL path that can be used to GET the file", func() {
+				response.HeaderShould("Content-Location", Equal("/readwrite.txt"))
+			})
+			It("sets a strong validator ETag header to the SHA1 sum of the file's contents", func() {
+				response.HeaderShould("ETag", Equal("\""+updatedContentSha1+"\""))
+			})
+			It("updates the file's contents to what is in the message body", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(updatedContent))
+			})
+		})
+
+		Context("when the file is read-only", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readonly.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+				Expect(os.Chmod(existingFile, os.FileMode(0400))).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PATCH,
+					TargetReturns:  "/readonly.txt",
+					PathReturns:    "/readonly.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.AddHeader("If-Match", originalContentSha1)
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Patch(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds 500 Internal Server Error", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(500, "Internal Server Error")
+			})
+			It("leaves the file unchanged", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(originalContent))
+			})
+		})
+
+		Context("when there is not a single If-Match", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PATCH,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Patch(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds 409 Conflict", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(409, "Conflict")
+			})
+			It("leaves the file unchanged", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(originalContent))
+			})
+		})
+
+		Context("when the If-Match header is not the same as the file's current SHA1 sum", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PATCH,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.AddHeader("If-Match", "abcdef")
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.ExistingFile{Filename: existingFile}
+				resource.Patch(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds 412 Precondition Failed", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(412, "Precondition Failed")
+			})
+			It("leaves the file unchanged", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(originalContent))
+			})
+		})
 	})
 })
