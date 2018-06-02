@@ -60,31 +60,38 @@ func contentTypeFromFileExtension(filename string) string {
 }
 
 func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMessage) {
-	currentETag := existingFile.fileContentsHash()
-	conditionalHeaders := message.HeaderValues("If-Match")
-	if len(conditionalHeaders) != 1 {
+	conditionalHeader, err := onlyConditionalHeader(message)
+	if err != nil {
 		msg.WriteStatus(client, clienterror.ConflictStatus)
 		msg.WriteEndOfMessageHeader(client)
 		return
 	}
 
-	conditionalHeader := conditionalHeaders[0]
-	if conditionalHeader != currentETag {
+	if !existingFile.preconditionMatches(conditionalHeader) {
 		msg.WriteStatus(client, clienterror.PreconditionFailedStatus)
 		msg.WriteEndOfMessageHeader(client)
 		return
 	}
 
-	if err := ioutil.WriteFile(existingFile.Filename, message.Body(), os.ModePerm); err != nil {
+	if err := existingFile.overwriteFile(message.Body()); err != nil {
 		msg.WriteStatus(client, servererror.InternalServerErrorStatus)
 		msg.WriteEndOfMessageHeader(client)
 		return
 	}
 
-	msg.WriteStatus(client, success.NoContentStatus)
-	msg.WriteHeader(client, "Content-Location", message.Path())
-	msg.WriteHeader(client, "ETag", existingFile.validatorTag())
-	msg.WriteEndOfMessageHeader(client)
+	existingFile.successfulPatch(client, message.Path())
+}
+
+func onlyConditionalHeader(message http.RequestMessage) (string, error) {
+	conditionalHeaders := message.HeaderValues("If-Match")
+	switch len(conditionalHeaders) {
+	case 0:
+		return "", &noConditionalHeadersError{}
+	case 1:
+		return conditionalHeaders[0], nil
+	default:
+		return "", &ambiguousConditionalHeadersError{}
+	}
 }
 
 func (existingFile *ExistingFile) validatorTag() string {
@@ -97,6 +104,34 @@ func (existingFile *ExistingFile) fileContentsHash() string {
 	defer file.Close()
 	io.Copy(h, file)
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+type noConditionalHeadersError struct{}
+
+func (noConditionalHeadersError) Error() string {
+	return "No If-Match header found"
+}
+
+type ambiguousConditionalHeadersError struct{}
+
+func (ambiguousConditionalHeadersError) Error() string {
+	return "Too many If-Match headers found"
+}
+
+func (existingFile *ExistingFile) preconditionMatches(preconditionHeader string) bool {
+	currentETag := existingFile.fileContentsHash()
+	return preconditionHeader == currentETag
+}
+
+func (existingFile *ExistingFile) overwriteFile(body []byte) error {
+	return ioutil.WriteFile(existingFile.Filename, body, os.ModePerm)
+}
+
+func (existingFile *ExistingFile) successfulPatch(client io.Writer, path string) {
+	msg.WriteStatus(client, success.NoContentStatus)
+	msg.WriteHeader(client, "Content-Location", path)
+	msg.WriteHeader(client, "ETag", existingFile.validatorTag())
+	msg.WriteEndOfMessageHeader(client)
 }
 
 // A view of all/part of a file
