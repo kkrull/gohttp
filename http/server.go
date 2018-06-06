@@ -119,11 +119,9 @@ func (server TCPServer) acceptConnections() {
 				continue
 			}
 
-			//fmt.Printf("Using token: %d\n", token)
 			go func(t uint) {
 				server.Handler.Handle(bufio.NewReader(conn), conn)
 				_ = conn.Close()
-				//fmt.Printf("Returning token: %d\n", t)
 				tokens <- t
 			}(token)
 		default:

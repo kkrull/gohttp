@@ -13,7 +13,8 @@ import (
 )
 
 type InterruptFactory struct {
-	Interrupts <-chan os.Signal
+	Interrupts     <-chan os.Signal
+	MaxConnections uint
 }
 
 func (factory *InterruptFactory) CliCommandParser() *CliCommandParser {
@@ -43,6 +44,7 @@ func (factory *InterruptFactory) TCPServer(contentRootPath string, host string, 
 	return http.TCPServerBuilder(host).
 		ListeningOnPort(port).
 		WithConnectionHandler(handler).
+		WithMaxConnections(factory.MaxConnections).
 		Build()
 }
 

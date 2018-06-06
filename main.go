@@ -9,8 +9,12 @@ import (
 	"github.com/kkrull/gohttp/main/cmd"
 )
 
+const maxConnections uint = 4
+
 func main() {
-	factory := &cmd.InterruptFactory{Interrupts: subscribeToSignals(os.Interrupt)}
+	factory := &cmd.InterruptFactory{
+		Interrupts:     subscribeToSignals(os.Interrupt),
+		MaxConnections: maxConnections}
 	gohttp := &GoHTTP{
 		CommandParser: factory.CliCommandParser(),
 		Stderr:        os.Stderr}
