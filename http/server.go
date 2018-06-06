@@ -148,18 +148,18 @@ var (
 )
 
 func HardCodedResponse(conn *net.TCPConn) error {
-	numRead, readError := conn.Read(request)
-	if numRead != 88 {
-		fmt.Printf("Read %d bytes\n", numRead)
-	}
+	_, readError := conn.Read(request)
+	//if numRead != 88 {
+	//	fmt.Printf("Read %d bytes\n", numRead)
+	//}
 	if readError != nil {
 		return readError
 	}
 
-	numWritten, writeError := fmt.Fprintf(conn, "HTTP/1.1 204 No Content\r\n\r\n")
-	if numWritten != 27 {
-		fmt.Printf("Wrote %d bytes\n", numWritten)
-	}
+	_, writeError := fmt.Fprintf(conn, "HTTP/1.1 204 No Content\r\n\r\n")
+	//if numWritten != 27 {
+	//	fmt.Printf("Wrote %d bytes\n", numWritten)
+	//}
 	if writeError != nil {
 		return writeError
 	}
