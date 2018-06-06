@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
+	"time"
 )
 
 // Builder for TCPServer that defaults to any available port on localhost
@@ -98,17 +100,71 @@ func (server TCPServer) hostAndPort() string {
 }
 
 func (server TCPServer) acceptConnections() {
-	for {
-		conn, listenerClosed := server.listener.AcceptTCP()
-		if listenerClosed != nil {
-			return
-		}
-
-		go func() {
-			server.Handler.Handle(bufio.NewReader(conn), conn)
-			_ = conn.Close()
-		}()
+	numTokens := 8
+	tokens := make(chan int, numTokens)
+	for token := 1; token <= numTokens; token++ {
+		tokens <- token
 	}
+
+	//TODO KDK: Is there a problem with Apache Bench?
+	//When things appear to hang, the server still responds to requests on all its tokens
+	//Other times, it refuses connections, which suggests a problem with the code, the Go runtime, or the OS's network stack
+	for c := 1; ; {
+		select {
+		case token := <-tokens:
+			request := c
+			c++
+			conn, listenerClosed := server.listener.AcceptTCP()
+			if listenerClosed != nil {
+				fmt.Printf("Listener closed prematurely: %s\n", listenerClosed)
+				return
+			}
+
+			go func(t int) {
+				fmt.Printf("[%d/%04d] Handling request %d\n", t, runtime.NumGoroutine(), request)
+				handleError := HardCodedResponse(conn)
+				if handleError != nil {
+					fmt.Printf("Error handling request: %s\n", handleError)
+				}
+
+				//server.Handler.Handle(bufio.NewReader(conn), conn)
+				closeError := conn.Close()
+				if closeError != nil {
+					fmt.Printf("Close error: %s\n", closeError)
+				}
+
+				tokens <- t
+			}(token)
+		default:
+			//runtime.Gosched()
+			time.Sleep(5 * time.Millisecond)
+			//fmt.Printf("Waited for token\n")
+		}
+	}
+}
+
+var (
+	request = make([]byte, 1024)
+)
+
+func HardCodedResponse(conn *net.TCPConn) error {
+	numRead, readError := conn.Read(request)
+	if numRead != 88 {
+		fmt.Printf("Read %d bytes\n", numRead)
+	}
+	if readError != nil {
+		return readError
+	}
+
+	numWritten, writeError := fmt.Fprintf(conn, "HTTP/1.1 204 No Content\r\n\r\n")
+	if numWritten != 27 {
+		fmt.Printf("Wrote %d bytes\n", numWritten)
+	}
+	if writeError != nil {
+		return writeError
+	}
+
+	return nil
 }
 
 func (server *TCPServer) Shutdown() error {
