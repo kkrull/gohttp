@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	server       *http.TCPServer
-	conn         net.Conn
-	connectError error
+	server *http.TCPServer
+	conn   net.Conn
+	err    error
 )
 
 var _ = Describe("TCPServer", func() {
@@ -21,7 +21,7 @@ var _ = Describe("TCPServer", func() {
 		if conn != nil {
 			Expect(conn.Close()).To(Succeed())
 			conn = nil
-			connectError = nil
+			err = nil
 		}
 
 		Expect(server.Shutdown()).To(Succeed())
@@ -108,8 +108,8 @@ var _ = Describe("TCPServer", func() {
 					Build()
 				Expect(server.Start()).To(Succeed())
 
-				conn, connectError = net.Dial("tcp", "localhost:8421")
-				Expect(connectError).NotTo(HaveOccurred())
+				conn, err = net.Dial("tcp", "localhost:8421")
+				Expect(err).NotTo(HaveOccurred())
 				close(done)
 			})
 		})
@@ -137,8 +137,8 @@ var _ = Describe("TCPServer", func() {
 
 			It("responds to HTTP requests", func(done Done) {
 				for i := 0; i < 2; i++ {
-					conn, connectError = net.Dial("tcp", server.Address().String())
-					Expect(connectError).NotTo(HaveOccurred())
+					conn, err = net.Dial("tcp", server.Address().String())
+					Expect(err).NotTo(HaveOccurred())
 					writeString(conn, "GET / HTTP/1.1\r\n\r\n")
 					expectHttpResponse(conn)
 				}
@@ -163,8 +163,8 @@ var _ = Describe("TCPServer", func() {
 				oldAddress := server.Address().String()
 
 				Expect(server.Shutdown()).To(Succeed())
-				conn, connectError = net.Dial("tcp", oldAddress)
-				Expect(connectError).To(HaveOccurred())
+				conn, err = net.Dial("tcp", oldAddress)
+				Expect(err).To(HaveOccurred())
 				close(done)
 			})
 		})
@@ -185,9 +185,9 @@ var _ = Describe("TCPServer", func() {
 	})
 
 	Describe("when running", func() {
-		var handler *HandlerMock
-
 		Context("when it receives a request", func() {
+			var handler *HandlerMock
+
 			BeforeEach(func(done Done) {
 				handler = &HandlerMock{}
 				server = http.TCPServerBuilder("localhost").
@@ -195,8 +195,8 @@ var _ = Describe("TCPServer", func() {
 					Build()
 
 				Expect(server.Start()).To(Succeed())
-				conn, connectError = net.Dial("tcp", server.Address().String())
-				Expect(connectError).NotTo(HaveOccurred())
+				conn, err = net.Dial("tcp", server.Address().String())
+				Expect(err).NotTo(HaveOccurred())
 				close(done)
 			})
 
@@ -207,8 +207,38 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 		})
+
+		Context("when the given concurrency limit is 2 or more", func() {
+			BeforeEach(func(done Done) {
+				server = http.TCPServerBuilder("localhost").
+					WithMaxConnections(2).
+					Build()
+				Expect(server.Start()).To(Succeed())
+				close(done)
+			})
+
+			FIt("can handle multiple connections at a time", func(done Done) {
+				slowConn := dial(server)
+				fastConn := dial(server)
+				writeString(fastConn, "GET / HTTP/1.1\r\n\r\n")
+				readString(fastConn)
+				Expect(fastConn.Close()).To(Succeed())
+
+				writeString(slowConn, "GET / HTTP/1.1\r\n\r\n")
+				readString(slowConn)
+				Expect(slowConn.Close()).To(Succeed())
+
+				close(done)
+			})
+		})
 	})
 })
+
+func dial(server *http.TCPServer) net.Conn {
+	conn, err = net.Dial("tcp", server.Address().String())
+	Expect(err).NotTo(HaveOccurred())
+	return conn
+}
 
 func expectHttpResponse(conn net.Conn) {
 	rfc7230StatusLinePattern := "^HTTP/1[.]1 \\d{3} [\\w\\s]+[\r][\n]"

@@ -10,16 +10,18 @@ import (
 // Builder for TCPServer that defaults to any available port on localhost
 func TCPServerBuilder(host string) *tcpServerBuilder {
 	return &tcpServerBuilder{
-		host:    host,
-		port:    0,
-		handler: NewConnectionHandler(NewRouter()),
+		host:           host,
+		port:           0,
+		maxConnections: 1,
+		handler:        NewConnectionHandler(NewRouter()),
 	}
 }
 
 type tcpServerBuilder struct {
-	host    string
-	port    uint16
-	handler ConnectionHandler
+	host           string
+	port           uint16
+	maxConnections uint
+	handler        ConnectionHandler
 }
 
 func (builder *tcpServerBuilder) Build() *TCPServer {
@@ -42,6 +44,11 @@ func (builder *tcpServerBuilder) ListeningOnPort(port uint16) *tcpServerBuilder 
 
 func (builder *tcpServerBuilder) WithConnectionHandler(handler ConnectionHandler) *tcpServerBuilder {
 	builder.handler = handler
+	return builder
+}
+
+func (builder *tcpServerBuilder) WithMaxConnections(maxConnections uint) *tcpServerBuilder {
+	builder.maxConnections = maxConnections //TODO KDK: ADd to TCPServer
 	return builder
 }
 
