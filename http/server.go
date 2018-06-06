@@ -26,9 +26,10 @@ type tcpServerBuilder struct {
 
 func (builder *tcpServerBuilder) Build() *TCPServer {
 	return &TCPServer{
-		Host:    builder.host,
-		Port:    builder.port,
-		Handler: builder.handler,
+		Host:           builder.host,
+		Port:           builder.port,
+		MaxConnections: builder.maxConnections,
+		Handler:        builder.handler,
 	}
 }
 
@@ -48,15 +49,16 @@ func (builder *tcpServerBuilder) WithConnectionHandler(handler ConnectionHandler
 }
 
 func (builder *tcpServerBuilder) WithMaxConnections(maxConnections uint) *tcpServerBuilder {
-	builder.maxConnections = maxConnections //TODO KDK: ADd to TCPServer
+	builder.maxConnections = maxConnections
 	return builder
 }
 
 type TCPServer struct {
-	Host     string
-	Port     uint16
-	Handler  ConnectionHandler
-	listener *net.TCPListener
+	Host           string
+	Port           uint16
+	MaxConnections uint
+	Handler        ConnectionHandler
+	listener       *net.TCPListener
 }
 
 func (server *TCPServer) Address() net.Addr {
@@ -104,14 +106,28 @@ func (server TCPServer) hostAndPort() string {
 }
 
 func (server TCPServer) acceptConnections() {
-	for {
-		conn, listenerClosed := server.listener.AcceptTCP()
-		if listenerClosed != nil {
-			return
-		}
+	tokens := make(chan uint, server.MaxConnections)
+	for i := uint(1); i <= server.MaxConnections; i++ {
+		tokens <- i
+	}
 
-		server.Handler.Handle(bufio.NewReader(conn), conn)
-		_ = conn.Close()
+	for {
+		select {
+		case token := <-tokens:
+			conn, listenerClosed := server.listener.AcceptTCP()
+			if listenerClosed != nil {
+				continue
+			}
+
+			//fmt.Printf("Using token: %d\n", token)
+			go func(t uint) {
+				server.Handler.Handle(bufio.NewReader(conn), conn)
+				_ = conn.Close()
+				//fmt.Printf("Returning token: %d\n", t)
+				tokens <- t
+			}(token)
+		default:
+		}
 	}
 }
 

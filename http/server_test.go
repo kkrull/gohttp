@@ -10,13 +10,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var (
-	server *http.TCPServer
-	conn   net.Conn
-	err    error
-)
-
 var _ = Describe("TCPServer", func() {
+	var (
+		server *http.TCPServer
+		conn   net.Conn
+		err    error
+	)
+
 	AfterEach(func(done Done) {
 		if conn != nil {
 			Expect(conn.Close()).To(Succeed())
@@ -217,7 +217,7 @@ var _ = Describe("TCPServer", func() {
 				close(done)
 			})
 
-			FIt("can handle multiple connections at a time", func(done Done) {
+			It("can handle multiple connections at a time", func(done Done) {
 				slowConn := dial(server)
 				fastConn := dial(server)
 				writeString(fastConn, "GET / HTTP/1.1\r\n\r\n")
@@ -229,13 +229,13 @@ var _ = Describe("TCPServer", func() {
 				Expect(slowConn.Close()).To(Succeed())
 
 				close(done)
-			})
+			}, 2)
 		})
 	})
 })
 
 func dial(server *http.TCPServer) net.Conn {
-	conn, err = net.Dial("tcp", server.Address().String())
+	conn, err := net.Dial("tcp", server.Address().String())
 	Expect(err).NotTo(HaveOccurred())
 	return conn
 }
