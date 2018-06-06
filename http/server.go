@@ -106,14 +106,11 @@ func (server TCPServer) hostAndPort() string {
 }
 
 func (server TCPServer) acceptConnections() {
-	tokens := make(chan uint, server.MaxConnections)
-	for i := uint(1); i <= server.MaxConnections; i++ {
-		tokens <- i
-	}
+	handlerTokens := allocateConnectionHandlers(server)
 
 	for {
 		select {
-		case token := <-tokens:
+		case bandwidthToHandleConnection := <-handlerTokens:
 			conn, listenerClosed := server.listener.AcceptTCP()
 			if listenerClosed != nil {
 				continue
@@ -122,11 +119,20 @@ func (server TCPServer) acceptConnections() {
 			go func(t uint) {
 				server.Handler.Handle(bufio.NewReader(conn), conn)
 				_ = conn.Close()
-				tokens <- t
-			}(token)
+				handlerTokens <- t
+			}(bandwidthToHandleConnection)
 		default:
 		}
 	}
+}
+
+func allocateConnectionHandlers(server TCPServer) chan uint {
+	workerTokens := make(chan uint, server.MaxConnections)
+	for i := uint(1); i <= server.MaxConnections; i++ {
+		workerTokens <- i
+	}
+
+	return workerTokens
 }
 
 func (server *TCPServer) Shutdown() error {

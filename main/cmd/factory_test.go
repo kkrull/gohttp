@@ -79,7 +79,7 @@ var _ = Describe("InterruptFactory", func() {
 		BeforeEach(func() {
 			interrupts = make(chan os.Signal, 1)
 			factory = &cmd.InterruptFactory{
-				Interrupts: interrupts,
+				Interrupts:     interrupts,
 				MaxConnections: 42,
 			}
 
