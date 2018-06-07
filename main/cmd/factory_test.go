@@ -78,14 +78,18 @@ var _ = Describe("InterruptFactory", func() {
 
 		BeforeEach(func() {
 			interrupts = make(chan os.Signal, 1)
-			factory = &cmd.InterruptFactory{Interrupts: interrupts}
+			factory = &cmd.InterruptFactory{
+				Interrupts:     interrupts,
+				MaxConnections: 42,
+			}
 
 			server = factory.TCPServer("/public", "localhost", 8421)
 			typedServer, _ = server.(*http.TCPServer)
 		})
 
-		It("returns an http.TCPServer", func() {
+		It("returns an http.TCPServer with the specified level of concurrency", func() {
 			Expect(server).To(BeAssignableToTypeOf(&http.TCPServer{}))
+			Expect(typedServer.MaxConnections).To(Equal(uint(42)))
 		})
 
 		It("has a capabilities route", func() {

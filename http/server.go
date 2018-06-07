@@ -7,35 +7,58 @@ import (
 	"net"
 )
 
-func MakeTCPServerOnAvailablePort(host string) *TCPServer {
-	return &TCPServer{
-		Host:    host,
-		Port:    0,
-		Handler: NewConnectionHandler(NewRouter()),
+// Builder for TCPServer that defaults to any available port on localhost
+func TCPServerBuilder(host string) *tcpServerBuilder {
+	return &tcpServerBuilder{
+		host:           host,
+		port:           0,
+		maxConnections: 1,
+		handler:        NewConnectionHandler(NewRouter()),
 	}
 }
 
-func MakeTCPServer(host string, port uint16) *TCPServer {
+type tcpServerBuilder struct {
+	host           string
+	port           uint16
+	maxConnections uint
+	handler        ConnectionHandler
+}
+
+func (builder *tcpServerBuilder) Build() *TCPServer {
 	return &TCPServer{
-		Host:    host,
-		Port:    port,
-		Handler: NewConnectionHandler(NewRouter()),
+		Host:           builder.host,
+		Port:           builder.port,
+		MaxConnections: builder.maxConnections,
+		Handler:        builder.handler,
 	}
 }
 
-func MakeTCPServerWithHandler(host string, port uint16, handler ConnectionHandler) *TCPServer {
-	return &TCPServer{
-		Host:    host,
-		Port:    port,
-		Handler: handler,
-	}
+func (builder *tcpServerBuilder) ListeningOnHost(host string) *tcpServerBuilder {
+	builder.host = host
+	return builder
+}
+
+func (builder *tcpServerBuilder) ListeningOnPort(port uint16) *tcpServerBuilder {
+	builder.port = port
+	return builder
+}
+
+func (builder *tcpServerBuilder) WithConnectionHandler(handler ConnectionHandler) *tcpServerBuilder {
+	builder.handler = handler
+	return builder
+}
+
+func (builder *tcpServerBuilder) WithMaxConnections(maxConnections uint) *tcpServerBuilder {
+	builder.maxConnections = maxConnections
+	return builder
 }
 
 type TCPServer struct {
-	Host     string
-	Port     uint16
-	Handler  ConnectionHandler
-	listener *net.TCPListener
+	Host           string
+	Port           uint16
+	MaxConnections uint
+	Handler        ConnectionHandler
+	listener       *net.TCPListener
 }
 
 func (server *TCPServer) Address() net.Addr {
@@ -83,15 +106,33 @@ func (server TCPServer) hostAndPort() string {
 }
 
 func (server TCPServer) acceptConnections() {
-	for {
-		conn, listenerClosed := server.listener.AcceptTCP()
-		if listenerClosed != nil {
-			return
-		}
+	handlerTokens := allocateConnectionHandlers(server)
 
-		server.Handler.Handle(bufio.NewReader(conn), conn)
-		_ = conn.Close()
+	for {
+		select {
+		case bandwidthToHandleConnection := <-handlerTokens:
+			conn, listenerClosed := server.listener.AcceptTCP()
+			if listenerClosed != nil {
+				continue
+			}
+
+			go func(t uint) {
+				server.Handler.Handle(bufio.NewReader(conn), conn)
+				_ = conn.Close()
+				handlerTokens <- t
+			}(bandwidthToHandleConnection)
+		default:
+		}
 	}
+}
+
+func allocateConnectionHandlers(server TCPServer) chan uint {
+	workerTokens := make(chan uint, server.MaxConnections)
+	for i := uint(1); i <= server.MaxConnections; i++ {
+		workerTokens <- i
+	}
+
+	return workerTokens
 }
 
 func (server *TCPServer) Shutdown() error {
