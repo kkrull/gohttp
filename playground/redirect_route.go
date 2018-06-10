@@ -8,13 +8,15 @@ import (
 	"github.com/kkrull/gohttp/msg/redirect"
 )
 
-func NewRedirectRoute() http.Route {
+func NewRedirectRoute(path string) *RedirectRoute {
 	return &RedirectRoute{
+		Path:     path,
 		Resource: &GoBackHomeResource{},
 	}
 }
 
 type RedirectRoute struct {
+	Path     string
 	Resource RelocatedResource
 }
 

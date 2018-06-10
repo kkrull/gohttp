@@ -13,15 +13,16 @@ import (
 
 var _ = Describe("::NewRedirectRoute", func() {
 	It("returns a fully configured RedirectRoute", func() {
-		route := playground.NewRedirectRoute()
+		route := playground.NewRedirectRoute("/overthere")
 		Expect(route).To(BeAssignableToTypeOf(&playground.RedirectRoute{}))
-		Expect(route).To(BeEquivalentTo(&playground.RedirectRoute{
-			Resource: &playground.GoBackHomeResource{},
-		}))
+		Expect(route.Path).To(Equal("/overthere"))
+		Expect(route.Resource).To(BeEquivalentTo(&playground.GoBackHomeResource{}))
 	})
 })
 
 var _ = Describe("RedirectRoute", func() {
+	const configuredPath = "/redirect"
+
 	Describe("#Route", func() {
 		var (
 			router   http.Route
@@ -38,7 +39,7 @@ var _ = Describe("RedirectRoute", func() {
 		Context("when the path is /redirect", func() {
 			It("routes GET to RelocatedResource#Get", func() {
 				requestMessage := &httptest.RequestMessage{
-					PathReturns:                "/redirect",
+					PathReturns:                configuredPath,
 					MakeResourceRequestReturns: &httptest.RequestMock{},
 				}
 
@@ -47,7 +48,7 @@ var _ = Describe("RedirectRoute", func() {
 
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage("/redirect")
+					requested := http.NewOptionsMessage(configuredPath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -59,7 +60,7 @@ var _ = Describe("RedirectRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := http.NewTraceMessage("/redirect")
+				requested := http.NewTraceMessage(configuredPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
@@ -87,7 +88,7 @@ var _ = Describe("GoBackHomeResource", func() {
 			resource = &playground.GoBackHomeResource{}
 			request = &httptest.RequestMessage{
 				MethodReturns: http.GET,
-				PathReturns:   "/redirect",
+				PathReturns:   "/match",
 			}
 
 			resource.Get(response, request)
