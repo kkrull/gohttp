@@ -53,7 +53,7 @@ var _ = Describe("FileSystemRoute", func() {
 				resource.GetShouldHaveReceived("/missing.txt")
 			})
 
-			It("routes to ExistingFile when the requested path is a file inside the base directory", func() {
+			It("routes to ReadableFile when the requested path is a file inside the base directory", func() {
 				existingFile := path.Join(route.ContentRootPath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
 
