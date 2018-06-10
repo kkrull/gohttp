@@ -120,12 +120,12 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewSingletonRoute("/cat-form"))))
 		})
 
-		It("has a playground route for parameter decoding", func() {
+		It("has a playground route for parameter decoding at /parameters", func() {
 			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewParameterRoute("/parameters"))))
 		})
 
-		It("has a playground route for a read-only resource", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadOnlyRoute())))
+		It("has a playground route for a read-only resource at /method_options2", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadOnlyRoute("/method_options2"))))
 		})
 
 		It("has a playground route for a read-write resource", func() {
