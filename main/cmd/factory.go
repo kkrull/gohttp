@@ -71,7 +71,7 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	//router.AddRoute(fs.WritableFile("/patch-content.txt", contentRootPath))
 
 	//fs: PUT /put-target (ExistingFile_W)
-	router.AddRoute(playground.NewNopPutRoute("/put-target")) //TODO KDK: Rename to fs.WritableFile
+	router.AddRoute(fs.NewWritableFileRoute("/put-target", contentRootPath))
 
 	//fs: GET /, /cat-form (DirectoryListing)
 	//fs: GET /cat-form/.gitkeep, /file1, /image.*, /partial_content.txt, /text-file.txt (ExistingFile_RO)

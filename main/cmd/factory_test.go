@@ -140,8 +140,8 @@ var _ = Describe("InterruptFactory", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewParameterRoute("/parameters"))))
 			})
 
-			It("/put-target is a black hole that accepts PUT requests", func() {
-				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewNopPutRoute("/put-target"))))
+			It("/put-target is a writable file", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(fs.NewWritableFileRoute("/put-target", "/public"))))
 			})
 
 			It("/redirect sends you to your home", func() {
