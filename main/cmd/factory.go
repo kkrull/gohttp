@@ -67,14 +67,9 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 
 	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 
-	//fs: PATCH /patch-content.txt (ExistingFile_W)
-	//router.AddRoute(fs.WritableFile("/patch-content.txt", contentRootPath))
-
-	//fs: PUT /put-target (ExistingFile_W)
+	//A couple paths are backed by real files and are meant to support write operations; the rest default to read-only
+	router.AddRoute(fs.NewWritableFileRoute("/patch-content.txt", contentRootPath))
 	router.AddRoute(fs.NewWritableFileRoute("/put-target", contentRootPath))
-
-	//fs: GET /, /cat-form (DirectoryListing)
-	//fs: GET /cat-form/.gitkeep, /file1, /image.*, /partial_content.txt, /text-file.txt (ExistingFile_RO)
 	router.AddRoute(fs.NewRoute(contentRootPath))
 	return router
 }

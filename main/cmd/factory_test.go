@@ -140,6 +140,10 @@ var _ = Describe("InterruptFactory", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewParameterRoute("/parameters"))))
 			})
 
+			It("/patch-content.txt is a writable file", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(fs.NewWritableFileRoute("/patch-content.txt", "/public"))))
+			})
+
 			It("/put-target is a writable file", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(fs.NewWritableFileRoute("/put-target", "/public"))))
 			})
