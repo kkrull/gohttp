@@ -347,8 +347,8 @@ var _ = Describe("WritableFile", func() {
 
 	Describe("#Put", func() {
 		const (
-			originalContent     = "42"
-			updatedContent      = "43"
+			originalContent = "42"
+			updatedContent  = "43"
 		)
 
 		Context("when the path is a file in the base path", func() {
