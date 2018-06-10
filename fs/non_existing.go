@@ -9,6 +9,7 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
+// A requested file or directory that does not exist at the requested path
 type NonExisting struct {
 	Path string
 	body string

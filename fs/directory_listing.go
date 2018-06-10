@@ -11,6 +11,7 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
+// Responds with a navigable list of files and directories in a given path
 type DirectoryListing struct {
 	Files      []string
 	HrefPrefix string

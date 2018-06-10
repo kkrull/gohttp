@@ -16,6 +16,7 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
+// A requested file that can be read or patched to an updated version
 type ExistingFile struct {
 	Filename string
 }
