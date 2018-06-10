@@ -65,8 +65,18 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	router.AddRoute(playground.NewParameterRoute("/parameters"))
 	router.AddRoute(playground.NewRedirectRoute("/redirect"))
 
+	//fs: POST /cat-form (Singleton),
+	//fs: DELETE|GET\PUT /cat-form/data (Singleton),
 	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
-	router.AddRoute(playground.NewNopPutRoute("/put-target"))
+
+	//fs: PATCH /patch-content.txt (ExistingFile_W)
+	//router.AddRoute(fs.WritableFile("/patch-content.txt", contentRootPath))
+
+	//fs: PUT /put-target (ExistingFile_W)
+	router.AddRoute(playground.NewNopPutRoute("/put-target")) //TODO KDK: Rename to fs.WritableFile
+
+	//fs: GET /, /cat-form (DirectoryListing)
+	//fs: GET /cat-form/.gitkeep, /file1, /image.*, /partial_content.txt, /text-file.txt (ExistingFile_RO)
 	router.AddRoute(fs.NewRoute(contentRootPath))
 	return router
 }
