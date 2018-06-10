@@ -103,6 +103,16 @@ func (writableFile *WritableFile) Patch(client io.Writer, message http.RequestMe
 	writableFile.successfulPatch(client, message.Path())
 }
 
+func (writableFile *WritableFile) Put(client io.Writer, message http.RequestMessage) {
+	if err := writableFile.overwriteFile(message.Body()); err != nil {
+		msg.WriteStatus(client, servererror.InternalServerErrorStatus)
+		msg.WriteEndOfMessageHeader(client)
+		return
+	}
+
+	writableFile.successfulPut(client, message.Path())
+}
+
 //func onlyConditionalHeader(message http.RequestMessage) (string, error) {
 //	conditionalHeaders := message.HeaderValues("If-Match")
 //	switch len(conditionalHeaders) {
@@ -152,6 +162,11 @@ func (writableFile *WritableFile) successfulPatch(client io.Writer, path string)
 	msg.WriteStatus(client, success.NoContentStatus)
 	msg.WriteHeader(client, "Content-Location", path)
 	msg.WriteHeader(client, "ETag", writableFile.validatorTag())
+	msg.WriteEndOfMessageHeader(client)
+}
+
+func (writableFile *WritableFile) successfulPut(client io.Writer, path string) {
+	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteEndOfMessageHeader(client)
 }
 

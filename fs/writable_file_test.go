@@ -344,4 +344,70 @@ var _ = Describe("WritableFile", func() {
 			})
 		})
 	})
+
+	Describe("#Put", func() {
+		const (
+			originalContent     = "42"
+			updatedContent      = "43"
+		)
+
+		Context("when the path is a file in the base path", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PUT,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.WritableFile{Filename: existingFile}
+				resource.Put(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds with 200 OK", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(200, "OK")
+			})
+			It("updates the file's contents to what is in the message body", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(updatedContent))
+			})
+		})
+
+		Context("when the file is read-only", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readonly.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+				Expect(os.Chmod(existingFile, os.FileMode(0400))).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PUT,
+					TargetReturns:  "/readonly.txt",
+					PathReturns:    "/readonly.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.WritableFile{Filename: existingFile}
+				resource.Put(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds 500 Internal Server Error", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(500, "Internal Server Error")
+			})
+			It("leaves the file unchanged", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(originalContent))
+			})
+		})
+	})
 })
