@@ -71,15 +71,6 @@ func (writableFile *WritableFile) makeSliceOfTargetFile(message http.RequestMess
 	return ParseByteRange(rangeHeaders[0], writableFile.Filename, contentType)
 }
 
-//func contentTypeFromFileExtension(filename string) string {
-//	extension := path.Ext(filename)
-//	if extension == "" {
-//		return "text/plain"
-//	}
-//
-//	return mime.TypeByExtension(extension)
-//}
-
 func (writableFile *WritableFile) Patch(client io.Writer, message http.RequestMessage) {
 	conditionalHeader, err := onlyConditionalHeader(message)
 	if err != nil {
@@ -113,18 +104,6 @@ func (writableFile *WritableFile) Put(client io.Writer, message http.RequestMess
 	writableFile.successfulPut(client, message.Path())
 }
 
-//func onlyConditionalHeader(message http.RequestMessage) (string, error) {
-//	conditionalHeaders := message.HeaderValues("If-Match")
-//	switch len(conditionalHeaders) {
-//	case 0:
-//		return "", &noConditionalHeadersError{}
-//	case 1:
-//		return conditionalHeaders[0], nil
-//	default:
-//		return "", &ambiguousConditionalHeadersError{}
-//	}
-//}
-
 func (writableFile *WritableFile) validatorTag() string {
 	return "\"" + writableFile.fileContentsHash() + "\""
 }
@@ -136,18 +115,6 @@ func (writableFile *WritableFile) fileContentsHash() string {
 	io.Copy(h, file)
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
-
-//type noConditionalHeadersError struct{}
-//
-//func (noConditionalHeadersError) Error() string {
-//	return "No If-Match header found"
-//}
-//
-//type ambiguousConditionalHeadersError struct{}
-//
-//func (ambiguousConditionalHeadersError) Error() string {
-//	return "Too many If-Match headers found"
-//}
 
 func (writableFile *WritableFile) preconditionMatches(preconditionHeader string) bool {
 	currentETag := writableFile.fileContentsHash()
@@ -169,10 +136,3 @@ func (writableFile *WritableFile) successfulPut(client io.Writer, path string) {
 	msg.WriteStatus(client, success.OKStatus)
 	msg.WriteEndOfMessageHeader(client)
 }
-
-//// A view of all/part of a file
-//type FileSlice interface {
-//	WriteStatus(writer io.Writer)
-//	WriteContentHeaders(writer io.Writer)
-//	WriteBody(writer io.Writer)
-//}

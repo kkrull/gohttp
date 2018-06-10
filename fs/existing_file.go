@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"mime"
 	"os"
-	"path"
 
 	"github.com/kkrull/gohttp/http"
 	"github.com/kkrull/gohttp/msg"
@@ -51,15 +49,6 @@ func (existingFile *ExistingFile) makeSliceOfTargetFile(message http.RequestMess
 	return ParseByteRange(rangeHeaders[0], existingFile.Filename, contentType)
 }
 
-func contentTypeFromFileExtension(filename string) string {
-	extension := path.Ext(filename)
-	if extension == "" {
-		return "text/plain"
-	}
-
-	return mime.TypeByExtension(extension)
-}
-
 func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMessage) {
 	conditionalHeader, err := onlyConditionalHeader(message)
 	if err != nil {
@@ -83,18 +72,6 @@ func (existingFile *ExistingFile) Patch(client io.Writer, message http.RequestMe
 	existingFile.successfulPatch(client, message.Path())
 }
 
-func onlyConditionalHeader(message http.RequestMessage) (string, error) {
-	conditionalHeaders := message.HeaderValues("If-Match")
-	switch len(conditionalHeaders) {
-	case 0:
-		return "", &noConditionalHeadersError{}
-	case 1:
-		return conditionalHeaders[0], nil
-	default:
-		return "", &ambiguousConditionalHeadersError{}
-	}
-}
-
 func (existingFile *ExistingFile) validatorTag() string {
 	return "\"" + existingFile.fileContentsHash() + "\""
 }
@@ -105,18 +82,6 @@ func (existingFile *ExistingFile) fileContentsHash() string {
 	defer file.Close()
 	io.Copy(h, file)
 	return fmt.Sprintf("%x", h.Sum(nil))
-}
-
-type noConditionalHeadersError struct{}
-
-func (noConditionalHeadersError) Error() string {
-	return "No If-Match header found"
-}
-
-type ambiguousConditionalHeadersError struct{}
-
-func (ambiguousConditionalHeadersError) Error() string {
-	return "Too many If-Match headers found"
 }
 
 func (existingFile *ExistingFile) preconditionMatches(preconditionHeader string) bool {
@@ -133,11 +98,4 @@ func (existingFile *ExistingFile) successfulPatch(client io.Writer, path string)
 	msg.WriteHeader(client, "Content-Location", path)
 	msg.WriteHeader(client, "ETag", existingFile.validatorTag())
 	msg.WriteEndOfMessageHeader(client)
-}
-
-// A view of all/part of a file
-type FileSlice interface {
-	WriteStatus(writer io.Writer)
-	WriteContentHeaders(writer io.Writer)
-	WriteBody(writer io.Writer)
 }
