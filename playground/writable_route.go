@@ -7,18 +7,20 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewReadWriteRoute() *ReadWriteRoute {
+func NewReadWriteRoute(path string) *ReadWriteRoute {
 	return &ReadWriteRoute{
+		Path:     path,
 		Resource: &ReadWriteNopResource{},
 	}
 }
 
 type ReadWriteRoute struct {
+	Path     string
 	Resource ReadWriteResource
 }
 
 func (route *ReadWriteRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Path() != "/method_options" {
+	if requested.Path() != route.Path {
 		return nil
 	}
 

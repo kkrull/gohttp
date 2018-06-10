@@ -61,7 +61,7 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	router.AddRoute(playground.NewWriteOKRoute("/put-target"))
 	router.AddRoute(playground.NewParameterRoute("/parameters"))
 	router.AddRoute(playground.NewReadOnlyRoute("/method_options2"))
-	router.AddRoute(playground.NewReadWriteRoute())
+	router.AddRoute(playground.NewReadWriteRoute("/method_options"))
 	router.AddRoute(playground.NewRedirectRoute())
 	router.AddRoute(playground.NewCookieRoute("/cookie", "/eat_cookie"))
 	router.AddRoute(teapot.NewRoute())
