@@ -58,14 +58,13 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	router.AddRoute(capability.NewRoute("*"))
 	router.AddRoute(teapot.NewRoute())
 
+	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 	router.AddRoute(playground.NewCookieRoute("/cookie", "/eat_cookie"))
 	router.AddRoute(playground.NewNopPostRoute("/form"))
 	router.AddRoute(playground.NewReadWriteRoute("/method_options"))
 	router.AddRoute(playground.NewReadOnlyRoute("/method_options2"))
 	router.AddRoute(playground.NewParameterRoute("/parameters"))
 	router.AddRoute(playground.NewRedirectRoute("/redirect"))
-
-	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 
 	//A couple paths are backed by real files and are meant to support write operations; the rest default to read-only
 	router.AddRoute(fs.NewWritableFileRoute("/patch-content.txt", contentRootPath))
