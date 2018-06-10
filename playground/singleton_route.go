@@ -40,6 +40,7 @@ func isSupported(requestedMethod string, allowedMethods []string) bool {
 	return false
 }
 
+// A collection to which you can POST or do CRUD on a single, most recent data member
 type SingletonResource struct {
 	CollectionPath string
 	data           []byte

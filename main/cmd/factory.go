@@ -65,8 +65,6 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	router.AddRoute(playground.NewParameterRoute("/parameters"))
 	router.AddRoute(playground.NewRedirectRoute("/redirect"))
 
-	//fs: POST /cat-form (Singleton),
-	//fs: DELETE|GET\PUT /cat-form/data (Singleton),
 	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 
 	//fs: PATCH /patch-content.txt (ExistingFile_W)
