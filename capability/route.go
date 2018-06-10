@@ -7,20 +7,24 @@ import (
 	"github.com/kkrull/gohttp/msg/clienterror"
 )
 
-func NewRoute() *ServerCapabilityRoute {
+func NewRoute(target string) *ServerCapabilityRoute {
 	controller := &StaticCapabilityServer{
 		AvailableMethods: []string{http.GET, http.HEAD},
 	}
 
-	return &ServerCapabilityRoute{Controller: controller}
+	return &ServerCapabilityRoute{
+		Target:     target,
+		Controller: controller,
+	}
 }
 
 type ServerCapabilityRoute struct {
+	Target     string
 	Controller ServerResource
 }
 
 func (route *ServerCapabilityRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Target() != "*" {
+	if requested.Target() != route.Target {
 		return nil
 	} else if requested.Method() != http.OPTIONS {
 		return clienterror.MethodNotAllowed(http.OPTIONS)

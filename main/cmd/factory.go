@@ -53,18 +53,20 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 
 	logger := log.NewBufferedRequestLogger()
 	router.LogRequests(logger)
-
-	router.AddRoute(capability.NewRoute())
 	router.AddRoute(log.NewLogRoute("/logs", logger))
-	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
-	router.AddRoute(playground.NewWriteOKRoute("/form"))
-	router.AddRoute(playground.NewWriteOKRoute("/put-target"))
-	router.AddRoute(playground.NewParameterRoute("/parameters"))
-	router.AddRoute(playground.NewReadOnlyRoute("/method_options2"))
-	router.AddRoute(playground.NewReadWriteRoute("/method_options"))
-	router.AddRoute(playground.NewRedirectRoute("/redirect"))
-	router.AddRoute(playground.NewCookieRoute("/cookie", "/eat_cookie"))
+
+	router.AddRoute(capability.NewRoute("*"))
 	router.AddRoute(teapot.NewRoute())
+
+	router.AddRoute(playground.NewCookieRoute("/cookie", "/eat_cookie"))
+	router.AddRoute(playground.NewWriteOKRoute("/form"))
+	router.AddRoute(playground.NewReadWriteRoute("/method_options"))
+	router.AddRoute(playground.NewReadOnlyRoute("/method_options2"))
+	router.AddRoute(playground.NewParameterRoute("/parameters"))
+	router.AddRoute(playground.NewRedirectRoute("/redirect"))
+
+	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
+	router.AddRoute(playground.NewWriteOKRoute("/put-target"))
 	router.AddRoute(fs.NewRoute(contentRootPath))
 	return router
 }

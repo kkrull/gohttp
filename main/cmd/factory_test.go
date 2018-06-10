@@ -92,8 +92,8 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.MaxConnections).To(Equal(uint(42)))
 		})
 
-		It("has a capabilities route", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute())))
+		It("has a capabilities route at *", func() {
+			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute("*"))))
 		})
 
 		It("has a log route at /logs", func() {
