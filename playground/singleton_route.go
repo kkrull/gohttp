@@ -21,11 +21,23 @@ type SingletonRoute struct {
 }
 
 func (route *SingletonRoute) Route(requested http.RequestMessage) http.Request {
-	if !strings.HasPrefix(requested.Path(), route.Singleton.CollectionPath) {
+	if requested.Path() == route.Singleton.CollectionPath && isSupported(requested.Method(), collectionMethods) {
+		return requested.MakeResourceRequest(route.Singleton)
+	} else if requested.Path() == route.Singleton.dataPath() {
+		return requested.MakeResourceRequest(route.Singleton)
+	} else {
 		return nil
 	}
+}
 
-	return requested.MakeResourceRequest(route.Singleton)
+func isSupported(requestedMethod string, allowedMethods []string) bool {
+	for _, allowed := range allowedMethods {
+		if allowed == requestedMethod {
+			return true
+		}
+	}
+
+	return false
 }
 
 type SingletonResource struct {
@@ -115,5 +127,5 @@ func (singleton *SingletonResource) allowedMethods(path string) []string {
 
 var (
 	collectionMethods = []string{http.OPTIONS, http.POST}
-	dataMethods       = []string{http.OPTIONS, http.DELETE, http.GET, http.PUT}
+	dataMethods       = []string{http.DELETE, http.GET, http.OPTIONS, http.PUT}
 )
