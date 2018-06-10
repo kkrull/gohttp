@@ -7,19 +7,19 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewPuttableRoute(path string) *PuttableRoute {
-	return &PuttableRoute{
+func NewNopPutRoute(path string) *NopPutRoute {
+	return &NopPutRoute{
 		Path:     path,
-		Resource: &PuttableResource{},
+		Resource: &NopPutResource{},
 	}
 }
 
-type PuttableRoute struct {
+type NopPutRoute struct {
 	Path     string
-	Resource *PuttableResource
+	Resource *NopPutResource
 }
 
-func (route *PuttableRoute) Route(requested http.RequestMessage) http.Request {
+func (route *NopPutRoute) Route(requested http.RequestMessage) http.Request {
 	if requested.Path() != route.Path {
 		return nil
 	}
@@ -28,16 +28,12 @@ func (route *PuttableRoute) Route(requested http.RequestMessage) http.Request {
 }
 
 // A resource where it's OK to PUT
-type PuttableResource struct{}
+type NopPutResource struct{}
 
-func (*PuttableResource) Name() string {
-	return "Puttable"
+func (*NopPutResource) Name() string {
+	return "NOP Put"
 }
 
-func (resource *PuttableResource) Post(client io.Writer, message http.RequestMessage) {
-	success.RespondOkWithoutBody(client)
-}
-
-func (resource *PuttableResource) Put(client io.Writer, message http.RequestMessage) {
+func (resource *NopPutResource) Put(client io.Writer, message http.RequestMessage) {
 	success.RespondOkWithoutBody(client)
 }

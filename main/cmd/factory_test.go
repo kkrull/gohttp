@@ -93,11 +93,15 @@ var _ = Describe("InterruptFactory", func() {
 		})
 
 		Describe("it has built-in routes that are reasonable defaults in many applications", func() {
-			It("has a capabilities route at *", func() {
+			It("* - target, not path - is for server-wide capabilities", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute("*"))))
 			})
 
-			It("has a log route at /logs", func() {
+			It("/coffee and /tea implement the teapot protocol", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
+			})
+
+			It("/logs shows recently-made requests to administrators", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
 					log.NewLogRoute(
 						"/logs",
@@ -105,18 +109,14 @@ var _ = Describe("InterruptFactory", func() {
 					))))
 			})
 
-			It("has a teapot route", func() {
-				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
-			})
-
-			It("the fs route is last", func() {
+			It("every other path hits the file system route to read files from the content base path", func() {
 				firstRoute := typedServer.Routes()[len(typedServer.Routes())-1]
 				Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("/tmp")))
 			})
 		})
 
 		Describe("it has playground routes to show off basic capabilities to cob_spec", func() {
-			It("/cat-form is good for remembering one cat at a time", func() {
+			It("/cat-form is good for remembering one writable cat at a time", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewSingletonRoute("/cat-form"))))
 			})
 
@@ -125,14 +125,14 @@ var _ = Describe("InterruptFactory", func() {
 			})
 
 			It("/form is a black hole that accepts form posts", func() {
-				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewWriteOKRoute("/form"))))
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewNopPostRoute("/form"))))
 			})
 
 			It("/method_options is an abstract route supporting read and write methods", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadWriteRoute("/method_options"))))
 			})
 
-			It("/method_options2 is an abstract route supporting various read methods", func() {
+			It("/method_options2 is an abstract route supporting read methods", func() {
 				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadOnlyRoute("/method_options2"))))
 			})
 
@@ -141,7 +141,7 @@ var _ = Describe("InterruptFactory", func() {
 			})
 
 			It("/put-target is a black hole that accepts PUT requests", func() {
-				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewWriteOKRoute("/put-target"))))
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewNopPutRoute("/put-target"))))
 			})
 
 			It("/redirect sends you to your home", func() {

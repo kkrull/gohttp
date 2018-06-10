@@ -7,19 +7,19 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewWriteOKRoute(path string) *WriteOKRoute {
-	return &WriteOKRoute{
+func NewNopPostRoute(path string) *NopPostRoute {
+	return &NopPostRoute{
 		Path:     path,
-		Resource: &WriteOKResource{},
+		Resource: &NopPostResource{},
 	}
 }
 
-type WriteOKRoute struct {
+type NopPostRoute struct {
 	Path     string
-	Resource *WriteOKResource
+	Resource *NopPostResource
 }
 
-func (route *WriteOKRoute) Route(requested http.RequestMessage) http.Request {
+func (route *NopPostRoute) Route(requested http.RequestMessage) http.Request {
 	if requested.Path() != route.Path {
 		return nil
 	}
@@ -28,16 +28,12 @@ func (route *WriteOKRoute) Route(requested http.RequestMessage) http.Request {
 }
 
 // A resource where it's OK to write
-type WriteOKResource struct{}
+type NopPostResource struct{}
 
-func (*WriteOKResource) Name() string {
-	return "Write OK"
+func (*NopPostResource) Name() string {
+	return "NOP Post"
 }
 
-func (resource *WriteOKResource) Post(client io.Writer, message http.RequestMessage) {
-	success.RespondOkWithoutBody(client)
-}
-
-func (resource *WriteOKResource) Put(client io.Writer, message http.RequestMessage) {
+func (resource *NopPostResource) Post(client io.Writer, message http.RequestMessage) {
 	success.RespondOkWithoutBody(client)
 }

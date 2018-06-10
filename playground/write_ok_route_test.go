@@ -11,18 +11,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("::NewWriteOKRoute", func() {
-	It("returns a WriteOKRoute at the given path", func() {
-		route := playground.NewWriteOKRoute("/oracle")
+var _ = Describe("::NewNopPostRoute", func() {
+	It("returns a NopPostRoute at the given path", func() {
+		route := playground.NewNopPostRoute("/dev/null")
 		Expect(route).NotTo(BeNil())
-		Expect(route).To(BeEquivalentTo(&playground.WriteOKRoute{
-			Path:     "/oracle",
-			Resource: &playground.WriteOKResource{},
+		Expect(route).To(BeEquivalentTo(&playground.NopPostRoute{
+			Path:     "/dev/null",
+			Resource: &playground.NopPostResource{},
 		}))
 	})
 })
 
-var _ = Describe("WriteOKRoute", func() {
+var _ = Describe("NopPostRoute", func() {
 	Describe("#Route", func() {
 		const givenPath = "/sweetness"
 
@@ -32,7 +32,7 @@ var _ = Describe("WriteOKRoute", func() {
 		)
 
 		BeforeEach(func() {
-			router = &playground.WriteOKRoute{Path: givenPath}
+			router = &playground.NopPostRoute{Path: givenPath}
 			response.Reset()
 		})
 
@@ -48,7 +48,6 @@ var _ = Describe("WriteOKRoute", func() {
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
 				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
-				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
@@ -65,9 +64,9 @@ var _ = Describe("WriteOKRoute", func() {
 	})
 })
 
-var _ = Describe("WriteOKResource", func() {
+var _ = Describe("NopPostResource", func() {
 	var (
-		okResource      *playground.WriteOKResource
+		resource        *playground.NopPostResource
 		request         *httptest.RequestMessage
 		responseMessage *httptest.ResponseMessage
 
@@ -81,33 +80,13 @@ var _ = Describe("WriteOKResource", func() {
 	Describe("#Post", func() {
 		Context("given any data in the body", func() {
 			BeforeEach(func() {
-				okResource = &playground.WriteOKResource{}
+				resource = &playground.NopPostResource{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.POST,
 					PathReturns:   "/form",
 				}
 
-				okResource.Post(response, request)
-				responseMessage = httptest.ParseResponse(response)
-			})
-
-			It("responds 200 OK", func() {
-				responseMessage.ShouldBeWellFormed()
-				responseMessage.StatusShouldBe(200, "OK")
-			})
-		})
-	})
-
-	Describe("#Put", func() {
-		Context("given any data in the body", func() {
-			BeforeEach(func() {
-				okResource = &playground.WriteOKResource{}
-				request = &httptest.RequestMessage{
-					MethodReturns: http.PUT,
-					PathReturns:   "/form",
-				}
-
-				okResource.Put(response, request)
+				resource.Post(response, request)
 				responseMessage = httptest.ParseResponse(response)
 			})
 
