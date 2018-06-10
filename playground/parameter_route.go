@@ -10,16 +10,20 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewParameterRoute() *ParameterRoute {
-	return &ParameterRoute{Reporter: &AssignmentReporter{}}
+func NewParameterRoute(path string) *ParameterRoute {
+	return &ParameterRoute{
+		Path:     path,
+		Reporter: &AssignmentReporter{},
+	}
 }
 
 type ParameterRoute struct {
+	Path     string
 	Reporter ParameterReporter
 }
 
 func (route *ParameterRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Path() != "/parameters" {
+	if requested.Path() != route.Path {
 		return nil
 	}
 

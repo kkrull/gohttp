@@ -59,7 +59,7 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
 	router.AddRoute(playground.NewWriteOKRoute("/form"))
 	router.AddRoute(playground.NewWriteOKRoute("/put-target"))
-	router.AddRoute(playground.NewParameterRoute())
+	router.AddRoute(playground.NewParameterRoute("/parameters"))
 	router.AddRoute(playground.NewReadOnlyRoute())
 	router.AddRoute(playground.NewReadWriteRoute())
 	router.AddRoute(playground.NewRedirectRoute())

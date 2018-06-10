@@ -13,15 +13,21 @@ import (
 
 var _ = Describe("::NewParameterRoute", func() {
 	It("returns a fully configured ParameterRoute", func() {
-		route := playground.NewParameterRoute()
+		route := playground.NewParameterRoute("/debug/query")
 		Expect(route).NotTo(BeNil())
 		Expect(route).To(BeEquivalentTo(&playground.ParameterRoute{
+			Path:     "/debug/query",
 			Reporter: &playground.AssignmentReporter{},
 		}))
 	})
 })
 
 var _ = Describe("ParameterRoute", func() {
+	const (
+		configuredPath  = "/parameters"
+		nonMatchingPath = "/"
+	)
+
 	Describe("#Route", func() {
 		var (
 			router   http.Route
@@ -31,7 +37,10 @@ var _ = Describe("ParameterRoute", func() {
 
 		BeforeEach(func() {
 			reporter = &ParameterReporterMock{}
-			router = &playground.ParameterRoute{Reporter: reporter}
+			router = &playground.ParameterRoute{
+				Path:     configuredPath,
+				Reporter: reporter,
+			}
 			response.Reset()
 		})
 
@@ -39,7 +48,7 @@ var _ = Describe("ParameterRoute", func() {
 			It("routes GET to ParameterReporter#Get with the decoded query parameters", func() {
 				request := &httptest.RequestMock{}
 				requested := &httptest.RequestMessage{
-					PathReturns:                "/parameters",
+					PathReturns:                configuredPath,
 					MakeResourceRequestReturns: request,
 				}
 
@@ -49,7 +58,7 @@ var _ = Describe("ParameterRoute", func() {
 
 			Context("when the method is OPTIONS", func() {
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage("/parameters")
+					requested := http.NewOptionsMessage(configuredPath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 					routedRequest.Handle(response)
@@ -61,14 +70,14 @@ var _ = Describe("ParameterRoute", func() {
 			})
 
 			It("replies Method Not Allowed on any other method", func() {
-				requested := http.NewTraceMessage("/parameters")
+				requested := http.NewTraceMessage(configuredPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
 		})
 
 		It("returns nil for any other path", func() {
-			requested := http.NewGetMessage("/")
+			requested := http.NewGetMessage(nonMatchingPath)
 			Expect(router.Route(requested)).To(BeNil())
 		})
 	})
@@ -93,7 +102,7 @@ var _ = Describe("AssignmentReporter", func() {
 				reporter = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
-					PathReturns:   "/parameters",
+					PathReturns:   "/",
 				}
 
 				reporter.Get(response, request)
@@ -114,7 +123,7 @@ var _ = Describe("AssignmentReporter", func() {
 				reporter = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
-					PathReturns:   "/parameters",
+					PathReturns:   "/",
 				}
 
 				reporter.Get(response, request)
@@ -134,7 +143,7 @@ var _ = Describe("AssignmentReporter", func() {
 				reporter = &playground.AssignmentReporter{}
 				request = &httptest.RequestMessage{
 					MethodReturns: http.GET,
-					PathReturns:   "/parameters",
+					PathReturns:   "/",
 				}
 				request.AddQueryParameter("foo", "bar")
 
