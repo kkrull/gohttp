@@ -53,18 +53,22 @@ func (factory *InterruptFactory) routerWithAllRoutes(contentRootPath string) htt
 
 	logger := log.NewBufferedRequestLogger()
 	router.LogRequests(logger)
-
-	router.AddRoute(capability.NewRoute())
 	router.AddRoute(log.NewLogRoute("/logs", logger))
-	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
-	router.AddRoute(playground.NewWriteOKRoute("/form"))
-	router.AddRoute(playground.NewWriteOKRoute("/put-target"))
-	router.AddRoute(playground.NewParameterRoute())
-	router.AddRoute(playground.NewReadOnlyRoute())
-	router.AddRoute(playground.NewReadWriteRoute())
-	router.AddRoute(playground.NewRedirectRoute())
-	router.AddRoute(playground.NewCookieRoute("/cookie", "/eat_cookie"))
+
+	router.AddRoute(capability.NewRoute("*"))
 	router.AddRoute(teapot.NewRoute())
+
+	router.AddRoute(playground.NewSingletonRoute("/cat-form"))
+	router.AddRoute(playground.NewCookieRoute("/cookie", "/eat_cookie"))
+	router.AddRoute(playground.NewNopPostRoute("/form"))
+	router.AddRoute(playground.NewReadWriteRoute("/method_options"))
+	router.AddRoute(playground.NewReadOnlyRoute("/method_options2"))
+	router.AddRoute(playground.NewParameterRoute("/parameters"))
+	router.AddRoute(playground.NewRedirectRoute("/redirect"))
+
+	//A couple paths are backed by real files and are meant to support write operations; the rest default to read-only
+	router.AddRoute(fs.NewWritableFileRoute("/patch-content.txt", contentRootPath))
+	router.AddRoute(fs.NewWritableFileRoute("/put-target", contentRootPath))
 	router.AddRoute(fs.NewRoute(contentRootPath))
 	return router
 }

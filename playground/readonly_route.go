@@ -7,16 +7,20 @@ import (
 	"github.com/kkrull/gohttp/msg/success"
 )
 
-func NewReadOnlyRoute() *ReadOnlyRoute {
-	return &ReadOnlyRoute{Resource: &ReadableNopResource{}}
+func NewReadOnlyRoute(path string) *ReadOnlyRoute {
+	return &ReadOnlyRoute{
+		Path:     path,
+		Resource: &ReadableNopResource{},
+	}
 }
 
 type ReadOnlyRoute struct {
+	Path     string
 	Resource ReadOnlyResource
 }
 
 func (route *ReadOnlyRoute) Route(requested http.RequestMessage) http.Request {
-	if requested.Path() != "/method_options2" {
+	if requested.Path() != route.Path {
 		return nil
 	}
 

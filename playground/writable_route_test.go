@@ -13,13 +13,19 @@ import (
 
 var _ = Describe("::NewReadWriteRoute", func() {
 	It("returns a route to a resource that supports read and write methods", func() {
-		route := playground.NewReadWriteRoute()
+		route := playground.NewReadWriteRoute("/rw")
 		Expect(route).NotTo(BeNil())
+		Expect(route.Path).To(Equal("/rw"))
 		Expect(route.Resource).To(BeAssignableToTypeOf(&playground.ReadWriteNopResource{}))
 	})
 })
 
 var _ = Describe("ReadWriteRoute", func() {
+	const (
+		configuredPath  = "/method_options"
+		nonMatchingPath = "/"
+	)
+
 	Describe("#Route", func() {
 		var (
 			router   http.Route
@@ -28,17 +34,20 @@ var _ = Describe("ReadWriteRoute", func() {
 
 		BeforeEach(func() {
 			resource = &ReadWriteResourceMock{}
-			router = &playground.ReadWriteRoute{Resource: resource}
+			router = &playground.ReadWriteRoute{
+				Path:     configuredPath,
+				Resource: resource,
+			}
 		})
 
 		Context("when the path is /method_options", func() {
 			It("routes GET to Teapot#Get", func() {
-				handleRequest(router, http.GET, "/method_options")
+				handleRequest(router, http.GET, configuredPath)
 				resource.GetShouldHaveBeenCalled()
 			})
 
 			It("routes HEAD to Teapot#Head", func() {
-				handleRequest(router, http.HEAD, "/method_options")
+				handleRequest(router, http.HEAD, configuredPath)
 				resource.HeadShouldHaveBeenCalled()
 			})
 
@@ -46,7 +55,7 @@ var _ = Describe("ReadWriteRoute", func() {
 				var response = &bytes.Buffer{}
 
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage("/method_options")
+					requested := http.NewOptionsMessage(configuredPath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 
@@ -60,24 +69,24 @@ var _ = Describe("ReadWriteRoute", func() {
 			})
 
 			It("routes POST to Teapot#Post", func() {
-				handleRequest(router, http.POST, "/method_options")
+				handleRequest(router, http.POST, configuredPath)
 				resource.PostShouldHaveBeenCalled()
 			})
 
 			It("routes PUT to Teapot#Put", func() {
-				handleRequest(router, http.PUT, "/method_options")
+				handleRequest(router, http.PUT, configuredPath)
 				resource.PutShouldHaveBeenCalled()
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested := http.NewTraceMessage("/method_options")
+				requested := http.NewTraceMessage(configuredPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed(http.GET, http.HEAD, http.OPTIONS, http.POST, http.PUT)))
 			})
 		})
 
 		It("returns nil on any other path", func() {
-			requested := http.NewGetMessage("/")
+			requested := http.NewGetMessage(nonMatchingPath)
 			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})

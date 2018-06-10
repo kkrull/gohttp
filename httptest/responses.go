@@ -2,10 +2,18 @@ package httptest
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 )
+
+func AllowedMethodsShouldBe(response fmt.Stringer, methods ...string) func() {
+	return func() {
+		responseMessage := ParseResponse(response)
+		responseMessage.HeaderShould("Allow", Equal(strings.Join(methods, ",")))
+	}
+}
 
 func ShouldAllowMethods(response fmt.Stringer, methods ...string) func() {
 	return func() {

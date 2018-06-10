@@ -10,14 +10,17 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const serverCapabilityTarget = "*"
+
 var _ = Describe("::NewRoute", func() {
 	It("configures the route with StaticCapabilityServer", func() {
-		route := capability.NewRoute()
+		route := capability.NewRoute(serverCapabilityTarget)
 		Expect(route.Controller).To(BeAssignableToTypeOf(&capability.StaticCapabilityServer{}))
+		Expect(route.Target).To(Equal(serverCapabilityTarget))
 	})
 
 	It("configures available methods to the server as GET and HEAD", func() {
-		route := capability.NewRoute()
+		route := capability.NewRoute(serverCapabilityTarget)
 		Expect(route.Controller).To(BeEquivalentTo(
 			&capability.StaticCapabilityServer{
 				AvailableMethods: []string{http.GET, http.HEAD},
@@ -37,10 +40,13 @@ var _ = Describe("ServerCapabilityRoute", func() {
 
 		BeforeEach(func() {
 			controller = &ServerCapabilityServerMock{}
-			router = &capability.ServerCapabilityRoute{Controller: controller}
+			router = &capability.ServerCapabilityRoute{
+				Target:     serverCapabilityTarget,
+				Controller: controller,
+			}
 		})
 
-		Context("when the path is *", func() {
+		Context("when the path is the server capability target (*)", func() {
 			It("routes OPTIONS to ServerResource", func() {
 				requested = http.NewOptionsMessage("*")
 				routedRequest = router.Route(requested)
@@ -49,14 +55,14 @@ var _ = Describe("ServerCapabilityRoute", func() {
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested = http.NewGetMessage("*")
+				requested = http.NewGetMessage(serverCapabilityTarget)
 				routedRequest = router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed(http.OPTIONS)))
 			})
 		})
 
 		It("returns nil to pass on any other path", func() {
-			requested = http.NewOptionsMessage("/")
+			requested = http.NewOptionsMessage("/something/else")
 			routedRequest = router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})

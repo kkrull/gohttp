@@ -13,7 +13,7 @@ func (*LocalResources) DirectoryListingResource(message http.RequestMessage, fil
 }
 
 func (*LocalResources) ExistingFileResource(message http.RequestMessage, path string) http.Resource {
-	return &ExistingFile{Filename: path}
+	return &ReadableFile{Filename: path}
 }
 
 func (*LocalResources) NonExistingResource(message http.RequestMessage) http.Resource {

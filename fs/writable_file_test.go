@@ -13,9 +13,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ExistingFile", func() {
+var _ = Describe("WritableFile", func() {
 	var (
-		resource     *fs.ExistingFile
+		resource     *fs.WritableFile
 		basePath     string
 		existingFile string
 
@@ -24,7 +24,7 @@ var _ = Describe("ExistingFile", func() {
 	)
 
 	BeforeEach(func() {
-		basePath = makeEmptyTestDirectory("ExistingFile", os.ModePerm)
+		basePath = makeEmptyTestDirectory("WritableFile", os.ModePerm)
 		responseBuffer.Reset()
 	})
 
@@ -34,7 +34,7 @@ var _ = Describe("ExistingFile", func() {
 				existingFile = path.Join(basePath, "readable.txt")
 				Expect(createTextFile(existingFile, "A")).To(Succeed())
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Get(responseBuffer, http.NewGetMessage("/readable.txt"))
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -60,7 +60,7 @@ var _ = Describe("ExistingFile", func() {
 			})
 
 			It("sets Content-Type to the MIME type registered for that extension", func() {
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Get(responseBuffer, http.NewGetMessage("/image.jpeg"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("image/jpeg"))
@@ -74,7 +74,7 @@ var _ = Describe("ExistingFile", func() {
 			})
 
 			It("sets Content-Type to text/plain", func() {
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Get(responseBuffer, http.NewGetMessage("/assumed-text"))
 				response = httptest.ParseResponse(responseBuffer)
 				response.HeaderShould("Content-Type", Equal("text/plain"))
@@ -92,7 +92,7 @@ var _ = Describe("ExistingFile", func() {
 				}
 				requestMessage.AddHeader("Range", "bytes=0-1")
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Get(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -130,7 +130,7 @@ var _ = Describe("ExistingFile", func() {
 				requestMessage.AddHeader("Range", "bytes=0-1")
 				requestMessage.AddHeader("Range", "bytes=2-3")
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Get(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -153,7 +153,7 @@ var _ = Describe("ExistingFile", func() {
 				}
 				requestMessage.AddHeader("Range", "bytes=0-1,2-3")
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Get(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -181,7 +181,7 @@ var _ = Describe("ExistingFile", func() {
 			existingFile = path.Join(basePath, "readable.txt")
 			Expect(createTextFile(existingFile, "A")).To(Succeed())
 
-			resource = &fs.ExistingFile{Filename: existingFile}
+			resource = &fs.WritableFile{Filename: existingFile}
 			resource.Head(responseBuffer, http.NewHeadMessage("/readable.txt"))
 			response = httptest.ParseResponse(responseBuffer)
 		})
@@ -200,7 +200,7 @@ var _ = Describe("ExistingFile", func() {
 
 	Describe("#Options", func() {
 		BeforeEach(func() {
-			resource = &fs.ExistingFile{Filename: "/bonafide.txt"}
+			resource = &fs.WritableFile{Filename: "/bonafide.txt"}
 			requestMessage := http.NewOptionsMessage("/bonafide.txt")
 			request := requestMessage.MakeResourceRequest(resource)
 
@@ -232,7 +232,7 @@ var _ = Describe("ExistingFile", func() {
 				requestMessage.AddHeader("If-Match", originalContentSha1)
 				requestMessage.SetStringBody(updatedContent)
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Patch(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -269,7 +269,7 @@ var _ = Describe("ExistingFile", func() {
 				requestMessage.AddHeader("If-Match", originalContentSha1)
 				requestMessage.SetStringBody(updatedContent)
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Patch(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -298,7 +298,7 @@ var _ = Describe("ExistingFile", func() {
 				}
 				requestMessage.SetStringBody(updatedContent)
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Patch(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -328,7 +328,7 @@ var _ = Describe("ExistingFile", func() {
 				requestMessage.AddHeader("If-Match", "abcdef")
 				requestMessage.SetStringBody(updatedContent)
 
-				resource = &fs.ExistingFile{Filename: existingFile}
+				resource = &fs.WritableFile{Filename: existingFile}
 				resource.Patch(responseBuffer, requestMessage)
 				response = httptest.ParseResponse(responseBuffer)
 			})
@@ -336,6 +336,72 @@ var _ = Describe("ExistingFile", func() {
 			It("responds 412 Precondition Failed", func() {
 				response.ShouldBeWellFormed()
 				response.StatusShouldBe(412, "Precondition Failed")
+			})
+			It("leaves the file unchanged", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(originalContent))
+			})
+		})
+	})
+
+	Describe("#Put", func() {
+		const (
+			originalContent = "42"
+			updatedContent  = "43"
+		)
+
+		Context("when the path is a file in the base path", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readwrite.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PUT,
+					TargetReturns:  "/readwrite.txt",
+					PathReturns:    "/readwrite.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.WritableFile{Filename: existingFile}
+				resource.Put(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds with 200 OK", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(200, "OK")
+			})
+			It("updates the file's contents to what is in the message body", func() {
+				fileBytes, err := ioutil.ReadFile(existingFile)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(fileBytes)).To(Equal(updatedContent))
+			})
+		})
+
+		Context("when the file is read-only", func() {
+			BeforeEach(func() {
+				existingFile = path.Join(basePath, "readonly.txt")
+				Expect(createTextFile(existingFile, originalContent)).To(Succeed())
+				Expect(os.Chmod(existingFile, os.FileMode(0400))).To(Succeed())
+
+				requestMessage := &httptest.RequestMessage{
+					MethodReturns:  http.PUT,
+					TargetReturns:  "/readonly.txt",
+					PathReturns:    "/readonly.txt",
+					VersionReturns: http.VERSION_1_1,
+				}
+				requestMessage.SetStringBody(updatedContent)
+
+				resource = &fs.WritableFile{Filename: existingFile}
+				resource.Put(responseBuffer, requestMessage)
+				response = httptest.ParseResponse(responseBuffer)
+			})
+
+			It("responds 500 Internal Server Error", func() {
+				response.ShouldBeWellFormed()
+				response.StatusShouldBe(500, "Internal Server Error")
 			})
 			It("leaves the file unchanged", func() {
 				fileBytes, err := ioutil.ReadFile(existingFile)

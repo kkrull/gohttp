@@ -52,16 +52,16 @@ var _ = Describe("SingletonRoute", func() {
 				})
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
-				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
-				It("disallows GET", httptest.ShouldNotAllowMethod(response, http.GET))
-				It("allows POST", httptest.ShouldAllowMethods(response, http.POST))
-				It("disallows DELETE", httptest.ShouldNotAllowMethod(response, http.DELETE))
+				It("allows methods to create data", httptest.AllowedMethodsShouldBe(response, http.OPTIONS, http.POST))
 			})
 
-			It("replies Method Not Allowed on any other method", func() {
+			It("routes POST requests", func() {
+				requested := http.NewPostMessage(collectionPath)
+				Expect(router.Route(requested)).NotTo(BeNil())
+			})
+			It("passes on other methods", func() {
 				requested := http.NewTraceMessage(collectionPath)
-				routedRequest := router.Route(requested)
-				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
+				Expect(router.Route(requested)).To(BeNil())
 			})
 		})
 
@@ -75,30 +75,31 @@ var _ = Describe("SingletonRoute", func() {
 				})
 
 				It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
-				It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
-				It("allows GET", httptest.ShouldAllowMethods(response, http.GET))
-				It("disallows POST", httptest.ShouldNotAllowMethod(response, http.POST))
-				It("allows PUT", httptest.ShouldAllowMethods(response, http.PUT))
-				It("allows DELETE", httptest.ShouldAllowMethods(response, http.DELETE))
+				It("allows methods to read and modify existing data", httptest.AllowedMethodsShouldBe(response,
+					http.DELETE,
+					http.GET,
+					http.OPTIONS,
+					http.PUT,
+				))
 			})
 
+			It("routes DELETE requests", func() {
+				requested := http.NewDeleteMessage(dataPath)
+				Expect(router.Route(requested)).NotTo(BeNil())
+			})
+			It("routes GET requests", func() {
+				requested := http.NewGetMessage(dataPath)
+				Expect(router.Route(requested)).NotTo(BeNil())
+			})
+			It("routes PUT requests", func() {
+				requested := http.NewPutMessage(dataPath)
+				Expect(router.Route(requested)).NotTo(BeNil())
+			})
 			It("replies Method Not Allowed on any other method", func() {
 				requested := http.NewTraceMessage(dataPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeAssignableToTypeOf(clienterror.MethodNotAllowed()))
 			})
-		})
-
-		Context("when the method is OPTIONS and it's any other path", func() {
-			BeforeEach(func() {
-				requested := http.NewOptionsMessage(invalidDataPath)
-				routedRequest := router.Route(requested)
-				Expect(routedRequest).NotTo(BeNil())
-				routedRequest.Handle(response)
-			})
-
-			It("responds 200 OK with no body", httptest.ShouldHaveNoBody(response, 200, "OK"))
-			It("allows OPTIONS", httptest.ShouldAllowMethods(response, http.OPTIONS))
 		})
 
 		It("passes on any other path by returning nil", func() {

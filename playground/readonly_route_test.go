@@ -13,13 +13,19 @@ import (
 
 var _ = Describe("::NewReadOnlyRoute", func() {
 	It("returns a route to a resource that only supports read methods", func() {
-		route := playground.NewReadOnlyRoute()
+		route := playground.NewReadOnlyRoute("/readonly")
 		Expect(route).NotTo(BeNil())
+		Expect(route.Path).To(Equal("/readonly"))
 		Expect(route.Resource).To(BeAssignableToTypeOf(&playground.ReadableNopResource{}))
 	})
 })
 
 var _ = Describe("ReadOnlyRoute", func() {
+	const (
+		configuredPath  = "/method_options2"
+		nonMatchingPath = "/"
+	)
+
 	Describe("#Route", func() {
 		var (
 			router   http.Route
@@ -28,17 +34,20 @@ var _ = Describe("ReadOnlyRoute", func() {
 
 		BeforeEach(func() {
 			resource = &ReadOnlyResourceMock{}
-			router = &playground.ReadOnlyRoute{Resource: resource}
+			router = &playground.ReadOnlyRoute{
+				Path:     configuredPath,
+				Resource: resource,
+			}
 		})
 
 		Context("when the path is /method_options2", func() {
 			It("routes GET to Teapot#Get", func() {
-				handleRequest(router, http.GET, "/method_options2")
+				handleRequest(router, http.GET, configuredPath)
 				resource.GetShouldHaveBeenCalled()
 			})
 
 			It("routes HEAD to Teapot#Options", func() {
-				handleRequest(router, http.HEAD, "/method_options2")
+				handleRequest(router, http.HEAD, configuredPath)
 				resource.HeadShouldHaveBeenCalled()
 			})
 
@@ -46,7 +55,7 @@ var _ = Describe("ReadOnlyRoute", func() {
 				var response = &bytes.Buffer{}
 
 				BeforeEach(func() {
-					requested := http.NewOptionsMessage("/method_options2")
+					requested := http.NewOptionsMessage(configuredPath)
 					routedRequest := router.Route(requested)
 					Expect(routedRequest).NotTo(BeNil())
 
@@ -60,14 +69,14 @@ var _ = Describe("ReadOnlyRoute", func() {
 			})
 
 			It("returns MethodNotAllowed for any other method", func() {
-				requested := http.NewPutMessage("/method_options2")
+				requested := http.NewPutMessage(configuredPath)
 				routedRequest := router.Route(requested)
 				Expect(routedRequest).To(BeEquivalentTo(clienterror.MethodNotAllowed(http.GET, http.HEAD, http.OPTIONS)))
 			})
 		})
 
 		It("returns nil on any other path", func() {
-			requested := http.NewGetMessage("/")
+			requested := http.NewGetMessage(nonMatchingPath)
 			routedRequest := router.Route(requested)
 			Expect(routedRequest).To(BeNil())
 		})

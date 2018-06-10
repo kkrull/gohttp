@@ -92,57 +92,65 @@ var _ = Describe("InterruptFactory", func() {
 			Expect(typedServer.MaxConnections).To(Equal(uint(42)))
 		})
 
-		It("has a capabilities route", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute())))
+		Describe("it has built-in routes that are reasonable defaults in many applications", func() {
+			It("* - target, not path - is for server-wide capabilities", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(capability.NewRoute("*"))))
+			})
+
+			It("/coffee and /tea implement the teapot protocol", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
+			})
+
+			It("/logs shows recently-made requests to administrators", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
+					log.NewLogRoute(
+						"/logs",
+						log.NewBufferedRequestLogger(),
+					))))
+			})
+
+			It("every other path hits the file system route to read files from the content base path", func() {
+				firstRoute := typedServer.Routes()[len(typedServer.Routes())-1]
+				Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("/tmp")))
+			})
 		})
 
-		It("has a log route at /logs", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(
-				log.NewLogRoute(
-					"/logs",
-					log.NewBufferedRequestLogger(),
-				))))
-		})
+		Describe("it has playground routes to show off basic capabilities to cob_spec", func() {
+			It("/cat-form is good for remembering one writable cat at a time", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewSingletonRoute("/cat-form"))))
+			})
 
-		It("has a playground route to test round trips for cookies at /cookie and /eat_cookie", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewCookieRoute("/cookie", "/eat_cookie"))))
-		})
+			It("/cookie and /eat_cookie tests round trips for cookies", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewCookieRoute("/cookie", "/eat_cookie"))))
+			})
 
-		It("has a playground write-only route at /form", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewWriteOKRoute("/form"))))
-		})
+			It("/form is a black hole that accepts form posts", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewNopPostRoute("/form"))))
+			})
 
-		It("has a playground write-only route at /put-target", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewWriteOKRoute("/put-target"))))
-		})
+			It("/method_options is an abstract route supporting read and write methods", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadWriteRoute("/method_options"))))
+			})
 
-		It("has a playground singleton route at /cat-form", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(playground.NewSingletonRoute("/cat-form"))))
-		})
+			It("/method_options2 is an abstract route supporting read methods", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadOnlyRoute("/method_options2"))))
+			})
 
-		It("has a playground route for parameter decoding", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewParameterRoute())))
-		})
+			It("/parameters shows you a parsed and decoded query string", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewParameterRoute("/parameters"))))
+			})
 
-		It("has a playground route for a read-only resource", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadOnlyRoute())))
-		})
+			It("/patch-content.txt is a writable file", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(fs.NewWritableFileRoute("/patch-content.txt", "/public"))))
+			})
 
-		It("has a playground route for a read-write resource", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewReadWriteRoute())))
-		})
+			It("/put-target is a writable file", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeEquivalentTo(fs.NewWritableFileRoute("/put-target", "/public"))))
+			})
 
-		It("has a playground route for redirects", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewRedirectRoute())))
-		})
-
-		It("has a teapot route", func() {
-			Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(teapot.NewRoute())))
-		})
-
-		It("the fs route is last", func() {
-			firstRoute := typedServer.Routes()[len(typedServer.Routes())-1]
-			Expect(firstRoute).To(BeAssignableToTypeOf(fs.NewRoute("/tmp")))
+			It("/redirect sends you to your home", func() {
+				Expect(typedServer.Routes()).To(ContainElement(BeAssignableToTypeOf(playground.NewRedirectRoute("/redirect"))))
+			})
 		})
 	})
 })
